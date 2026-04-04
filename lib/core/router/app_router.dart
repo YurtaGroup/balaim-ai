@@ -13,6 +13,12 @@ import '../../features/journey/views/contraction_timer_screen.dart';
 import '../../features/journey/views/hospital_bag_screen.dart';
 import '../../features/journey/views/birth_plan_screen.dart';
 import '../../features/journey/views/baby_names_screen.dart';
+import '../../features/sounds/views/sounds_screen.dart';
+import '../../features/newborn/views/soothing_techniques_screen.dart';
+import '../../features/newborn/views/feeding_log_screen.dart';
+import '../../features/newborn/views/diaper_log_screen.dart';
+import '../../features/newborn/views/emergency_reference_screen.dart';
+import '../../features/newborn/views/postpartum_screen.dart';
 import '../../features/ai/views/ai_chat_screen.dart';
 import '../../features/community/views/community_screen.dart';
 import '../../features/admin/views/admin_dashboard_screen.dart';
@@ -83,6 +89,30 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/baby-names',
         builder: (context, state) => const BabyNamesScreen(),
+      ),
+      GoRoute(
+        path: '/sounds',
+        builder: (context, state) => const SoundsScreen(),
+      ),
+      GoRoute(
+        path: '/soothing',
+        builder: (context, state) => const SoothingTechniquesScreen(),
+      ),
+      GoRoute(
+        path: '/feeding-log',
+        builder: (context, state) => const FeedingLogScreen(),
+      ),
+      GoRoute(
+        path: '/diaper-log',
+        builder: (context, state) => const DiaperLogScreen(),
+      ),
+      GoRoute(
+        path: '/emergency',
+        builder: (context, state) => const EmergencyReferenceScreen(),
+      ),
+      GoRoute(
+        path: '/postpartum',
+        builder: (context, state) => const PostpartumScreen(),
       ),
 
       // Admin shell

@@ -58,6 +58,8 @@ dependencies:
 
   # Media
   image_picker: ^1.1.2
+  just_audio: ^0.9.42
+  path_provider: ^2.1.5
 
   # Notifications
   flutter_local_notifications: ^18.0.1

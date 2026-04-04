@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/data/seed_data.dart';
 import '../../../shared/models/baby_month_data.dart';
@@ -136,6 +137,63 @@ class BabyJourneyScreen extends ConsumerWidget {
                   label: 'Weight',
                   color: AppColors.stagePrePregnancy,
                   onTap: () => _showSheet(context, TrackingType.weight),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            // New Parent Toolkit
+            Text('New Parent Toolkit', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.2,
+              children: [
+                _ToolkitTile(
+                  icon: Icons.volume_up,
+                  label: 'White Noise',
+                  subtitle: 'Soothe & sleep',
+                  color: AppColors.stagePrePregnancy,
+                  onTap: () => context.push('/sounds'),
+                ),
+                _ToolkitTile(
+                  icon: Icons.auto_awesome,
+                  label: 'Soothing',
+                  subtitle: '5 S\'s & more',
+                  color: AppColors.primary,
+                  onTap: () => context.push('/soothing'),
+                ),
+                _ToolkitTile(
+                  icon: Icons.restaurant,
+                  label: 'Feeding Log',
+                  subtitle: 'Breast & bottle',
+                  color: AppColors.secondary,
+                  onTap: () => context.push('/feeding-log'),
+                ),
+                _ToolkitTile(
+                  icon: Icons.baby_changing_station,
+                  label: 'Diaper Log',
+                  subtitle: 'Wet & dirty',
+                  color: AppColors.accent,
+                  onTap: () => context.push('/diaper-log'),
+                ),
+                _ToolkitTile(
+                  icon: Icons.emergency,
+                  label: 'When to Call',
+                  subtitle: 'Doctor red flags',
+                  color: AppColors.error,
+                  onTap: () => context.push('/emergency'),
+                ),
+                _ToolkitTile(
+                  icon: Icons.favorite,
+                  label: 'For You, Mom',
+                  subtitle: 'Postpartum care',
+                  color: AppColors.stagePregnancy,
+                  onTap: () => context.push('/postpartum'),
                 ),
               ],
             ),
@@ -610,6 +668,71 @@ class _GuideCard extends StatelessWidget {
                   ),
                 )),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ToolkitTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ToolkitTile({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 24),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: color.withValues(alpha: 0.7),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
