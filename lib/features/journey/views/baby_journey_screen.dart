@@ -5,6 +5,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/data/seed_data.dart';
 import '../../../shared/models/baby_month_data.dart';
 import '../../../shared/models/tracking_entry.dart';
+import '../../../shared/widgets/gradient_banner.dart';
+import '../../../shared/widgets/pattern_background.dart';
+import '../../../shared/widgets/section_header.dart';
 import '../providers/journey_provider.dart';
 import 'tracking_sheet.dart';
 
@@ -30,18 +33,10 @@ class BabyJourneyScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Age banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.secondary, AppColors.secondaryDark],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-              ),
+            // Age banner with pattern
+            GradientBanner(
+              colors: const [AppColors.secondary, AppColors.secondaryDark],
+              patternStyle: PatternStyle.hearts,
               child: Row(
                 children: [
                   Expanded(
@@ -52,28 +47,55 @@ class BabyJourneyScreen extends ConsumerWidget {
                           monthData.ageLabel,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 36,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 40,
+                            fontWeight: FontWeight.w800,
+                            height: 1,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Text(
                           '$ageDays days old',
-                          style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          monthData.title,
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 16,
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: 13,
                             fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            monthData.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Icon(Icons.child_care, color: Colors.white.withValues(alpha: 0.9), size: 56),
+                  Container(
+                    width: 88,
+                    height: 88,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.child_care,
+                      color: Colors.white,
+                      size: 52,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -107,7 +129,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Quick tracking
-            Text('Track Today', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeader(title: 'Track Today', subtitle: 'Tap to log', accentColor: AppColors.primary),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -143,7 +165,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // New Parent Toolkit
-            Text('New Parent Toolkit', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeader(title: 'New Parent Toolkit', subtitle: 'Everything you need', accentColor: AppColors.secondary),
             const SizedBox(height: 12),
             GridView.count(
               shrinkWrap: true,
@@ -244,7 +266,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Milestones checklist
-            Text('Milestones', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeader(title: 'Milestones', accentColor: AppColors.accent),
             const SizedBox(height: 12),
             Card(
               child: Padding(
@@ -275,7 +297,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Activities
-            Text('Activities to Try', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeader(title: 'Activities to Try', accentColor: AppColors.secondary),
             const SizedBox(height: 12),
             ...monthData.activities.map((a) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
@@ -322,7 +344,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Red flags
-            Text('When to Call the Doctor', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeader(title: 'When to Call the Doctor', accentColor: AppColors.error),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -351,7 +373,7 @@ class BabyJourneyScreen extends ConsumerWidget {
 
             // Health checkup
             if (monthData.checkup != null) ...[
-              Text('Health Checkup', style: Theme.of(context).textTheme.titleLarge),
+              const SectionHeader(title: 'Health Checkup', accentColor: AppColors.secondary),
               const SizedBox(height: 12),
               Card(
                 child: Padding(
@@ -403,7 +425,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             ],
 
             // Parent tips
-            Text('Tips for You', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeader(title: 'Tips for You', accentColor: AppColors.stagePregnancy),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -429,7 +451,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             ),
             // Recommended products for baby's age
             const SizedBox(height: 20),
-            Text('Recommended for ${monthData.ageLabel}', style: Theme.of(context).textTheme.titleLarge),
+            SectionHeader(title: 'Recommended for ${monthData.ageLabel}', accentColor: AppColors.stagePrePregnancy),
             const SizedBox(height: 12),
             SizedBox(
               height: 180,

@@ -6,6 +6,10 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/data/seed_data.dart';
 import '../../../shared/models/tracking_entry.dart';
 import '../providers/journey_provider.dart';
+import '../../../shared/widgets/gradient_banner.dart';
+import '../../../shared/widgets/baby_size_visual.dart';
+import '../../../shared/widgets/section_header.dart';
+import '../../../shared/widgets/pattern_background.dart';
 import 'kick_counter_screen.dart';
 import 'tracking_sheet.dart';
 import 'baby_journey_screen.dart';
@@ -39,82 +43,88 @@ class JourneyScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Week banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryDark],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-              ),
+            // Week banner with progress ring + decorative pattern
+            GradientBanner(
+              colors: const [AppColors.primary, AppColors.primaryDark],
+              patternStyle: PatternStyle.circles,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Week $week',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 36,
-                              fontWeight: FontWeight.w700,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Week $week',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 40,
+                                fontWeight: FontWeight.w800,
+                                height: 1,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Trimester ${profile.trimester ?? 2} · ${weekData.trimester}',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 14,
+                            const SizedBox(height: 6),
+                            Text(
+                              '${weekData.trimester} trimester',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.calendar_today,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '$daysLeft days to go',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      Icon(
-                        Icons.child_care,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        size: 56,
-                      ),
+                      PregnancyProgressRing(currentWeek: week, size: 84),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 18),
                   Text(
                     'Your baby is the size of a ${weekData.babySize.toLowerCase()}',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 16,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${weekData.babyLengthCm} cm · ${weekData.babyWeightG >= 1000 ? "${(weekData.babyWeightG / 1000).toStringAsFixed(1)} kg" : "${weekData.babyWeightG.round()} g"}',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '$daysLeft days to go',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                  const SizedBox(height: 12),
+                  SizeComparisonBar(
+                    lengthCm: weekData.babyLengthCm,
+                    weightG: weekData.babyWeightG,
+                    color: Colors.white,
                   ),
                 ],
               ),
@@ -122,7 +132,7 @@ class JourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Baby development
-            Text("What's happening", style: Theme.of(context).textTheme.titleLarge),
+            SectionHeader(title: "What's happening"),
             const SizedBox(height: 8),
             Card(
               child: Padding(
@@ -136,7 +146,7 @@ class JourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Quick actions — real tracking
-            Text('Track Today', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeader(title: 'Track Today', subtitle: 'Tap to log', accentColor: AppColors.primary),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -186,7 +196,7 @@ class JourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Today's insights
-            Text("Today's Insights", style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeader(title: "Today's Insights", accentColor: AppColors.secondary),
             const SizedBox(height: 12),
             Card(
               child: Padding(
@@ -266,7 +276,7 @@ class JourneyScreen extends ConsumerWidget {
             ),
             // Pregnancy tools
             const SizedBox(height: 20),
-            Text('Tools', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeader(title: 'Tools', subtitle: 'Everything you need', accentColor: AppColors.accent),
             const SizedBox(height: 12),
             GridView.count(
               shrinkWrap: true,
@@ -316,7 +326,7 @@ class JourneyScreen extends ConsumerWidget {
             ),
             // Recommended products for pregnancy
             const SizedBox(height: 20),
-            Text('Recommended for You', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeader(title: 'Recommended for You', accentColor: AppColors.stagePrePregnancy),
             const SizedBox(height: 12),
             SizedBox(
               height: 180,
@@ -477,7 +487,7 @@ class _MoodRow extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("How are you feeling?", style: Theme.of(context).textTheme.titleLarge),
+        const SectionHeader(title: "How are you feeling?", accentColor: AppColors.stagePrePregnancy),
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
