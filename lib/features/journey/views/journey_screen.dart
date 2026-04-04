@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/data/seed_data.dart';
@@ -263,6 +264,44 @@ class JourneyScreen extends ConsumerWidget {
                 ),
               ),
             ),
+            // Pregnancy tools
+            const SizedBox(height: 20),
+            Text('Tools', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.4,
+              children: [
+                _ToolTile(
+                  icon: Icons.timer_outlined,
+                  label: 'Contraction\nTimer',
+                  color: AppColors.primary,
+                  onTap: () => context.push('/contraction-timer'),
+                ),
+                _ToolTile(
+                  icon: Icons.luggage_outlined,
+                  label: 'Hospital\nBag',
+                  color: AppColors.secondary,
+                  onTap: () => context.push('/hospital-bag'),
+                ),
+                _ToolTile(
+                  icon: Icons.edit_note,
+                  label: 'Birth\nPlan',
+                  color: AppColors.accent,
+                  onTap: () => context.push('/birth-plan'),
+                ),
+                _ToolTile(
+                  icon: Icons.favorite_outline,
+                  label: 'Baby\nNames',
+                  color: AppColors.stagePrePregnancy,
+                  onTap: () => context.push('/baby-names'),
+                ),
+              ],
+            ),
             // Recommended products for pregnancy
             const SizedBox(height: 20),
             Text('Recommended for You', style: Theme.of(context).textTheme.titleLarge),
@@ -481,6 +520,53 @@ class _MoodRow extends ConsumerWidget {
           }),
         ),
       ],
+    );
+  }
+}
+
+class _ToolTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ToolTile({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Row(
+            children: [
+              Icon(icon, color: color, size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios, color: color, size: 12),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

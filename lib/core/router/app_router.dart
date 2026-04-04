@@ -9,6 +9,10 @@ import '../../features/journey/views/journey_screen.dart';
 import '../../features/journey/views/due_date_screen.dart';
 import '../../features/journey/views/kick_counter_screen.dart';
 import '../../features/journey/views/baby_journey_screen.dart';
+import '../../features/journey/views/contraction_timer_screen.dart';
+import '../../features/journey/views/hospital_bag_screen.dart';
+import '../../features/journey/views/birth_plan_screen.dart';
+import '../../features/journey/views/baby_names_screen.dart';
 import '../../features/ai/views/ai_chat_screen.dart';
 import '../../features/community/views/community_screen.dart';
 import '../../features/admin/views/admin_dashboard_screen.dart';
@@ -63,6 +67,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/baby-journey',
         builder: (context, state) => const BabyJourneyScreen(),
+      ),
+      GoRoute(
+        path: '/contraction-timer',
+        builder: (context, state) => const ContractionTimerScreen(),
+      ),
+      GoRoute(
+        path: '/hospital-bag',
+        builder: (context, state) => const HospitalBagScreen(),
+      ),
+      GoRoute(
+        path: '/birth-plan',
+        builder: (context, state) => const BirthPlanScreen(),
+      ),
+      GoRoute(
+        path: '/baby-names',
+        builder: (context, state) => const BabyNamesScreen(),
       ),
 
       // Admin shell
