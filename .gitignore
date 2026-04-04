@@ -1,0 +1,108 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code
+.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/app.flx
+ios/Flutter/app.zip
+ios/Flutter/flutter_assets/
+ios/Flutter/flutter_export_environment.sh
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+ios/Podfile.lock
+ios/Runner.xcworkspace/xcuserdata/
+ios/Runner.xcodeproj/xcuserdata/
+ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Secrets & Firebase config (DO NOT COMMIT)
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+ios/firebase_app_id_file.json
+android/app/google-services.json
+lib/firebase_options.dart
+
+# API keys & credentials
+.firebaserc
+serviceAccountKey.json
+**/credentials.json
+**/service-account*.json
+
+# Cloud Functions build artifacts
+functions/node_modules/
+functions/lib/
+functions/.env
+functions/.env.*
+functions/ui-debug.log
+functions/firebase-debug.log
+
+# Native splash generated files (keep source, ignore output)
+# Uncomment if you want to regenerate on every machine:
+# ios/Runner/Assets.xcassets/LaunchImage.imageset/
+# android/app/src/main/res/drawable*/splash*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Claude Code / agent session files
+.claude/

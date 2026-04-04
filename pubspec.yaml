@@ -1,0 +1,109 @@
+name: balam_ai
+description: "Balam.AI — The Parenting Super App"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.17
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  fl_chart: ^0.70.2
+  lottie: ^3.3.1
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Routing
+  go_router: ^14.8.1
+
+  # Firebase
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.6.0
+  cloud_firestore: ^5.6.4
+  firebase_storage: ^12.4.3
+  firebase_messaging: ^15.2.3
+  firebase_analytics: ^11.4.3
+
+  # Auth providers
+  google_sign_in: ^6.2.2
+  sign_in_with_apple: ^6.1.4
+
+  # Networking (for Cloud Functions / Cloud SQL API)
+  dio: ^5.7.0
+  cloud_functions: ^5.3.3
+
+  # Local Storage (offline-first)
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.5.3
+  flutter_secure_storage: ^9.2.4
+
+  # Utilities
+  intl: ^0.19.0
+  uuid: ^4.5.1
+  equatable: ^2.0.7
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  logger: ^2.5.0
+  timeago: ^3.7.0
+
+  # Media
+  image_picker: ^1.1.2
+
+  # Notifications
+  flutter_local_notifications: ^18.0.1
+
+  # Payments
+  purchases_flutter: ^8.5.1  # RevenueCat
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  riverpod_generator: ^2.6.3
+  build_runner: ^2.4.14
+  freezed: ^2.5.8
+  json_serializable: ^6.9.4
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/animations/
+    - assets/icons/
+    - assets/branding/
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/branding/app_icon.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  background_color_ios: "#E8787A"
+  web:
+    generate: true
+    image_path: "assets/branding/app_icon.png"
+    background_color: "#E8787A"
+    theme_color: "#E8787A"
+
+flutter_native_splash:
+  color: "#E8787A"
+  image: "assets/branding/splash_logo.png"
+  android_12:
+    color: "#E8787A"
+    image: "assets/branding/splash_logo.png"
+  ios: true
+  android: true
+  web: false

@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users — can only read/write their own profile
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+
+      // Tracking — nested under user, private to that user
+      match /tracking/{entryId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Insights — users can read their own, Cloud Functions write
+    match /insights/{insightId} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null && resource.data.uid == request.auth.uid
+                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create, delete: if false; // Only Cloud Functions
+    }
+
+    // Community posts — any authenticated user can read, author can write
+    match /posts/{postId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null; // For likes (in production, use Cloud Functions)
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+
+      // Comments
+      match /comments/{commentId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null;
+        allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      }
+    }
+
+    // Vendors — public read, admin write
+    match /vendors/{vendorId} {
+      allow read: if true;
+      allow write: if false; // Admin SDK only
+    }
+
+    // Products — public read, vendor write via Cloud Functions
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if false; // Cloud Functions only
+    }
+  }
+}

@@ -1,0 +1,328 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_colors.dart';
+import '../providers/auth_provider.dart';
+
+class LoginScreen extends ConsumerStatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLogin = true;
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_emailController.text.trim().isEmpty) {
+      setState(() => _error = 'Please enter an email');
+      return;
+    }
+    setState(() { _isLoading = true; _error = null; });
+    try {
+      final auth = ref.read(demoAuthServiceProvider);
+      await auth.signIn(
+        _emailController.text.trim(),
+        _passwordController.text,
+      );
+    } catch (e) {
+      setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _quickLogin(String email) async {
+    setState(() { _isLoading = true; _error = null; });
+    try {
+      final auth = ref.read(demoAuthServiceProvider);
+      await auth.signIn(email, 'demo');
+    } catch (e) {
+      setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 32),
+              // Logo area
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryDark],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(Icons.child_care, color: Colors.white, size: 40),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: Text(
+                  _isLogin ? 'Welcome back' : 'Create account',
+                  style: Theme.of(context).textTheme.headlineLarge,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: Text(
+                  _isLogin
+                      ? 'Sign in to continue your journey'
+                      : 'Start your parenting journey with Balam',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Demo quick access — Bezos style: remove ALL friction
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.bolt, color: AppColors.accent, size: 20),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Quick Demo Access',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.accentDark,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    _DemoButton(
+                      icon: Icons.pregnant_woman,
+                      color: AppColors.primary,
+                      label: 'Parent (Sarah)',
+                      subtitle: 'Full parenting experience',
+                      onTap: () => _quickLogin('parent@balam.ai'),
+                    ),
+                    const SizedBox(height: 8),
+                    _DemoButton(
+                      icon: Icons.man,
+                      color: AppColors.secondary,
+                      label: 'Dad (Mike)',
+                      subtitle: 'Dad perspective',
+                      onTap: () => _quickLogin('dad@balam.ai'),
+                    ),
+                    const SizedBox(height: 8),
+                    _DemoButton(
+                      icon: Icons.admin_panel_settings,
+                      color: AppColors.accentDark,
+                      label: 'Admin Dashboard',
+                      subtitle: 'Platform management',
+                      onTap: () => _quickLogin('admin@balam.ai'),
+                    ),
+                    const SizedBox(height: 8),
+                    _DemoButton(
+                      icon: Icons.medical_services,
+                      color: AppColors.secondaryDark,
+                      label: 'Doctor (Dr. Amara)',
+                      subtitle: 'Professional view',
+                      onTap: () => _quickLogin('doctor@balam.ai'),
+                    ),
+                    const SizedBox(height: 8),
+                    _DemoButton(
+                      icon: Icons.camera_alt,
+                      color: Color(0xFF7C4DFF),
+                      label: 'Vendor (TinySteps)',
+                      subtitle: 'Marketplace seller',
+                      onTap: () => _quickLogin('vendor@balam.ai'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Divider
+              const Row(
+                children: [
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('or sign in with email',
+                        style: TextStyle(color: AppColors.textHint, fontSize: 13)),
+                  ),
+                  Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Email field
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Password field
+              TextField(
+                controller: _passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  prefixIcon: Icon(Icons.lock_outlined),
+                ),
+                onSubmitted: (_) => _submit(),
+              ),
+
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    _error!,
+                    style: const TextStyle(color: AppColors.error, fontSize: 13),
+                  ),
+                ),
+
+              const SizedBox(height: 24),
+
+              // Submit button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _submit,
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20, width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : Text(_isLogin ? 'Sign In' : 'Sign Up'),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Social sign-in
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _quickLogin('parent@balam.ai'),
+                  icon: const Icon(Icons.g_mobiledata, size: 24),
+                  label: const Text('Continue with Google'),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _quickLogin('parent@balam.ai'),
+                  icon: const Icon(Icons.apple, size: 24),
+                  label: const Text('Continue with Apple'),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Toggle login/signup
+              Center(
+                child: TextButton(
+                  onPressed: () => setState(() => _isLogin = !_isLogin),
+                  child: Text(
+                    _isLogin
+                        ? "Don't have an account? Sign Up"
+                        : 'Already have an account? Sign In',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DemoButton extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _DemoButton({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text(subtitle, style: TextStyle(color: AppColors.textHint, fontSize: 12)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textHint),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
