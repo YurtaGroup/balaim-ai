@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/tracking_entry.dart';
 import '../providers/journey_provider.dart';
 
@@ -85,7 +86,7 @@ class _KickCounterScreenState extends ConsumerState<KickCounterScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Kick Counter'),
+        title: Text(L.of(context).kickCounter),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () {
@@ -111,7 +112,7 @@ class _KickCounterScreenState extends ConsumerState<KickCounterScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            _isRunning ? 'Session in progress' : 'Tap Start to begin',
+            _isRunning ? L.of(context).sessionInProgress : L.of(context).tapStartToBegin,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 40),
@@ -126,7 +127,7 @@ class _KickCounterScreenState extends ConsumerState<KickCounterScreen> {
             ),
           ),
           Text(
-            kickCount == 1 ? 'kick' : 'kicks',
+            kickCount == 1 ? L.of(context).kickSingular : L.of(context).kickPlural,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -142,7 +143,7 @@ class _KickCounterScreenState extends ConsumerState<KickCounterScreen> {
                 height: 64,
                 child: ElevatedButton(
                   onPressed: _startSession,
-                  child: const Text('Start Counting', style: TextStyle(fontSize: 18)),
+                  child: Text(L.of(context).startCounting, style: const TextStyle(fontSize: 18)),
                 ),
               ),
             )
@@ -168,14 +169,14 @@ class _KickCounterScreenState extends ConsumerState<KickCounterScreen> {
                     ),
                   ],
                 ),
-                child: const Column(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.touch_app, color: Colors.white, size: 48),
-                    SizedBox(height: 4),
+                    const Icon(Icons.touch_app, color: Colors.white, size: 48),
+                    const SizedBox(height: 4),
                     Text(
-                      'TAP',
-                      style: TextStyle(
+                      L.of(context).tapButton,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                         fontSize: 18,
@@ -189,9 +190,9 @@ class _KickCounterScreenState extends ConsumerState<KickCounterScreen> {
             // Finish button
             TextButton(
               onPressed: _finishSession,
-              child: const Text(
-                'Finish Session',
-                style: TextStyle(fontSize: 16),
+              child: Text(
+                L.of(context).finishSession,
+                style: const TextStyle(fontSize: 16),
               ),
             ),
           ],
@@ -212,7 +213,7 @@ class _KickCounterScreenState extends ConsumerState<KickCounterScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Count 10 kicks. If it takes longer than 2 hours, contact your doctor.',
+                    L.of(context).kickCounterInfo,
                     style: TextStyle(
                       color: AppColors.secondaryDark,
                       fontSize: 13,

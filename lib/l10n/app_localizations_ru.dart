@@ -212,6 +212,54 @@ class LRu extends L {
   String get weight => 'Вес';
 
   @override
+  String get water => 'Вода';
+
+  @override
+  String get glasses => 'стаканов';
+
+  @override
+  String get sleep => 'Сон';
+
+  @override
+  String get hrs => 'час.';
+
+  @override
+  String get kicks => 'толчки';
+
+  @override
+  String get feeding => 'Кормление';
+
+  @override
+  String get diaper => 'Подгузник';
+
+  @override
+  String get myBaby => 'Мой малыш';
+
+  @override
+  String get avgWeightBoy => 'Ср. вес (мальч.)';
+
+  @override
+  String get avgWeightGirl => 'Ср. вес (девоч.)';
+
+  @override
+  String get avgHeight => 'Ср. рост';
+
+  @override
+  String allForStage(String stage) {
+    return 'Всё для «$stage»';
+  }
+
+  @override
+  String balamPicksStage(String stage) {
+    return 'Balam подбирает — $stage';
+  }
+
+  @override
+  String productsCuratedForStage(int count) {
+    return '$count товаров для вашего этапа';
+  }
+
+  @override
   String get whatsHappening => 'Что происходит';
 
   @override
@@ -901,4 +949,81 @@ class LRu extends L {
 
   @override
   String get navProfile => 'Профиль';
+
+  @override
+  String get parent => 'Родитель';
+
+  @override
+  String get languageSwitcherLabel => 'Язык';
+
+  @override
+  String get logWeight => 'Записать вес';
+
+  @override
+  String get logWater => 'Записать воду';
+
+  @override
+  String get logSleep => 'Записать сон';
+
+  @override
+  String get logMood => 'Записать настроение';
+
+  @override
+  String get logDefault => 'Записать';
+
+  @override
+  String get unitKg => 'кг';
+
+  @override
+  String get unitGlasses => 'стаканов';
+
+  @override
+  String get unitHours => 'часов';
+
+  @override
+  String get unitRating => 'оценка';
+
+  @override
+  String get addNoteOptional => 'Добавить заметку (необязательно)';
+
+  @override
+  String get kickCounter => 'Счётчик шевелений';
+
+  @override
+  String get sessionInProgress => 'Сессия идёт';
+
+  @override
+  String get tapStartToBegin => 'Нажмите «Старт», чтобы начать';
+
+  @override
+  String get kickSingular => 'шевеление';
+
+  @override
+  String get kickPlural => 'шевелений';
+
+  @override
+  String get startCounting => 'Начать подсчёт';
+
+  @override
+  String get tapButton => 'ТАП';
+
+  @override
+  String get finishSession => 'Завершить сессию';
+
+  @override
+  String get kickCounterInfo =>
+      'Посчитайте 10 шевелений. Если это занимает больше 2 часов — обратитесь к врачу.';
+
+  @override
+  String contractionLength(String duration) {
+    return 'Длит.: $duration';
+  }
+
+  @override
+  String contractionInterval(String duration) {
+    return 'Интервал: $duration';
+  }
+
+  @override
+  String get dueDateAppBarTitle => 'Дата родов';
 }

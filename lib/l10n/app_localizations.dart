@@ -477,6 +477,90 @@ abstract class L {
   /// **'Weight'**
   String get weight;
 
+  /// No description provided for @water.
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get water;
+
+  /// No description provided for @glasses.
+  ///
+  /// In en, this message translates to:
+  /// **'glasses'**
+  String get glasses;
+
+  /// No description provided for @sleep.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep'**
+  String get sleep;
+
+  /// No description provided for @hrs.
+  ///
+  /// In en, this message translates to:
+  /// **'hrs'**
+  String get hrs;
+
+  /// No description provided for @kicks.
+  ///
+  /// In en, this message translates to:
+  /// **'Kicks'**
+  String get kicks;
+
+  /// No description provided for @feeding.
+  ///
+  /// In en, this message translates to:
+  /// **'Feeding'**
+  String get feeding;
+
+  /// No description provided for @diaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Diaper'**
+  String get diaper;
+
+  /// No description provided for @myBaby.
+  ///
+  /// In en, this message translates to:
+  /// **'My Baby'**
+  String get myBaby;
+
+  /// No description provided for @avgWeightBoy.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Weight (Boy)'**
+  String get avgWeightBoy;
+
+  /// No description provided for @avgWeightGirl.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Weight (Girl)'**
+  String get avgWeightGirl;
+
+  /// No description provided for @avgHeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg Height'**
+  String get avgHeight;
+
+  /// No description provided for @allForStage.
+  ///
+  /// In en, this message translates to:
+  /// **'All for {stage}'**
+  String allForStage(String stage);
+
+  /// No description provided for @balamPicksStage.
+  ///
+  /// In en, this message translates to:
+  /// **'Balam Picks — {stage}'**
+  String balamPicksStage(String stage);
+
+  /// No description provided for @productsCuratedForStage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} products curated for your stage'**
+  String productsCuratedForStage(int count);
+
   /// No description provided for @whatsHappening.
   ///
   /// In en, this message translates to:
@@ -1796,6 +1880,150 @@ abstract class L {
   /// In en, this message translates to:
   /// **'Profile'**
   String get navProfile;
+
+  /// No description provided for @parent.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent'**
+  String get parent;
+
+  /// No description provided for @languageSwitcherLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageSwitcherLabel;
+
+  /// No description provided for @logWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Weight'**
+  String get logWeight;
+
+  /// No description provided for @logWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Water'**
+  String get logWater;
+
+  /// No description provided for @logSleep.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Sleep'**
+  String get logSleep;
+
+  /// No description provided for @logMood.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Mood'**
+  String get logMood;
+
+  /// No description provided for @logDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Log'**
+  String get logDefault;
+
+  /// No description provided for @unitKg.
+  ///
+  /// In en, this message translates to:
+  /// **'kg'**
+  String get unitKg;
+
+  /// No description provided for @unitGlasses.
+  ///
+  /// In en, this message translates to:
+  /// **'glasses'**
+  String get unitGlasses;
+
+  /// No description provided for @unitHours.
+  ///
+  /// In en, this message translates to:
+  /// **'hours'**
+  String get unitHours;
+
+  /// No description provided for @unitRating.
+  ///
+  /// In en, this message translates to:
+  /// **'rating'**
+  String get unitRating;
+
+  /// No description provided for @addNoteOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a note (optional)'**
+  String get addNoteOptional;
+
+  /// No description provided for @kickCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'Kick Counter'**
+  String get kickCounter;
+
+  /// No description provided for @sessionInProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Session in progress'**
+  String get sessionInProgress;
+
+  /// No description provided for @tapStartToBegin.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Start to begin'**
+  String get tapStartToBegin;
+
+  /// No description provided for @kickSingular.
+  ///
+  /// In en, this message translates to:
+  /// **'kick'**
+  String get kickSingular;
+
+  /// No description provided for @kickPlural.
+  ///
+  /// In en, this message translates to:
+  /// **'kicks'**
+  String get kickPlural;
+
+  /// No description provided for @startCounting.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Counting'**
+  String get startCounting;
+
+  /// No description provided for @tapButton.
+  ///
+  /// In en, this message translates to:
+  /// **'TAP'**
+  String get tapButton;
+
+  /// No description provided for @finishSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Session'**
+  String get finishSession;
+
+  /// No description provided for @kickCounterInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Count 10 kicks. If it takes longer than 2 hours, contact your doctor.'**
+  String get kickCounterInfo;
+
+  /// No description provided for @contractionLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length: {duration}'**
+  String contractionLength(String duration);
+
+  /// No description provided for @contractionInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval: {duration}'**
+  String contractionInterval(String duration);
+
+  /// No description provided for @dueDateAppBarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Due Date'**
+  String get dueDateAppBarTitle;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

@@ -213,6 +213,54 @@ class LEn extends L {
   String get weight => 'Weight';
 
   @override
+  String get water => 'Water';
+
+  @override
+  String get glasses => 'glasses';
+
+  @override
+  String get sleep => 'Sleep';
+
+  @override
+  String get hrs => 'hrs';
+
+  @override
+  String get kicks => 'Kicks';
+
+  @override
+  String get feeding => 'Feeding';
+
+  @override
+  String get diaper => 'Diaper';
+
+  @override
+  String get myBaby => 'My Baby';
+
+  @override
+  String get avgWeightBoy => 'Avg Weight (Boy)';
+
+  @override
+  String get avgWeightGirl => 'Avg Weight (Girl)';
+
+  @override
+  String get avgHeight => 'Avg Height';
+
+  @override
+  String allForStage(String stage) {
+    return 'All for $stage';
+  }
+
+  @override
+  String balamPicksStage(String stage) {
+    return 'Balam Picks — $stage';
+  }
+
+  @override
+  String productsCuratedForStage(int count) {
+    return '$count products curated for your stage';
+  }
+
+  @override
   String get whatsHappening => 'What\'s happening';
 
   @override
@@ -913,4 +961,81 @@ class LEn extends L {
 
   @override
   String get navProfile => 'Profile';
+
+  @override
+  String get parent => 'Parent';
+
+  @override
+  String get languageSwitcherLabel => 'Language';
+
+  @override
+  String get logWeight => 'Log Weight';
+
+  @override
+  String get logWater => 'Log Water';
+
+  @override
+  String get logSleep => 'Log Sleep';
+
+  @override
+  String get logMood => 'Log Mood';
+
+  @override
+  String get logDefault => 'Log';
+
+  @override
+  String get unitKg => 'kg';
+
+  @override
+  String get unitGlasses => 'glasses';
+
+  @override
+  String get unitHours => 'hours';
+
+  @override
+  String get unitRating => 'rating';
+
+  @override
+  String get addNoteOptional => 'Add a note (optional)';
+
+  @override
+  String get kickCounter => 'Kick Counter';
+
+  @override
+  String get sessionInProgress => 'Session in progress';
+
+  @override
+  String get tapStartToBegin => 'Tap Start to begin';
+
+  @override
+  String get kickSingular => 'kick';
+
+  @override
+  String get kickPlural => 'kicks';
+
+  @override
+  String get startCounting => 'Start Counting';
+
+  @override
+  String get tapButton => 'TAP';
+
+  @override
+  String get finishSession => 'Finish Session';
+
+  @override
+  String get kickCounterInfo =>
+      'Count 10 kicks. If it takes longer than 2 hours, contact your doctor.';
+
+  @override
+  String contractionLength(String duration) {
+    return 'Length: $duration';
+  }
+
+  @override
+  String contractionInterval(String duration) {
+    return 'Interval: $duration';
+  }
+
+  @override
+  String get dueDateAppBarTitle => 'Your Due Date';
 }

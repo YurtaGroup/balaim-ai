@@ -53,7 +53,7 @@ class BabyNamesScreen extends ConsumerWidget {
             child: TextField(
               onChanged: (v) => filterNotifier.update((s) => s.copyWith(search: v)),
               decoration: InputDecoration(
-                hintText: 'Search name or meaning...',
+                hintText: L.of(context).searchNameOrMeaning,
                 prefixIcon: const Icon(Icons.search, size: 20),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -74,27 +74,27 @@ class BabyNamesScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _FilterChip(
-                  label: 'All',
+                  label: L.of(context).all,
                   isSelected: filter.gender == null,
                   onTap: () =>
                       filterNotifier.update((s) => s.copyWith(clearGender: true)),
                 ),
                 _FilterChip(
-                  label: 'Boys',
+                  label: L.of(context).boys,
                   isSelected: filter.gender == NameGender.boy,
                   onTap: () => filterNotifier.update(
                     (s) => s.copyWith(gender: NameGender.boy),
                   ),
                 ),
                 _FilterChip(
-                  label: 'Girls',
+                  label: L.of(context).girls,
                   isSelected: filter.gender == NameGender.girl,
                   onTap: () => filterNotifier.update(
                     (s) => s.copyWith(gender: NameGender.girl),
                   ),
                 ),
                 _FilterChip(
-                  label: 'Unisex',
+                  label: L.of(context).unisex,
                   isSelected: filter.gender == NameGender.unisex,
                   onTap: () => filterNotifier.update(
                     (s) => s.copyWith(gender: NameGender.unisex),
@@ -113,7 +113,7 @@ class BabyNamesScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
                 _FilterChip(
-                  label: 'All origins',
+                  label: L.of(context).allOrigins,
                   isSelected: filter.origin == null,
                   onTap: () =>
                       filterNotifier.update((s) => s.copyWith(clearOrigin: true)),
@@ -137,7 +137,7 @@ class BabyNamesScreen extends ConsumerWidget {
             child: Row(
               children: [
                 Text(
-                  '${results.length} name${results.length == 1 ? '' : 's'}',
+                  L.of(context).namesCount(results.length),
                   style: TextStyle(color: AppColors.textHint, fontSize: 13),
                 ),
               ],
@@ -226,14 +226,14 @@ class _NameTile extends StatelessWidget {
     }
   }
 
-  String get _genderLabel {
+  String _genderLabel(BuildContext context) {
     switch (babyName.gender) {
       case NameGender.boy:
-        return 'Boy';
+        return L.of(context).boy;
       case NameGender.girl:
-        return 'Girl';
+        return L.of(context).girl;
       case NameGender.unisex:
-        return 'Unisex';
+        return L.of(context).unisex;
     }
   }
 
@@ -294,7 +294,7 @@ class _NameTile extends StatelessWidget {
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        _genderLabel,
+                        _genderLabel(context),
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w700,
@@ -370,8 +370,8 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               favoritesOnly
-                  ? 'No favorites yet\nTap the heart to save names you love'
-                  : 'No names match your filters',
+                  ? L.of(context).noFavoritesYet
+                  : L.of(context).noNamesMatch,
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary, height: 1.5),
             ),

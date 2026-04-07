@@ -39,7 +39,7 @@ class ProfileScreen extends ConsumerWidget {
           const SizedBox(height: 16),
           Center(
             child: Text(
-              userInfo.name ?? 'Parent',
+              userInfo.name ?? L.of(context).parent,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
@@ -86,7 +86,7 @@ class ProfileScreen extends ConsumerWidget {
                     const Icon(Icons.swap_horiz, color: AppColors.accentDark, size: 18),
                     const SizedBox(width: 6),
                     Text(
-                      'Switch Stage (Demo)',
+                      L.of(context).switchStageDemo,
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         color: AppColors.accentDark,
@@ -97,7 +97,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Preview the app at different parenting stages',
+                  L.of(context).previewStages,
                   style: TextStyle(fontSize: 12, color: AppColors.textHint),
                 ),
                 const SizedBox(height: 12),
@@ -162,26 +162,26 @@ class ProfileScreen extends ConsumerWidget {
 
           _ProfileTile(
             icon: Icons.child_care,
-            title: 'My Journey Stage',
+            title: L.of(context).myJourneyStage,
             subtitle: '${profile.stage.label} — ${profile.stage == ParentingStage.pregnant ? "Week ${profile.currentWeek ?? 24}" : profile.babyName ?? "My Baby"}',
             onTap: () => context.push('/stage-select'),
           ),
           _ProfileTile(
             icon: Icons.family_restroom,
-            title: 'My Children',
-            subtitle: 'Manage your family',
+            title: L.of(context).myChildren,
+            subtitle: L.of(context).manageFamily,
             onTap: () {},
           ),
           _ProfileTile(
             icon: Icons.medical_services_outlined,
-            title: 'My Care Team',
-            subtitle: 'Doctors & specialists',
+            title: L.of(context).myCareTeam,
+            subtitle: L.of(context).doctorsSpecialists,
             onTap: () {},
           ),
           _ProfileTile(
             icon: Icons.notifications_outlined,
-            title: 'Notifications',
-            subtitle: 'Manage alerts',
+            title: L.of(context).notifications,
+            subtitle: L.of(context).manageAlerts,
             onTap: () {},
           ),
           _ProfileTile(
@@ -208,7 +208,7 @@ class ProfileScreen extends ConsumerWidget {
                     const Icon(Icons.language, color: AppColors.secondary, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      'Language / Тил / Язык',
+                      'Language / Тил / Язык', // intentionally trilingual
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,

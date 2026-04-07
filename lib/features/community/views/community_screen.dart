@@ -19,7 +19,7 @@ class CommunityScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           // My groups
-          Text('My Groups', style: Theme.of(context).textTheme.titleLarge),
+          Text(L.of(context).myGroups, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           SizedBox(
             height: 100,
@@ -56,7 +56,7 @@ class CommunityScreen extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Feed
-          Text('Recent Posts', style: Theme.of(context).textTheme.titleLarge),
+          Text(L.of(context).recentPosts, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           const _PostCard(
             username: 'Sarah M.',
@@ -134,7 +134,7 @@ class _GroupChip extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           Text(
-            '$members members',
+            '$members ${L.of(context).members}',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],

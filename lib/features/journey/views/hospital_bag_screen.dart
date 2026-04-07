@@ -126,7 +126,7 @@ class _ProgressHeader extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'items packed',
+                      L.of(context).itemsPacked,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.8),
                       ),
@@ -241,9 +241,9 @@ class _ItemTile extends StatelessWidget {
                                 color: AppColors.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: const Text(
-                                'ESSENTIAL',
-                                style: TextStyle(
+                              child: Text(
+                                L.of(context).essential,
+                                style: const TextStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.primary,

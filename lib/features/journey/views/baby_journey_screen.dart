@@ -1,3 +1,4 @@
+import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,7 +24,7 @@ class BabyJourneyScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(profile.babyName ?? 'My Baby'),
+        title: Text(profile.babyName ?? L.of(context).myBaby),
         actions: [
           IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
         ],
@@ -54,7 +55,7 @@ class BabyJourneyScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '$ageDays days old',
+                          L.of(context).daysOld(ageDays),
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 13,
@@ -105,21 +106,21 @@ class BabyJourneyScreen extends ConsumerWidget {
             Row(
               children: [
                 _StatChip(
-                  label: 'Avg Weight (Boy)',
+                  label: L.of(context).avgWeightBoy,
                   value: '${monthData.avgWeightKgBoy} kg',
                   icon: Icons.monitor_weight_outlined,
                   color: AppColors.secondary,
                 ),
                 const SizedBox(width: 8),
                 _StatChip(
-                  label: 'Avg Weight (Girl)',
+                  label: L.of(context).avgWeightGirl,
                   value: '${monthData.avgWeightKgGirl} kg',
                   icon: Icons.monitor_weight_outlined,
                   color: AppColors.primary,
                 ),
                 const SizedBox(width: 8),
                 _StatChip(
-                  label: 'Avg Height',
+                  label: L.of(context).avgHeight,
                   value: '${monthData.avgHeightCmBoy} cm',
                   icon: Icons.straighten,
                   color: AppColors.accent,
@@ -129,34 +130,34 @@ class BabyJourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Quick tracking
-            const SectionHeader(title: 'Track Today', subtitle: 'Tap to log', accentColor: AppColors.primary),
+            SectionHeader(title: L.of(context).trackToday, subtitle: L.of(context).tapToLog, accentColor: AppColors.primary),
             const SizedBox(height: 12),
             Row(
               children: [
                 _TrackAction(
                   icon: Icons.restaurant,
-                  label: 'Feeding',
+                  label: L.of(context).feeding,
                   color: AppColors.primary,
                   onTap: () => _showSheet(context, TrackingType.feeding),
                 ),
                 const SizedBox(width: 12),
                 _TrackAction(
                   icon: Icons.bedtime_outlined,
-                  label: 'Sleep',
+                  label: L.of(context).sleep,
                   color: AppColors.accent,
                   onTap: () => _showSheet(context, TrackingType.sleep),
                 ),
                 const SizedBox(width: 12),
                 _TrackAction(
                   icon: Icons.baby_changing_station,
-                  label: 'Diaper',
+                  label: L.of(context).diaper,
                   color: AppColors.secondary,
                   onTap: () => _showSheet(context, TrackingType.diaper),
                 ),
                 const SizedBox(width: 12),
                 _TrackAction(
                   icon: Icons.monitor_weight_outlined,
-                  label: 'Weight',
+                  label: L.of(context).weight,
                   color: AppColors.stagePrePregnancy,
                   onTap: () => _showSheet(context, TrackingType.weight),
                 ),
@@ -165,7 +166,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // New Parent Toolkit
-            const SectionHeader(title: 'New Parent Toolkit', subtitle: 'Everything you need', accentColor: AppColors.secondary),
+            SectionHeader(title: L.of(context).newParentToolkit, subtitle: L.of(context).everythingYouNeed, accentColor: AppColors.secondary),
             const SizedBox(height: 12),
             GridView.count(
               shrinkWrap: true,
@@ -177,57 +178,57 @@ class BabyJourneyScreen extends ConsumerWidget {
               children: [
                 _ToolkitTile(
                   icon: Icons.volume_up,
-                  label: 'White Noise',
-                  subtitle: 'Soothe & sleep',
+                  label: L.of(context).whiteNoise,
+                  subtitle: L.of(context).soothAndSleep,
                   color: AppColors.stagePrePregnancy,
                   onTap: () => context.push('/sounds'),
                 ),
                 _ToolkitTile(
                   icon: Icons.auto_awesome,
-                  label: 'Soothing',
-                  subtitle: '5 S\'s & more',
+                  label: L.of(context).soothing,
+                  subtitle: L.of(context).fiveSsAndMore,
                   color: AppColors.primary,
                   onTap: () => context.push('/soothing'),
                 ),
                 _ToolkitTile(
                   icon: Icons.restaurant,
-                  label: 'Feeding Log',
-                  subtitle: 'Breast & bottle',
+                  label: L.of(context).feedingLog,
+                  subtitle: L.of(context).breastAndBottle,
                   color: AppColors.secondary,
                   onTap: () => context.push('/feeding-log'),
                 ),
                 _ToolkitTile(
                   icon: Icons.baby_changing_station,
-                  label: 'Diaper Log',
-                  subtitle: 'Wet & dirty',
+                  label: L.of(context).diaperLog,
+                  subtitle: L.of(context).wetAndDirty,
                   color: AppColors.accent,
                   onTap: () => context.push('/diaper-log'),
                 ),
                 _ToolkitTile(
                   icon: Icons.emergency,
-                  label: 'When to Call',
-                  subtitle: 'Doctor red flags',
+                  label: L.of(context).whenToCall,
+                  subtitle: L.of(context).doctorRedFlags,
                   color: AppColors.error,
                   onTap: () => context.push('/emergency'),
                 ),
                 _ToolkitTile(
                   icon: Icons.favorite,
-                  label: 'For You, Mom',
-                  subtitle: 'Postpartum care',
+                  label: L.of(context).forYouMom,
+                  subtitle: L.of(context).postpartumCare,
                   color: AppColors.stagePregnancy,
                   onTap: () => context.push('/postpartum'),
                 ),
                 _ToolkitTile(
                   icon: Icons.restaurant_menu,
-                  label: 'Baby Foods',
-                  subtitle: 'What to feed',
+                  label: L.of(context).babyFoods,
+                  subtitle: L.of(context).whatToFeed,
                   color: AppColors.success,
                   onTap: () => context.push('/baby-foods'),
                 ),
                 _ToolkitTile(
                   icon: Icons.medical_services,
-                  label: 'Pediatrician',
-                  subtitle: 'Find a doctor',
+                  label: L.of(context).pediatrician,
+                  subtitle: L.of(context).findADoctor,
                   color: AppColors.secondaryDark,
                   onTap: () => context.go('/professionals'),
                 ),
@@ -237,28 +238,28 @@ class BabyJourneyScreen extends ConsumerWidget {
 
             // Development sections
             _SectionCard(
-              title: 'Physical Development',
+              title: L.of(context).physicalDevelopment,
               icon: Icons.directions_run,
               color: AppColors.primary,
               content: monthData.physicalDevelopment,
             ),
             const SizedBox(height: 12),
             _SectionCard(
-              title: 'Brain & Learning',
+              title: L.of(context).brainAndLearning,
               icon: Icons.psychology,
               color: AppColors.accent,
               content: monthData.cognitiveDevelopment,
             ),
             const SizedBox(height: 12),
             _SectionCard(
-              title: 'Social & Emotional',
+              title: L.of(context).socialAndEmotional,
               icon: Icons.favorite,
               color: AppColors.primary,
               content: monthData.socialEmotional,
             ),
             const SizedBox(height: 12),
             _SectionCard(
-              title: 'Language & Communication',
+              title: L.of(context).languageAndCommunication,
               icon: Icons.chat_bubble_outline,
               color: AppColors.secondary,
               content: monthData.languageDevelopment,
@@ -266,7 +267,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Milestones checklist
-            const SectionHeader(title: 'Milestones', accentColor: AppColors.accent),
+            SectionHeader(title: L.of(context).milestones, accentColor: AppColors.accent),
             const SizedBox(height: 12),
             Card(
               child: Padding(
@@ -297,7 +298,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Activities
-            const SectionHeader(title: 'Activities to Try', accentColor: AppColors.secondary),
+            SectionHeader(title: L.of(context).activitiesToTry, accentColor: AppColors.secondary),
             const SizedBox(height: 12),
             ...monthData.activities.map((a) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
@@ -323,7 +324,7 @@ class BabyJourneyScreen extends ConsumerWidget {
 
             // Sleep guide
             _GuideCard(
-              title: 'Sleep Guide',
+              title: L.of(context).sleepGuide,
               icon: Icons.bedtime,
               color: AppColors.accent,
               header: '${monthData.sleep.totalHours} total',
@@ -334,7 +335,7 @@ class BabyJourneyScreen extends ConsumerWidget {
 
             // Feeding guide
             _GuideCard(
-              title: 'Feeding Guide',
+              title: L.of(context).feedingGuide,
               icon: Icons.restaurant,
               color: AppColors.primary,
               header: monthData.feeding.type,
@@ -344,7 +345,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Red flags
-            const SectionHeader(title: 'When to Call the Doctor', accentColor: AppColors.error),
+            SectionHeader(title: L.of(context).whenToCallDoctor, accentColor: AppColors.error),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -373,7 +374,7 @@ class BabyJourneyScreen extends ConsumerWidget {
 
             // Health checkup
             if (monthData.checkup != null) ...[
-              const SectionHeader(title: 'Health Checkup', accentColor: AppColors.secondary),
+              SectionHeader(title: L.of(context).healthCheckup, accentColor: AppColors.secondary),
               const SizedBox(height: 12),
               Card(
                 child: Padding(
@@ -391,7 +392,7 @@ class BabyJourneyScreen extends ConsumerWidget {
                       ),
                       if (monthData.checkup!.vaccines.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('Vaccines:', style: TextStyle(fontWeight: FontWeight.w600)),
+                        Text(L.of(context).vaccines, style: const TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         ...monthData.checkup!.vaccines.map((v) => Padding(
                               padding: const EdgeInsets.only(left: 8, top: 2),
@@ -405,7 +406,7 @@ class BabyJourneyScreen extends ConsumerWidget {
                       ],
                       if (monthData.checkup!.screenings.isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        const Text('Screenings:', style: TextStyle(fontWeight: FontWeight.w600)),
+                        Text(L.of(context).screenings, style: const TextStyle(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 4),
                         ...monthData.checkup!.screenings.map((s) => Padding(
                               padding: const EdgeInsets.only(left: 8, top: 2),
@@ -425,7 +426,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             ],
 
             // Parent tips
-            const SectionHeader(title: 'Tips for You', accentColor: AppColors.stagePregnancy),
+            SectionHeader(title: L.of(context).tipsForYou, accentColor: AppColors.stagePregnancy),
             const SizedBox(height: 12),
             Container(
               width: double.infinity,
@@ -451,7 +452,7 @@ class BabyJourneyScreen extends ConsumerWidget {
             ),
             // Recommended products for baby's age
             const SizedBox(height: 20),
-            SectionHeader(title: 'Recommended for ${monthData.ageLabel}', accentColor: AppColors.stagePrePregnancy),
+            SectionHeader(title: L.of(context).recommendedForAge(monthData.ageLabel), accentColor: AppColors.stagePrePregnancy),
             const SizedBox(height: 12),
             SizedBox(
               height: 180,

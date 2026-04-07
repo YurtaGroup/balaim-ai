@@ -59,7 +59,7 @@ class JourneyScreen extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Week $week',
+                              L.of(context).weekN(week),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 40,
@@ -69,7 +69,7 @@ class JourneyScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              '${weekData.trimester} trimester',
+                              L.of(context).trimesterN(weekData.trimester),
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.85),
                                 fontSize: 14,
@@ -96,7 +96,7 @@ class JourneyScreen extends ConsumerWidget {
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    '$daysLeft days to go',
+                                    L.of(context).daysToGo(daysLeft),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
@@ -114,7 +114,7 @@ class JourneyScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    'Your baby is the size of a ${weekData.babySize.toLowerCase()}',
+                    L.of(context).babySizeOf(weekData.babySize.toLowerCase()),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
@@ -133,7 +133,7 @@ class JourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Baby development
-            SectionHeader(title: "What's happening"),
+            SectionHeader(title: L.of(context).whatsHappening),
             const SizedBox(height: 8),
             Card(
               child: Padding(
@@ -147,13 +147,13 @@ class JourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Quick actions — real tracking
-            const SectionHeader(title: 'Track Today', subtitle: 'Tap to log', accentColor: AppColors.primary),
+            SectionHeader(title: L.of(context).trackToday, subtitle: L.of(context).tapToLog, accentColor: AppColors.primary),
             const SizedBox(height: 12),
             Row(
               children: [
                 _QuickAction(
                   icon: Icons.monitor_weight_outlined,
-                  label: 'Weight',
+                  label: L.of(context).weight,
                   color: AppColors.primary,
                   value: _todayValue(todayEntries, TrackingType.weight),
                   unit: 'kg',
@@ -162,28 +162,28 @@ class JourneyScreen extends ConsumerWidget {
                 const SizedBox(width: 12),
                 _QuickAction(
                   icon: Icons.water_drop_outlined,
-                  label: 'Water',
+                  label: L.of(context).water,
                   color: AppColors.secondary,
                   value: _todayValue(todayEntries, TrackingType.water),
-                  unit: 'glasses',
+                  unit: L.of(context).glasses,
                   onTap: () => _showTrackingSheet(context, TrackingType.water),
                 ),
                 const SizedBox(width: 12),
                 _QuickAction(
                   icon: Icons.bedtime_outlined,
-                  label: 'Sleep',
+                  label: L.of(context).sleep,
                   color: AppColors.accent,
                   value: _todayValue(todayEntries, TrackingType.sleep),
-                  unit: 'hrs',
+                  unit: L.of(context).hrs,
                   onTap: () => _showTrackingSheet(context, TrackingType.sleep),
                 ),
                 const SizedBox(width: 12),
                 _QuickAction(
                   icon: Icons.favorite_outline,
-                  label: 'Kicks',
+                  label: L.of(context).kicks,
                   color: AppColors.stagePrePregnancy,
                   value: _todayValue(todayEntries, TrackingType.kicks),
-                  unit: 'kicks',
+                  unit: L.of(context).kicks,
                   onTap: () => Navigator.of(context).push(
                     MaterialPageRoute(builder: (_) => const KickCounterScreen()),
                   ),
@@ -197,7 +197,7 @@ class JourneyScreen extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Today's insights
-            const SectionHeader(title: "Today's Insights", accentColor: AppColors.secondary),
+            SectionHeader(title: L.of(context).todaysInsights, accentColor: AppColors.secondary),
             const SizedBox(height: 12),
             Card(
               child: Padding(
@@ -219,7 +219,7 @@ class JourneyScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Balam AI Insight',
+                            L.of(context).balamAiInsight,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 4),
@@ -244,7 +244,7 @@ class JourneyScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Common at Week $week',
+                      L.of(context).commonAtWeek(week),
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -277,7 +277,7 @@ class JourneyScreen extends ConsumerWidget {
             ),
             // Pregnancy tools
             const SizedBox(height: 20),
-            const SectionHeader(title: 'Tools', subtitle: 'Everything you need', accentColor: AppColors.accent),
+            SectionHeader(title: L.of(context).tools, subtitle: L.of(context).everythingYouNeed, accentColor: AppColors.accent),
             const SizedBox(height: 12),
             GridView.count(
               shrinkWrap: true,
@@ -289,37 +289,37 @@ class JourneyScreen extends ConsumerWidget {
               children: [
                 _ToolTile(
                   icon: Icons.timer_outlined,
-                  label: 'Contraction\nTimer',
+                  label: L.of(context).contractionTimer,
                   color: AppColors.primary,
                   onTap: () => context.push('/contraction-timer'),
                 ),
                 _ToolTile(
                   icon: Icons.luggage_outlined,
-                  label: 'Hospital\nBag',
+                  label: L.of(context).hospitalBag,
                   color: AppColors.secondary,
                   onTap: () => context.push('/hospital-bag'),
                 ),
                 _ToolTile(
                   icon: Icons.edit_note,
-                  label: 'Birth\nPlan',
+                  label: L.of(context).birthPlan,
                   color: AppColors.accent,
                   onTap: () => context.push('/birth-plan'),
                 ),
                 _ToolTile(
                   icon: Icons.favorite_outline,
-                  label: 'Baby\nNames',
+                  label: L.of(context).babyNames,
                   color: AppColors.stagePrePregnancy,
                   onTap: () => context.push('/baby-names'),
                 ),
                 _ToolTile(
                   icon: Icons.menu_book,
-                  label: 'Trimester\nGuide',
+                  label: L.of(context).trimesterGuide,
                   color: AppColors.success,
                   onTap: () => context.push('/trimester-guide'),
                 ),
                 _ToolTile(
                   icon: Icons.auto_awesome,
-                  label: 'AI\nChat',
+                  label: L.of(context).aiChat,
                   color: AppColors.secondaryDark,
                   onTap: () => context.go('/ai'),
                 ),
@@ -327,7 +327,7 @@ class JourneyScreen extends ConsumerWidget {
             ),
             // Recommended products for pregnancy
             const SizedBox(height: 20),
-            const SectionHeader(title: 'Recommended for You', accentColor: AppColors.stagePrePregnancy),
+            SectionHeader(title: L.of(context).recommendedForYou, accentColor: AppColors.stagePrePregnancy),
             const SizedBox(height: 12),
             SizedBox(
               height: 180,
@@ -478,17 +478,17 @@ class _MoodRow extends ConsumerWidget {
     final currentMood = todayMood.isNotEmpty ? todayMood.first.value?.round() : null;
 
     final moods = [
-      ('😢', 'Rough'),
-      ('😟', 'Meh'),
-      ('😐', 'Okay'),
-      ('😊', 'Good'),
-      ('😄', 'Great'),
+      ('😢', L.of(context).moodRough),
+      ('😟', L.of(context).moodMeh),
+      ('😐', L.of(context).moodOkay),
+      ('😊', L.of(context).moodGood),
+      ('😄', L.of(context).moodGreat),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(title: "How are you feeling?", accentColor: AppColors.stagePrePregnancy),
+        SectionHeader(title: L.of(context).howAreYouFeeling, accentColor: AppColors.stagePrePregnancy),
         const SizedBox(height: 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/tracking_entry.dart';
 import '../providers/journey_provider.dart';
 
@@ -39,21 +40,22 @@ class _TrackingSheetState extends ConsumerState<TrackingSheet> {
     }
   }
 
-  String get _title {
+  String _title(BuildContext context) {
     switch (widget.type) {
       case TrackingType.weight:
-        return 'Log Weight';
+        return L.of(context).logWeight;
       case TrackingType.water:
-        return 'Log Water';
+        return L.of(context).logWater;
       case TrackingType.sleep:
-        return 'Log Sleep';
+        return L.of(context).logSleep;
       case TrackingType.mood:
-        return 'Log Mood';
+        return L.of(context).logMood;
       default:
-        return 'Log';
+        return L.of(context).logDefault;
     }
   }
 
+  // English unit strings used for data model storage
   String get _unit {
     switch (widget.type) {
       case TrackingType.weight:
@@ -64,6 +66,22 @@ class _TrackingSheetState extends ConsumerState<TrackingSheet> {
         return 'hours';
       case TrackingType.mood:
         return 'rating';
+      default:
+        return '';
+    }
+  }
+
+  // Localized unit strings for display
+  String _unitLabel(BuildContext context) {
+    switch (widget.type) {
+      case TrackingType.weight:
+        return L.of(context).unitKg;
+      case TrackingType.water:
+        return L.of(context).unitGlasses;
+      case TrackingType.sleep:
+        return L.of(context).unitHours;
+      case TrackingType.mood:
+        return L.of(context).unitRating;
       default:
         return '';
     }
@@ -184,7 +202,7 @@ class _TrackingSheetState extends ConsumerState<TrackingSheet> {
             children: [
               Icon(_icon, color: _color, size: 24),
               const SizedBox(width: 10),
-              Text(_title, style: Theme.of(context).textTheme.titleLarge),
+              Text(_title(context), style: Theme.of(context).textTheme.titleLarge),
             ],
           ),
           const SizedBox(height: 24),
@@ -207,7 +225,7 @@ class _TrackingSheetState extends ConsumerState<TrackingSheet> {
                     ),
                   ),
                   TextSpan(
-                    text: ' $_unit',
+                    text: ' ${_unitLabel(context)}',
                     style: TextStyle(
                       fontSize: 18,
                       color: AppColors.textSecondary,
@@ -242,7 +260,7 @@ class _TrackingSheetState extends ConsumerState<TrackingSheet> {
           TextField(
             controller: _notesController,
             decoration: InputDecoration(
-              hintText: 'Add a note (optional)',
+              hintText: L.of(context).addNoteOptional,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -257,7 +275,7 @@ class _TrackingSheetState extends ConsumerState<TrackingSheet> {
             child: ElevatedButton(
               onPressed: _save,
               style: ElevatedButton.styleFrom(backgroundColor: _color),
-              child: const Text('Save'),
+              child: Text(L.of(context).save),
             ),
           ),
         ],

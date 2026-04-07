@@ -50,9 +50,9 @@ class BirthPlanScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Your Birth Plan',
-                  style: TextStyle(
+                Text(
+                  L.of(context).yourBirthPlan,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
@@ -60,7 +60,7 @@ class BirthPlanScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$answered of $totalQuestions questions answered',
+                  L.of(context).questionsAnswered(answered, totalQuestions),
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.85),
                   ),
@@ -92,10 +92,10 @@ class BirthPlanScreen extends ConsumerWidget {
                 const Icon(Icons.lightbulb_outline,
                     color: AppColors.accentDark, size: 20),
                 const SizedBox(width: 10),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Your birth plan is a wish list, not a contract. Share it with your care team. Be flexible — baby decides.',
-                    style: TextStyle(fontSize: 13, height: 1.4),
+                    L.of(context).birthPlanNote,
+                    style: const TextStyle(fontSize: 13, height: 1.4),
                   ),
                 ),
               ],
@@ -160,7 +160,7 @@ class BirthPlanScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'My Birth Plan',
+              L.of(context).myBirthPlan,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 16),

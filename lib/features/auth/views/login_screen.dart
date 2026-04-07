@@ -28,7 +28,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (_emailController.text.trim().isEmpty) {
-      setState(() => _error = 'Please enter an email');
+      setState(() => _error = L.of(context).pleaseEnterEmail);
       return;
     }
     setState(() {
@@ -136,40 +136,40 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     _DemoButton(
                       icon: Icons.pregnant_woman,
                       color: AppColors.primary,
-                      label: 'Parent (Sarah)',
-                      subtitle: 'Full parenting experience',
+                      label: L.of(context).parentSarah,
+                      subtitle: L.of(context).fullParentingExperience,
                       onTap: () => _quickLogin('parent@balam.ai'),
                     ),
                     const SizedBox(height: 8),
                     _DemoButton(
                       icon: Icons.man,
                       color: AppColors.secondary,
-                      label: 'Dad (Mike)',
-                      subtitle: 'Dad perspective',
+                      label: L.of(context).dadMike,
+                      subtitle: L.of(context).dadPerspective,
                       onTap: () => _quickLogin('dad@balam.ai'),
                     ),
                     const SizedBox(height: 8),
                     _DemoButton(
                       icon: Icons.admin_panel_settings,
                       color: AppColors.accentDark,
-                      label: 'Admin Dashboard',
-                      subtitle: 'Platform management',
+                      label: L.of(context).adminDashboard,
+                      subtitle: L.of(context).platformManagement,
                       onTap: () => _quickLogin('admin@balam.ai'),
                     ),
                     const SizedBox(height: 8),
                     _DemoButton(
                       icon: Icons.medical_services,
                       color: AppColors.secondaryDark,
-                      label: 'Doctor (Dr. Amara)',
-                      subtitle: 'Professional view',
+                      label: L.of(context).doctorAmara,
+                      subtitle: L.of(context).professionalView,
                       onTap: () => _quickLogin('doctor@balam.ai'),
                     ),
                     const SizedBox(height: 8),
                     _DemoButton(
                       icon: Icons.camera_alt,
                       color: Color(0xFF7C4DFF),
-                      label: 'Vendor (TinySteps)',
-                      subtitle: 'Marketplace seller',
+                      label: L.of(context).vendorTinySteps,
+                      subtitle: L.of(context).marketplaceSeller,
                       onTap: () => _quickLogin('vendor@balam.ai'),
                     ),
                   ],

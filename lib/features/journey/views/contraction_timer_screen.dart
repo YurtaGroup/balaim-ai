@@ -91,7 +91,7 @@ class _ContractionTimerScreenState
             child: Column(
               children: [
                 Text(
-                  isTiming ? 'CONTRACTION IN PROGRESS' : 'READY',
+                  isTiming ? L.of(context).contractionInProgress : L.of(context).ready,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -133,7 +133,7 @@ class _ContractionTimerScreenState
                       isTiming ? AppColors.error : AppColors.primary,
                 ),
                 child: Text(
-                  isTiming ? 'Stop Contraction' : 'Start Contraction',
+                  isTiming ? L.of(context).stopContraction : L.of(context).startContraction,
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -162,14 +162,14 @@ class _ContractionTimerScreenState
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Clear all contractions?'),
-        content: const Text(
-          'This will remove all recorded contractions from this session.',
+        title: Text(L.of(context).clearAllContractions),
+        content: Text(
+          L.of(context).clearAllContractionsBody,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(L.of(context).cancel),
           ),
           TextButton(
             onPressed: () {
@@ -177,7 +177,7 @@ class _ContractionTimerScreenState
               Navigator.of(context).pop();
             },
             style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('Clear'),
+            child: Text(L.of(context).clear),
           ),
         ],
       ),
@@ -213,17 +213,17 @@ class _AnalysisCard extends StatelessWidget {
           Row(
             children: [
               _Stat(
-                label: 'Count',
+                label: L.of(context).count,
                 value: '${analysis.count}',
                 color: AppColors.primary,
               ),
               _Stat(
-                label: 'Avg Length',
+                label: L.of(context).avgLength,
                 value: _fmt(analysis.averageDuration),
                 color: AppColors.secondary,
               ),
               _Stat(
-                label: 'Avg Interval',
+                label: L.of(context).avgInterval,
                 value: _fmt(analysis.averageInterval),
                 color: AppColors.accent,
               ),
@@ -257,7 +257,7 @@ class _AnalysisCard extends StatelessWidget {
                       children: [
                         Text(
                           analysis.meets511Rule
-                              ? '5-1-1 Rule Met — Call your doctor'
+                              ? L.of(context).callDoctorAlert
                               : analysis.phase!.label,
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
@@ -269,7 +269,7 @@ class _AnalysisCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           analysis.meets511Rule
-                              ? 'Contractions are 5 min apart, lasting 1 min, for 1 hour. Time to go.'
+                              ? L.of(context).callDoctorBody
                               : analysis.phase!.guidance,
                           style: const TextStyle(fontSize: 13, height: 1.4),
                         ),
@@ -328,7 +328,7 @@ class _EmptyState extends StatelessWidget {
             Icon(Icons.timer_outlined, size: 64, color: AppColors.textHint),
             const SizedBox(height: 16),
             Text(
-              'Tap Start Contraction\nwhen one begins',
+              L.of(context).tapStartContraction,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: AppColors.textSecondary,
@@ -415,12 +415,12 @@ class _ContractionHistory extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Length: ${fmtDuration(c.duration)}',
+                        L.of(context).contractionLength(fmtDuration(c.duration)),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       if (interval != null)
                         Text(
-                          'Interval: ${fmtDuration(interval)}',
+                          L.of(context).contractionInterval(fmtDuration(interval)),
                           style: TextStyle(
                             fontSize: 12,
                             color: AppColors.textHint,

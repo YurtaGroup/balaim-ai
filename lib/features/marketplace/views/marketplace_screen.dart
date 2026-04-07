@@ -63,7 +63,7 @@ class MarketplaceScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Balam Picks — ${profile.stage.label}',
+                        L.of(context).balamPicksStage(profile.stage.label),
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
@@ -71,7 +71,7 @@ class MarketplaceScreen extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        '${stageProducts.length} products curated for your stage',
+                        L.of(context).productsCuratedForStage(stageProducts.length),
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 12,
@@ -87,7 +87,7 @@ class MarketplaceScreen extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // Categories
-          Text('Categories', style: Theme.of(context).textTheme.titleLarge),
+          Text(L.of(context).categories, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           SizedBox(
             height: 100,
@@ -127,7 +127,7 @@ class MarketplaceScreen extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // Featured vendors
-          Text('Featured Vendors', style: Theme.of(context).textTheme.titleLarge),
+          Text(L.of(context).featuredVendors, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           ...featuredVendors.map((v) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -136,7 +136,7 @@ class MarketplaceScreen extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // Featured products for your stage
-          Text('Recommended for You', style: Theme.of(context).textTheme.titleLarge),
+          Text(L.of(context).recommendedForYou, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
@@ -153,7 +153,7 @@ class MarketplaceScreen extends ConsumerWidget {
           const SizedBox(height: 20),
 
           // All stage-relevant products
-          Text('All for ${profile.stage.label}', style: Theme.of(context).textTheme.titleLarge),
+          Text(L.of(context).allForStage(profile.stage.label), style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
           ...stageProducts.where((p) => !featured.contains(p)).take(8).map((p) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -212,9 +212,9 @@ class _VendorCard extends StatelessWidget {
                             color: AppColors.accent.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
-                            'FEATURED',
-                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.accentDark),
+                          child: Text(
+                            L.of(context).featured,
+                            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.accentDark),
                           ),
                         ),
                       ],

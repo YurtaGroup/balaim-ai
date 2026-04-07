@@ -213,6 +213,54 @@ class LKy extends L {
   String get weight => 'Салмак';
 
   @override
+  String get water => 'Суу';
+
+  @override
+  String get glasses => 'стакан';
+
+  @override
+  String get sleep => 'Уйку';
+
+  @override
+  String get hrs => 'саат';
+
+  @override
+  String get kicks => 'теппелер';
+
+  @override
+  String get feeding => 'Тамактандыруу';
+
+  @override
+  String get diaper => 'Бала кийими';
+
+  @override
+  String get myBaby => 'Менин балам';
+
+  @override
+  String get avgWeightBoy => 'Орт. салмак (эркек)';
+
+  @override
+  String get avgWeightGirl => 'Орт. салмак (кыз)';
+
+  @override
+  String get avgHeight => 'Орт. бой';
+
+  @override
+  String allForStage(String stage) {
+    return '$stage үчүн баары';
+  }
+
+  @override
+  String balamPicksStage(String stage) {
+    return 'Balam тандайт — $stage';
+  }
+
+  @override
+  String productsCuratedForStage(int count) {
+    return 'Сиздин этабыңыз үчүн $count товар';
+  }
+
+  @override
   String get whatsHappening => 'Эмне болуп жатат';
 
   @override
@@ -902,4 +950,81 @@ class LKy extends L {
 
   @override
   String get navProfile => 'Профиль';
+
+  @override
+  String get parent => 'Ата-эне';
+
+  @override
+  String get languageSwitcherLabel => 'Тил';
+
+  @override
+  String get logWeight => 'Салмакты жазуу';
+
+  @override
+  String get logWater => 'Суунун санын жазуу';
+
+  @override
+  String get logSleep => 'Уйкуну жазуу';
+
+  @override
+  String get logMood => 'Маанайды жазуу';
+
+  @override
+  String get logDefault => 'Жазуу';
+
+  @override
+  String get unitKg => 'кг';
+
+  @override
+  String get unitGlasses => 'стакан';
+
+  @override
+  String get unitHours => 'саат';
+
+  @override
+  String get unitRating => 'баа';
+
+  @override
+  String get addNoteOptional => 'Жазма кошуу (милдеттүү эмес)';
+
+  @override
+  String get kickCounter => 'Козголуу эсептегич';
+
+  @override
+  String get sessionInProgress => 'Сессия жүрүп жатат';
+
+  @override
+  String get tapStartToBegin => 'Баштоо үчүн «Старт» басыңыз';
+
+  @override
+  String get kickSingular => 'козголуу';
+
+  @override
+  String get kickPlural => 'козголуу';
+
+  @override
+  String get startCounting => 'Эсептөөнү баштоо';
+
+  @override
+  String get tapButton => 'БАС';
+
+  @override
+  String get finishSession => 'Сессияны аяктоо';
+
+  @override
+  String get kickCounterInfo =>
+      '10 козголууну саныңыз. Эгер 2 сааттан ашса — врачка кайрылыңыз.';
+
+  @override
+  String contractionLength(String duration) {
+    return 'Узак.: $duration';
+  }
+
+  @override
+  String contractionInterval(String duration) {
+    return 'Аралык: $duration';
+  }
+
+  @override
+  String get dueDateAppBarTitle => 'Төрөт күнү';
 }

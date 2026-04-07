@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/journey_provider.dart';
 
 class DueDateScreen extends ConsumerStatefulWidget {
@@ -20,7 +21,7 @@ class _DueDateScreenState extends ConsumerState<DueDateScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Your Due Date'),
+        title: Text(L.of(context).dueDateAppBarTitle),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24),
@@ -28,12 +29,12 @@ class _DueDateScreenState extends ConsumerState<DueDateScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "When is your\nbaby due?",
+              L.of(context).dueDateTitle,
               style: Theme.of(context).textTheme.headlineLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              "This personalizes your entire journey experience",
+              L.of(context).dueDateSubtitle,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -44,13 +45,13 @@ class _DueDateScreenState extends ConsumerState<DueDateScreen> {
             Row(
               children: [
                 _ToggleChip(
-                  label: 'I know my due date',
+                  label: L.of(context).iKnowMyDueDate,
                   isSelected: _knowsDueDate,
                   onTap: () => setState(() => _knowsDueDate = true),
                 ),
                 const SizedBox(width: 12),
                 _ToggleChip(
-                  label: 'Calculate it',
+                  label: L.of(context).calculateIt,
                   isSelected: !_knowsDueDate,
                   onTap: () => setState(() => _knowsDueDate = false),
                 ),
@@ -107,7 +108,7 @@ class _DueDateScreenState extends ConsumerState<DueDateScreen> {
                       Text(
                         _selectedDate != null
                             ? '${_selectedDate!.month}/${_selectedDate!.day}/${_selectedDate!.year}'
-                            : 'Tap to select your due date',
+                            : L.of(context).tapToSelectDueDate,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight:
@@ -124,7 +125,7 @@ class _DueDateScreenState extends ConsumerState<DueDateScreen> {
             ] else ...[
               // LMP calculator
               Text(
-                'When was the first day of your last period?',
+                L.of(context).whenWasLMP,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
@@ -157,8 +158,8 @@ class _DueDateScreenState extends ConsumerState<DueDateScreen> {
                       const SizedBox(width: 14),
                       Text(
                         _selectedDate != null
-                            ? 'Due date: ${_selectedDate!.month}/${_selectedDate!.day}/${_selectedDate!.year}'
-                            : 'Tap to select LMP date',
+                            ? L.of(context).dueDate('${_selectedDate!.month}/${_selectedDate!.day}/${_selectedDate!.year}')
+                            : L.of(context).tapToSelectLMP,
                         style: TextStyle(
                           fontSize: 16,
                           color: _selectedDate != null
@@ -194,13 +195,13 @@ class _DueDateScreenState extends ConsumerState<DueDateScreen> {
                       return Column(
                         children: [
                           Text(
-                            'Week $week',
+                            L.of(context).weekN(week),
                             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                   color: AppColors.primary,
                                 ),
                           ),
                           Text(
-                            '$daysLeft days to go',
+                            L.of(context).daysToGo(daysLeft),
                             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
@@ -226,7 +227,7 @@ class _DueDateScreenState extends ConsumerState<DueDateScreen> {
                         context.go('/');
                       }
                     : null,
-                child: const Text('Continue'),
+                child: Text(L.of(context).continueButton),
               ),
             ),
             const SizedBox(height: 16),

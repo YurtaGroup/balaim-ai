@@ -67,7 +67,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
               children: [
                 Text(L.of(context).balamAI, style: TextStyle(fontSize: 16)),
                 Text(
-                  'Week $week companion',
+                  L.of(context).weekCompanion(week),
                   style: const TextStyle(fontSize: 11, color: AppColors.textHint),
                 ),
               ],
@@ -84,23 +84,23 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
             child: Row(
               children: [
                 _SuggestionChip(
-                  label: 'Is this normal?',
+                  label: L.of(context).isThisNormal,
                   onTap: () => _send('Is it normal to feel Braxton Hicks at week $week?'),
                 ),
                 _SuggestionChip(
-                  label: "What's baby doing?",
+                  label: L.of(context).whatsBabyDoing,
                   onTap: () => _send("What is my baby doing at week $week?"),
                 ),
                 _SuggestionChip(
-                  label: 'Nutrition tips',
+                  label: L.of(context).nutritionTips,
                   onTap: () => _send('What should I eat this week for my baby\'s development?'),
                 ),
                 _SuggestionChip(
-                  label: 'Sleep help',
+                  label: L.of(context).sleepHelp,
                   onTap: () => _send("I can't sleep well at week $week, any tips?"),
                 ),
                 _SuggestionChip(
-                  label: 'Partner tips',
+                  label: L.of(context).partnerTips,
                   onTap: () => _send("How can my partner be more involved at week $week?"),
                 ),
               ],
