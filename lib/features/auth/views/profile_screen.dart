@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../main.dart' show localeProvider;
 import '../providers/auth_provider.dart';
 import '../../journey/providers/journey_provider.dart';
 
@@ -184,9 +186,64 @@ class ProfileScreen extends ConsumerWidget {
           ),
           _ProfileTile(
             icon: Icons.settings_outlined,
-            title: 'Settings',
-            subtitle: 'App preferences',
+            title: L.of(context).settings,
+            subtitle: L.of(context).appPreferences,
             onTap: () {},
+          ),
+          const SizedBox(height: 16),
+
+          // Language switcher
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.divider),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.language, color: AppColors.secondary, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Language / Тил / Язык',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: AppColors.secondaryDark,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _LanguageChip(
+                      label: 'English',
+                      locale: const Locale('en'),
+                      currentLocale: ref.watch(localeProvider),
+                      onTap: () => ref.read(localeProvider.notifier).state = const Locale('en'),
+                    ),
+                    _LanguageChip(
+                      label: 'Русский',
+                      locale: const Locale('ru'),
+                      currentLocale: ref.watch(localeProvider),
+                      onTap: () => ref.read(localeProvider.notifier).state = const Locale('ru'),
+                    ),
+                    _LanguageChip(
+                      label: 'Кыргызча',
+                      locale: const Locale('ky'),
+                      currentLocale: ref.watch(localeProvider),
+                      onTap: () => ref.read(localeProvider.notifier).state = const Locale('ky'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
           OutlinedButton(
@@ -195,7 +252,7 @@ class ProfileScreen extends ConsumerWidget {
               foregroundColor: AppColors.error,
               side: const BorderSide(color: AppColors.error),
             ),
-            child: const Text('Sign Out'),
+            child: Text(L.of(context).signOut),
           ),
         ],
       ),
@@ -232,6 +289,46 @@ class _ProfileTile extends StatelessWidget {
       subtitle: Text(subtitle),
       trailing: const Icon(Icons.chevron_right, color: AppColors.textHint),
       onTap: onTap,
+    );
+  }
+}
+
+class _LanguageChip extends StatelessWidget {
+  final String label;
+  final Locale locale;
+  final Locale? currentLocale;
+  final VoidCallback onTap;
+
+  const _LanguageChip({
+    required this.label,
+    required this.locale,
+    required this.currentLocale,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = currentLocale?.languageCode == locale.languageCode;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.secondary : AppColors.background,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.secondary : AppColors.divider,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            color: isSelected ? Colors.white : AppColors.textPrimary,
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'l10n/app_localizations.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
 /// Global flag: true when Firebase is initialized successfully
 bool isFirebaseInitialized = false;
 
+/// Global locale provider — user can switch language in settings
+final localeProvider = StateProvider<Locale?>((ref) => null);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Try to initialize Firebase — if firebase_options.dart doesn't exist
-  // or config is missing, we fall back to demo mode gracefully
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -22,7 +25,6 @@ void main() async {
   } catch (e) {
     isFirebaseInitialized = false;
     debugPrint('⚠️ Firebase not configured — running in DEMO mode');
-    debugPrint('   Run: flutterfire configure --project=balam-ai');
   }
 
   runApp(const ProviderScope(child: BalamApp()));
@@ -34,12 +36,22 @@ class BalamApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
       title: 'Balam.AI',
       theme: AppTheme.light,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      // Localization
+      locale: locale,
+      localizationsDelegates: const [
+        L.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: L.supportedLocales,
     );
   }
 }

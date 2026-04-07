@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_colors.dart';
 
 class ShellScreen extends StatelessWidget {
@@ -18,6 +19,7 @@ class ShellScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L.of(context);
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
@@ -38,31 +40,31 @@ class ShellScreen extends StatelessWidget {
         },
         backgroundColor: AppColors.surface,
         indicatorColor: AppColors.primary.withValues(alpha: 0.1),
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.child_care_outlined),
-            selectedIcon: Icon(Icons.child_care, color: AppColors.primary),
-            label: 'Journey',
+            icon: const Icon(Icons.child_care_outlined),
+            selectedIcon: const Icon(Icons.child_care, color: AppColors.primary),
+            label: l.navJourney,
           ),
           NavigationDestination(
-            icon: Icon(Icons.auto_awesome_outlined),
-            selectedIcon: Icon(Icons.auto_awesome, color: AppColors.primary),
-            label: 'Balam AI',
+            icon: const Icon(Icons.auto_awesome_outlined),
+            selectedIcon: const Icon(Icons.auto_awesome, color: AppColors.primary),
+            label: l.navBalamAI,
           ),
           NavigationDestination(
-            icon: Icon(Icons.people_outline),
-            selectedIcon: Icon(Icons.people, color: AppColors.primary),
-            label: 'Community',
+            icon: const Icon(Icons.people_outline),
+            selectedIcon: const Icon(Icons.people, color: AppColors.primary),
+            label: l.navCommunity,
           ),
           NavigationDestination(
-            icon: Icon(Icons.storefront_outlined),
-            selectedIcon: Icon(Icons.storefront, color: AppColors.primary),
-            label: 'Market',
+            icon: const Icon(Icons.storefront_outlined),
+            selectedIcon: const Icon(Icons.storefront, color: AppColors.primary),
+            label: l.navMarket,
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person, color: AppColors.primary),
-            label: 'Profile',
+            icon: const Icon(Icons.person_outline),
+            selectedIcon: const Icon(Icons.person, color: AppColors.primary),
+            label: l.navProfile,
           ),
         ],
       ),
