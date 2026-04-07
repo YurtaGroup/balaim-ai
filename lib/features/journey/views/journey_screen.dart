@@ -1,3 +1,4 @@
+import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,7 +34,7 @@ class JourneyScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Journey'),
+        title: Text(L.of(context).myJourney),
         actions: [
           IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
         ],

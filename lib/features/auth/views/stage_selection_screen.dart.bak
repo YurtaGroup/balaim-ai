@@ -46,12 +46,12 @@ class StageSelectionScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: 32),
               Text(
-                L.of(context).whatStage,
+                "What stage\nare you in?",
                 style: Theme.of(context).textTheme.headlineLarge,
               ),
               const SizedBox(height: 8),
               Text(
-                L.of(context).stagePersonalize,
+                "This personalizes your entire experience",
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: AppColors.textSecondary,
                     ),

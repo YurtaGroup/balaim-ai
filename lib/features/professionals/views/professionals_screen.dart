@@ -1,3 +1,4 @@
+import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 
@@ -8,7 +9,7 @@ class ProfessionalsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Find Professionals'),
+        title: Text(L.of(context).findProfessionals),
         actions: [
           IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
         ],
@@ -19,7 +20,7 @@ class ProfessionalsScreen extends StatelessWidget {
           // Search bar
           TextField(
             decoration: InputDecoration(
-              hintText: 'Search doctors, nurses, doulas...',
+              hintText: L.of(context).searchDoctors,
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),

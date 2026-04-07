@@ -1,3 +1,4 @@
+import '../../../l10n/app_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -58,7 +59,7 @@ class _ContractionTimerScreenState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Contraction Timer'),
+        title: Text(L.of(context).contractionTimer),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => context.pop(),

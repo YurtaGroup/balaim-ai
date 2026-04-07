@@ -1,3 +1,4 @@
+import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
@@ -20,7 +21,7 @@ class MarketplaceScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Marketplace'),
+        title: Text(L.of(context).marketplace),
         actions: [
           IconButton(icon: const Icon(Icons.shopping_bag_outlined), onPressed: () {}),
         ],
@@ -31,7 +32,7 @@ class MarketplaceScreen extends ConsumerWidget {
           // Search
           TextField(
             decoration: InputDecoration(
-              hintText: 'Search products, services...',
+              hintText: L.of(context).searchProducts,
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),

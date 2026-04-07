@@ -1,3 +1,4 @@
+import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
@@ -64,7 +65,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Balam AI', style: TextStyle(fontSize: 16)),
+                Text(L.of(context).balamAI, style: TextStyle(fontSize: 16)),
                 Text(
                   'Week $week companion',
                   style: const TextStyle(fontSize: 11, color: AppColors.textHint),
@@ -133,7 +134,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      hintText: 'Ask Balam anything...',
+                      hintText: L.of(context).askBalamAnything,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
