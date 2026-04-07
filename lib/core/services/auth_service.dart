@@ -6,17 +6,14 @@ import 'demo_auth_service.dart';
 import 'analytics_service.dart';
 
 /// Unified auth service — Firebase when configured, demo fallback otherwise.
-///
-/// Design:
-/// - Single source of truth for auth state
-/// - Graceful degradation: app works identically in either mode
-/// - When Firebase is on, creates a matching Firestore user doc on signup
+/// SINGLETON: ensures auth state is consistent across the entire app.
 class AuthService {
   static final AuthService _instance = AuthService._();
   factory AuthService() => _instance;
   AuthService._();
 
-  final DemoAuthService _demo = DemoAuthService();
+  /// SINGLE demo auth instance — shared everywhere
+  final DemoAuthService demo = DemoAuthService();
 
   bool get _useFirebase => isFirebaseInitialized;
 
@@ -26,23 +23,26 @@ class AuthService {
 
   String? get currentUid {
     if (_useFirebase) return fb.FirebaseAuth.instance.currentUser?.uid;
-    return _demo.currentUser?.uid;
+    return demo.currentUser?.uid;
   }
 
   String? get currentEmail {
     if (_useFirebase) return fb.FirebaseAuth.instance.currentUser?.email;
-    return _demo.currentUser?.email;
+    return demo.currentUser?.email;
   }
 
   String? get currentDisplayName {
     if (_useFirebase) return fb.FirebaseAuth.instance.currentUser?.displayName;
-    return _demo.currentUser?.displayName;
+    return demo.currentUser?.displayName;
   }
 
   bool get isSignedIn => currentUid != null;
 
+  /// The demo user object (for role checking). Null when Firebase is active.
+  DemoUser? get currentDemoUser => _useFirebase ? null : demo.currentUser;
+
   // ==========================================================
-  // AUTH STATE STREAM
+  // AUTH STATE STREAM — the single source of truth for the router
   // ==========================================================
 
   Stream<bool> get authStateChanges {
@@ -51,11 +51,14 @@ class AuthService {
           .authStateChanges()
           .map((user) => user != null);
     }
-    return _demo.authStateChanges.map((user) => user != null);
+    return demo.authStateChanges.map((user) => user != null);
   }
 
+  /// Demo user stream — for role-based routing
+  Stream<DemoUser?> get demoUserChanges => demo.authStateChanges;
+
   // ==========================================================
-  // SIGN UP — creates account + Firestore user doc
+  // SIGN UP
   // ==========================================================
 
   Future<AuthResult> signUp({
@@ -69,7 +72,6 @@ class AuthService {
             .createUserWithEmailAndPassword(email: email, password: password);
         await cred.user?.updateDisplayName(displayName);
 
-        // Create Firestore user document
         if (cred.user != null) {
           await FirebaseFirestore.instance
               .collection('users')
@@ -89,8 +91,7 @@ class AuthService {
         AnalyticsService().logSignUp(method: 'email');
         return AuthResult.success(cred.user!.uid);
       } else {
-        // Demo mode: create an account with any credentials
-        final user = await _demo.signIn(email, password);
+        final user = await demo.signIn(email, password);
         AnalyticsService().logSignUp(method: 'demo');
         return AuthResult.success(user.uid);
       }
@@ -116,7 +117,7 @@ class AuthService {
         AnalyticsService().logLogin(method: 'email');
         return AuthResult.success(cred.user!.uid);
       } else {
-        final user = await _demo.signIn(email, password);
+        final user = await demo.signIn(email, password);
         AnalyticsService().logLogin(method: 'demo');
         return AuthResult.success(user.uid);
       }
@@ -135,7 +136,7 @@ class AuthService {
     if (_useFirebase) {
       await fb.FirebaseAuth.instance.signOut();
     } else {
-      await _demo.signOut();
+      await demo.signOut();
     }
   }
 
