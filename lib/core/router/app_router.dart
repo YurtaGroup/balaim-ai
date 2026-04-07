@@ -27,6 +27,7 @@ import '../../features/community/views/community_screen.dart';
 import '../../features/admin/views/admin_dashboard_screen.dart';
 import '../../features/admin/views/admin_metrics_screen.dart';
 import '../../features/professionals/views/professionals_screen.dart';
+import '../../features/doctor/views/doctor_dashboard_screen.dart';
 import '../../features/marketplace/views/marketplace_screen.dart';
 import '../router/shell_screen.dart';
 
@@ -46,8 +47,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/onboarding';
       }
       if (isLoggedIn && isAuthRoute) {
-        // Route admin demo users to admin dashboard
+        // Route by role
         if (demoUser?.isAdmin == true) return '/admin';
+        if (demoUser?.isDoctor == true) return '/doctor';
         return '/';
       }
       return null;
@@ -140,6 +142,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/admin/metrics',
         builder: (context, state) => const AdminMetricsScreen(),
+      ),
+
+      // Doctor dashboard
+      GoRoute(
+        path: '/doctor',
+        builder: (context, state) => const DoctorDashboardScreen(),
       ),
 
       // Main parent app shell with bottom navigation
