@@ -53,7 +53,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _isLoading = true;
       _error = null;
     });
-    final result = await AuthService().signIn(email: email, password: 'demo');
+    // Try sign in first; if account doesn't exist, create it
+    var result = await AuthService().signIn(email: email, password: 'demo123');
+    if (!result.success) {
+      result = await AuthService().signUp(
+        email: email,
+        password: 'demo123',
+        displayName: email.split('@').first,
+      );
+    }
     if (!mounted) return;
     if (!result.success) {
       setState(() {
@@ -106,8 +114,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Demo quick access — only shown in demo mode
-              if (!isFirebaseInitialized) Container(
+              // Demo quick access — shown during beta for easy testing
+              Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
