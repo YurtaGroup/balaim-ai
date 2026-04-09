@@ -1,4 +1,5 @@
 import '../../../l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -76,6 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // Try sign in first; if account doesn't exist, create it
     var result = await AuthService().signIn(email: email, password: 'demo123');
     if (!result.success) {
+      // Account might not exist yet — try creating it
       result = await AuthService().signUp(
         email: email,
         password: 'demo123',
@@ -84,8 +86,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
     if (!mounted) return;
     if (!result.success) {
+      // If both failed, show the error but also log it for debugging
+      debugPrint('[Auth] Quick login failed for $email: ${result.error}');
       setState(() {
-        _error = result.error;
+        _error = '${result.error}\n\nTip: Try using email/password sign-in with your real credentials.';
         _isLoading = false;
       });
     }
@@ -226,8 +230,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
               const SizedBox(height: 16),
 
-              // Hidden demo access — only visible after 5 taps on logo
-              if (_showDemoAccess) ...[
+              // Demo access — always visible for testing
+              if (true) ...[
                 const SizedBox(height: 8),
                 Container(
                   width: double.infinity,
