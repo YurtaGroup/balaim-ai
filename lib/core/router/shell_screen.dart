@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../l10n/app_localizations.dart';
+import '../../shared/widgets/role_switcher.dart';
 import '../theme/app_colors.dart';
 
-class ShellScreen extends StatelessWidget {
+class ShellScreen extends ConsumerWidget {
   final Widget child;
 
   const ShellScreen({super.key, required this.child});
@@ -13,15 +15,20 @@ class ShellScreen extends StatelessWidget {
     if (location.startsWith('/ai')) return 1;
     if (location.startsWith('/community')) return 2;
     if (location.startsWith('/marketplace')) return 3;
-    if (location.startsWith('/profile')) return 4;
+    if (location.startsWith('/my-child')) return 4;
     return 0;
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = L.of(context);
     return Scaffold(
-      body: child,
+      body: Stack(
+        children: [
+          child,
+          const RoleSwitcher(),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex(context),
         onDestinationSelected: (index) {
@@ -35,16 +42,16 @@ class ShellScreen extends StatelessWidget {
             case 3:
               context.go('/marketplace');
             case 4:
-              context.go('/profile');
+              context.go('/my-child');
           }
         },
         backgroundColor: AppColors.surface,
         indicatorColor: AppColors.primary.withValues(alpha: 0.1),
         destinations: [
           NavigationDestination(
-            icon: const Icon(Icons.child_care_outlined),
-            selectedIcon: const Icon(Icons.child_care, color: AppColors.primary),
-            label: l.navJourney,
+            icon: const Icon(Icons.today_outlined),
+            selectedIcon: const Icon(Icons.today, color: AppColors.primary),
+            label: l.navToday,
           ),
           NavigationDestination(
             icon: const Icon(Icons.auto_awesome_outlined),
@@ -62,9 +69,9 @@ class ShellScreen extends StatelessWidget {
             label: l.navMarket,
           ),
           NavigationDestination(
-            icon: const Icon(Icons.person_outline),
-            selectedIcon: const Icon(Icons.person, color: AppColors.primary),
-            label: l.navProfile,
+            icon: const Icon(Icons.face_outlined),
+            selectedIcon: const Icon(Icons.face, color: AppColors.primary),
+            label: l.navMyChild,
           ),
         ],
       ),

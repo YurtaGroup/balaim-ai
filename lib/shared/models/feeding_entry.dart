@@ -44,4 +44,24 @@ class FeedingEntry {
     if (isBreast && durationMinutes != null) return '${durationMinutes!} min';
     return type.label;
   }
+
+  Map<String, dynamic> toFirestore() => {
+    'id': id,
+    'type': type.name,
+    'startTime': startTime.toIso8601String(),
+    'endTime': endTime?.toIso8601String(),
+    'amountMl': amountMl,
+    'durationMinutes': durationMinutes,
+    'note': note,
+  };
+
+  factory FeedingEntry.fromFirestore(Map<String, dynamic> data) => FeedingEntry(
+    id: data['id'] as String,
+    type: FeedingType.values.firstWhere((t) => t.name == data['type']),
+    startTime: DateTime.parse(data['startTime']),
+    endTime: data['endTime'] != null ? DateTime.parse(data['endTime']) : null,
+    amountMl: (data['amountMl'] as num?)?.toDouble(),
+    durationMinutes: data['durationMinutes'] as int?,
+    note: data['note'] as String?,
+  );
 }

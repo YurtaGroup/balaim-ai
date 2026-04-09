@@ -1,6 +1,6 @@
 import 'dart:async';
 
-enum UserRole { parent, admin, doctor, vendor }
+enum UserRole { parent, admin, doctor, vendor, owner }
 
 class DemoUser {
   final String uid;
@@ -17,10 +17,11 @@ class DemoUser {
     this.photoUrl,
   });
 
-  bool get isAdmin => role == UserRole.admin;
-  bool get isDoctor => role == UserRole.doctor;
+  bool get isAdmin => role == UserRole.admin || role == UserRole.owner;
+  bool get isDoctor => role == UserRole.doctor || role == UserRole.owner;
   bool get isVendor => role == UserRole.vendor;
-  bool get isParent => role == UserRole.parent;
+  bool get isParent => role == UserRole.parent || role == UserRole.owner;
+  bool get isOwner => role == UserRole.owner;
 }
 
 class DemoAuthService {
@@ -65,6 +66,12 @@ class DemoAuthService {
       email: 'vendor@balam.ai',
       displayName: 'TinySteps Photography',
       role: UserRole.vendor,
+    ),
+    'owner@balam.ai': DemoUser(
+      uid: 'demo-owner-001',
+      email: 'owner@balam.ai',
+      displayName: 'Timur Mone',
+      role: UserRole.owner,
     ),
   };
 

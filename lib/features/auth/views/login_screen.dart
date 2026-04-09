@@ -17,6 +17,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  int _logoTapCount = 0;
+  bool _showDemoAccess = false;
   String? _error;
 
   @override
@@ -45,6 +47,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _error = result.error;
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() { _isLoading = true; _error = null; });
+    final result = await AuthService().signInWithGoogle();
+    if (!mounted) return;
+    if (!result.success) {
+      setState(() { _error = result.error; _isLoading = false; });
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    setState(() { _isLoading = true; _error = null; });
+    final result = await AuthService().signInWithApple();
+    if (!mounted) return;
+    if (!result.success) {
+      setState(() { _error = result.error; _isLoading = false; });
     }
   }
 
@@ -82,18 +102,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 32),
-              // Logo area
+              // Logo area — triple-tap for dev demo access
               Center(
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryDark],
+                child: GestureDetector(
+                  onTap: () {
+                    _logoTapCount++;
+                    if (_logoTapCount >= 5 && !_showDemoAccess) {
+                      setState(() => _showDemoAccess = true);
+                    }
+                  },
+                  child: Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppColors.primary, AppColors.primaryDark],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    child: const Icon(Icons.child_care, color: Colors.white, size: 40),
                   ),
-                  child: const Icon(Icons.child_care, color: Colors.white, size: 40),
                 ),
               ),
               const SizedBox(height: 24),
@@ -114,73 +142,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Demo quick access — shown during beta for easy testing
-              Container(
+              // Social sign-in first — most users will use these
+              SizedBox(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.accent.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _signInWithGoogle,
+                  icon: const Icon(Icons.g_mobiledata, size: 24),
+                  label: Text(L.of(context).continueWithGoogle),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.bolt, color: AppColors.accent, size: 20),
-                        const SizedBox(width: 6),
-                        Text(
-                          L.of(context).quickDemoAccess,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.accentDark,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _DemoButton(
-                      icon: Icons.pregnant_woman,
-                      color: AppColors.primary,
-                      label: L.of(context).parentSarah,
-                      subtitle: L.of(context).fullParentingExperience,
-                      onTap: () => _quickLogin('parent@balam.ai'),
-                    ),
-                    const SizedBox(height: 8),
-                    _DemoButton(
-                      icon: Icons.man,
-                      color: AppColors.secondary,
-                      label: L.of(context).dadMike,
-                      subtitle: L.of(context).dadPerspective,
-                      onTap: () => _quickLogin('dad@balam.ai'),
-                    ),
-                    const SizedBox(height: 8),
-                    _DemoButton(
-                      icon: Icons.admin_panel_settings,
-                      color: AppColors.accentDark,
-                      label: L.of(context).adminDashboard,
-                      subtitle: L.of(context).platformManagement,
-                      onTap: () => _quickLogin('admin@balam.ai'),
-                    ),
-                    const SizedBox(height: 8),
-                    _DemoButton(
-                      icon: Icons.medical_services,
-                      color: AppColors.secondaryDark,
-                      label: L.of(context).doctorAmara,
-                      subtitle: L.of(context).professionalView,
-                      onTap: () => _quickLogin('doctor@balam.ai'),
-                    ),
-                    const SizedBox(height: 8),
-                    _DemoButton(
-                      icon: Icons.camera_alt,
-                      color: Color(0xFF7C4DFF),
-                      label: L.of(context).vendorTinySteps,
-                      subtitle: L.of(context).marketplaceSeller,
-                      onTap: () => _quickLogin('vendor@balam.ai'),
-                    ),
-                  ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _isLoading ? null : _signInWithApple,
+                  icon: const Icon(Icons.apple, size: 24),
+                  label: Text(L.of(context).continueWithApple),
                 ),
               ),
               const SizedBox(height: 24),
@@ -247,25 +224,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Social sign-in
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _quickLogin('parent@balam.ai'),
-                  icon: const Icon(Icons.g_mobiledata, size: 24),
-                  label: Text(L.of(context).continueWithGoogle),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _quickLogin('parent@balam.ai'),
-                  icon: const Icon(Icons.apple, size: 24),
-                  label: Text(L.of(context).continueWithApple),
-                ),
-              ),
               const SizedBox(height: 16),
+
+              // Hidden demo access — only visible after 5 taps on logo
+              if (_showDemoAccess) ...[
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Dev', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _DemoChip(label: 'Owner', onTap: () => _quickLogin('owner@balam.ai')),
+                          _DemoChip(label: 'Parent', onTap: () => _quickLogin('parent@balam.ai')),
+                          _DemoChip(label: 'Dad', onTap: () => _quickLogin('dad@balam.ai')),
+                          _DemoChip(label: 'Admin', onTap: () => _quickLogin('admin@balam.ai')),
+                          _DemoChip(label: 'Doctor', onTap: () => _quickLogin('doctor@balam.ai')),
+                          _DemoChip(label: 'Vendor', onTap: () => _quickLogin('vendor@balam.ai')),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // Toggle login/signup
               Center(
@@ -282,56 +275,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-class _DemoButton extends StatelessWidget {
-  final IconData icon;
-  final Color color;
+class _DemoChip extends StatelessWidget {
   final String label;
-  final String subtitle;
   final VoidCallback onTap;
-
-  const _DemoButton({
-    required this.icon,
-    required this.color,
-    required this.label,
-    required this.subtitle,
-    required this.onTap,
-  });
+  const _DemoChip({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                    Text(subtitle, style: TextStyle(color: AppColors.textHint, fontSize: 12)),
-                  ],
-                ),
-              ),
-              const Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.textHint),
-            ],
-          ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.divider),
         ),
+        child: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
       ),
     );
   }

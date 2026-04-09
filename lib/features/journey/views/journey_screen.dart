@@ -6,12 +6,12 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/data/seed_data.dart';
 import '../../../shared/models/tracking_entry.dart';
+import '../../../shared/widgets/notification_bell.dart';
 import '../providers/journey_provider.dart';
 import '../../../shared/widgets/gradient_banner.dart';
 import '../../../shared/widgets/baby_size_visual.dart';
 import '../../../shared/widgets/section_header.dart';
 import '../../../shared/widgets/pattern_background.dart';
-import 'kick_counter_screen.dart';
 import 'tracking_sheet.dart';
 import 'baby_journey_screen.dart';
 
@@ -35,8 +35,8 @@ class JourneyScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(L.of(context).myJourney),
-        actions: [
-          IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
+        actions: const [
+          NotificationBell(),
         ],
       ),
       body: SingleChildScrollView(
@@ -69,7 +69,7 @@ class JourneyScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              L.of(context).trimesterN(weekData.trimester),
+                              L.of(context).trimesterN(weekData.trimester.of(context)),
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.85),
                                 fontSize: 14,
@@ -114,7 +114,7 @@ class JourneyScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    L.of(context).babySizeOf(weekData.babySize.toLowerCase()),
+                    L.of(context).babySizeOf(weekData.babySize.of(context).toLowerCase()),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
@@ -139,7 +139,7 @@ class JourneyScreen extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  weekData.babyDevelopment,
+                  weekData.babyDevelopment.of(context),
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(height: 1.5),
                 ),
               ),
@@ -184,9 +184,7 @@ class JourneyScreen extends ConsumerWidget {
                   color: AppColors.stagePrePregnancy,
                   value: _todayValue(todayEntries, TrackingType.kicks),
                   unit: L.of(context).kicks,
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const KickCounterScreen()),
-                  ),
+                  onTap: () => context.push('/kick-counter'),
                 ),
               ],
             ),
@@ -224,7 +222,7 @@ class JourneyScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            weekData.tips.first,
+                            weekData.tips.first.of(context),
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
@@ -262,7 +260,7 @@ class JourneyScreen extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            s,
+                            s.of(context),
                             style: TextStyle(
                               color: AppColors.primaryDark,
                               fontSize: 13,

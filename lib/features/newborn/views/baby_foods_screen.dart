@@ -706,22 +706,22 @@ class _SafetyTab extends StatelessWidget {
             children: [
               const Icon(Icons.emergency, color: AppColors.error, size: 22),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Choking is the #1 food-related emergency',
-                      style: TextStyle(
+                      L.of(context).chokingWarning,
+                      style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
                         color: AppColors.error,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Learn infant/child CPR. Supervise every meal.',
-                      style: TextStyle(fontSize: 13, height: 1.4),
+                      L.of(context).chokingSafety,
+                      style: const TextStyle(fontSize: 13, height: 1.4),
                     ),
                   ],
                 ),
@@ -732,7 +732,7 @@ class _SafetyTab extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Safety tips
-        Text('Safety Tips', style: Theme.of(context).textTheme.titleLarge),
+        Text(L.of(context).safetyTips, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 10),
         ...ChokingHazardsInfo.safetyTips.map((tip) => Padding(
               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -753,7 +753,7 @@ class _SafetyTab extends StatelessWidget {
             )),
 
         const SizedBox(height: 20),
-        Text('Common Choking Hazards',
+        Text(L.of(context).commonChokingHazards,
             style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 10),
         ...ChokingHazardsInfo.hazards.entries.map((e) => Container(

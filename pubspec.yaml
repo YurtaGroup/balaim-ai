@@ -1,7 +1,7 @@
 name: balam_ai
 description: "Balam.AI — The Parenting Super App"
 publish_to: 'none'
-version: 1.0.0+6
+version: 1.1.0+7
 
 environment:
   sdk: ^3.11.3
@@ -65,6 +65,10 @@ dependencies:
 
   # Notifications
   flutter_local_notifications: ^18.0.1
+
+  # Sharing & URLs
+  share_plus: ^10.1.4
+  url_launcher: ^6.3.1
 
   # Payments
   purchases_flutter: ^8.5.1  # RevenueCat

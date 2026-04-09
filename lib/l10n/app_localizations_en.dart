@@ -1710,4 +1710,255 @@ class LEn extends L {
 
   @override
   String get requestConsultation => 'Request Consultation';
+
+  @override
+  String get addChild => 'Add Child';
+
+  @override
+  String get editChild => 'Edit Child';
+
+  @override
+  String get childName => 'Child\'s name';
+
+  @override
+  String get noChildrenYet => 'No children yet';
+
+  @override
+  String get addChildToStart => 'Tap + to add your first child';
+
+  @override
+  String get removeChild => 'Remove Child';
+
+  @override
+  String removeChildConfirm(String name) {
+    return 'Remove $name from your family? This cannot be undone.';
+  }
+
+  @override
+  String get selectDueDate => 'Select due date';
+
+  @override
+  String get selectBirthDate => 'Select birth date';
+
+  @override
+  String get selectDate => 'Select date';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get active => 'ACTIVE';
+
+  @override
+  String get stage => 'Stage';
+
+  @override
+  String get notificationSettings => 'Notification Settings';
+
+  @override
+  String get notificationSettingsSubtitle => 'Choose what alerts you receive';
+
+  @override
+  String get appSettings => 'App Settings';
+
+  @override
+  String get appSettingsSubtitle => 'Language, theme, data';
+
+  @override
+  String get comingSoon => 'Coming Soon';
+
+  @override
+  String get featureComingSoon => 'This feature is coming in a future update!';
+
+  @override
+  String get createPost => 'Create Post';
+
+  @override
+  String get whatsOnYourMind => 'What\'s on your mind?';
+
+  @override
+  String get post => 'Post';
+
+  @override
+  String get likedPost => 'Liked!';
+
+  @override
+  String get searchCommunity => 'Search community...';
+
+  @override
+  String get productDetails => 'Product Details';
+
+  @override
+  String get addToCart => 'Add to Cart';
+
+  @override
+  String get cartEmpty => 'Your cart is empty';
+
+  @override
+  String get editEntry => 'Edit Entry';
+
+  @override
+  String get deleteEntry => 'Delete Entry';
+
+  @override
+  String get deleteEntryConfirm => 'Delete this entry? This cannot be undone.';
+
+  @override
+  String get entryDeleted => 'Entry deleted';
+
+  @override
+  String get tellUsAboutBaby => 'Tell us about your baby';
+
+  @override
+  String get babyName => 'Baby\'s name';
+
+  @override
+  String get photoUpdated => 'Photo updated!';
+
+  @override
+  String childrenCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count children',
+      one: '1 child',
+      zero: 'No children',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noPostsFound => 'No posts match your search';
+
+  @override
+  String get postPublished => 'Post published!';
+
+  @override
+  String get commentsTitle => 'Comments';
+
+  @override
+  String get commentsPlaceholder => 'Comments will appear here';
+
+  @override
+  String get writeComment => 'Write a comment...';
+
+  @override
+  String get commentPosted => 'Comment posted!';
+
+  @override
+  String get reportPost => 'Report post';
+
+  @override
+  String get postReported => 'Post reported. Thank you.';
+
+  @override
+  String get deletePost => 'Delete post';
+
+  @override
+  String get chokingSafety => 'Learn infant/child CPR. Supervise every meal.';
+
+  @override
+  String get noNotificationsYet => 'No notifications yet';
+
+  @override
+  String get notificationsEmptyDesc =>
+      'You\'ll see updates about consultations,\ninsights, and reminders here.';
+
+  @override
+  String get speechMilestones => 'Speech milestones';
+
+  @override
+  String get handleTantrums => 'Handle tantrums';
+
+  @override
+  String get activitiesForToday => 'Activities for today';
+
+  @override
+  String get developmentOnTrack => 'On track?';
+
+  @override
+  String get bondingTips => 'Bonding tips';
+
+  @override
+  String parentingTeacherSubtitle(String name, int months) {
+    return '$name, $months mo — Teacher';
+  }
+
+  @override
+  String get toddlerToolkit => 'Toddler Toolkit';
+
+  @override
+  String get speechLanguage => 'Speech & Language';
+
+  @override
+  String get speechLanguageSubtitle => 'Milestones & tips';
+
+  @override
+  String get montessoriActivities => 'Montessori Activities';
+
+  @override
+  String get montessoriActivitiesSubtitle => 'Learn through play';
+
+  @override
+  String get emotionalConnection => 'Connection';
+
+  @override
+  String get emotionalConnectionSubtitle => 'How to love well';
+
+  @override
+  String get behaviorBoundaries => 'Behavior';
+
+  @override
+  String get behaviorBoundariesSubtitle => 'Boundaries with love';
+
+  @override
+  String get mealsAndSnacks => 'Meals & snacks';
+
+  @override
+  String get navToday => 'Today';
+
+  @override
+  String get navMyChild => 'My Child';
+
+  @override
+  String get thisWeeksFocus => 'This Week\'s Focus';
+
+  @override
+  String get todaysActivity => 'Today\'s Activity';
+
+  @override
+  String get isThisNormalCard => 'Is This Normal?';
+
+  @override
+  String get dailyInsightCard => 'Daily Insight';
+
+  @override
+  String get askBalamAboutThis => 'Ask Balam about this';
+
+  @override
+  String get tryThisToday => 'Try this today';
+
+  @override
+  String get developmentDashboard => 'Development';
+
+  @override
+  String get myToolkit => 'Toolkit';
+
+  @override
+  String get guidesSection => 'Guides';
+
+  @override
+  String get healthSection => 'Health';
+
+  @override
+  String get quickLinksSection => 'Quick Links';
+
+  @override
+  String get pregnancyTools => 'Pregnancy Tools';
+
+  @override
+  String get firstMoments => 'First Moments';
+
+  @override
+  String get captureFirsts => 'Capture your baby\'s firsts';
 }

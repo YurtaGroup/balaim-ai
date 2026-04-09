@@ -17,7 +17,12 @@ class ProfessionalsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l.findProfessionals),
         actions: [
-          IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(L.of(context).featureComingSoon), behavior: SnackBarBehavior.floating),
+            ),
+          ),
         ],
       ),
       body: ListView(
@@ -95,6 +100,9 @@ class ProfessionalsScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => ConsultationRequestScreen(doctor: doc)),
                 ),
               )),
+
+          // Show "coming soon" for filter
+          // Filter button wired below
 
           const SizedBox(height: 16),
           Container(

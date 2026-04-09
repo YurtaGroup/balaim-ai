@@ -9,6 +9,12 @@ import '../../auth/providers/auth_provider.dart';
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
 
+  void _comingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(L.of(context).featureComingSoon), behavior: SnackBarBehavior.floating),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userInfo = ref.watch(currentUserInfoProvider);
@@ -128,7 +134,7 @@ class AdminDashboardScreen extends ConsumerWidget {
               title: L.of(context).userManagement,
               subtitle: L.of(context).userManagementSubtitle,
               color: AppColors.primary,
-              onTap: () {},
+              onTap: () => _comingSoon(context),
             ),
             _AdminTile(
               icon: Icons.verified_user_outlined,
@@ -136,7 +142,7 @@ class AdminDashboardScreen extends ConsumerWidget {
               subtitle: L.of(context).pendingApplications,
               color: AppColors.secondary,
               badge: '23',
-              onTap: () {},
+              onTap: () => _comingSoon(context),
             ),
             _AdminTile(
               icon: Icons.storefront_outlined,
@@ -144,7 +150,7 @@ class AdminDashboardScreen extends ConsumerWidget {
               subtitle: L.of(context).marketplaceVendorsSubtitle,
               color: AppColors.accent,
               badge: '8',
-              onTap: () {},
+              onTap: () => _comingSoon(context),
             ),
             _AdminTile(
               icon: Icons.forum_outlined,
@@ -152,42 +158,42 @@ class AdminDashboardScreen extends ConsumerWidget {
               subtitle: L.of(context).communityModerationSubtitle,
               color: AppColors.error,
               badge: '12',
-              onTap: () {},
+              onTap: () => _comingSoon(context),
             ),
             _AdminTile(
               icon: Icons.auto_awesome_outlined,
               title: L.of(context).aiPerformance,
               subtitle: L.of(context).aiPerformanceSubtitle,
               color: Colors.purple,
-              onTap: () {},
+              onTap: () => _comingSoon(context),
             ),
             _AdminTile(
               icon: Icons.analytics_outlined,
               title: L.of(context).analyticsReports,
               subtitle: L.of(context).analyticsReportsSubtitle,
               color: Colors.indigo,
-              onTap: () {},
+              onTap: () => _comingSoon(context),
             ),
             _AdminTile(
               icon: Icons.payments_outlined,
               title: L.of(context).billingRevenue,
               subtitle: L.of(context).billingRevenueSubtitle,
               color: AppColors.success,
-              onTap: () {},
+              onTap: () => _comingSoon(context),
             ),
             _AdminTile(
               icon: Icons.notifications_outlined,
               title: L.of(context).pushNotifications,
               subtitle: L.of(context).pushNotificationsSubtitle,
               color: Colors.orange,
-              onTap: () {},
+              onTap: () => _comingSoon(context),
             ),
             _AdminTile(
               icon: Icons.settings_outlined,
               title: L.of(context).platformSettings,
               subtitle: L.of(context).platformSettingsSubtitle,
               color: AppColors.textSecondary,
-              onTap: () {},
+              onTap: () => _comingSoon(context),
             ),
           ],
         ),

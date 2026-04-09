@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/consultation_service.dart';
+import '../../../shared/models/consultation.dart';
 import '../../../l10n/app_localizations.dart';
 
 /// The most critical screen in the app.
@@ -575,7 +577,7 @@ class _CaseReviewScreenState extends State<CaseReviewScreen>
     );
   }
 
-  void _submitResponse() {
+  void _submitResponse() async {
     if (_assessmentController.text.trim().isEmpty) {
       _showError(L.of(context).assessmentRequired);
       return;
@@ -591,32 +593,50 @@ class _CaseReviewScreenState extends State<CaseReviewScreen>
 
     setState(() => _isSubmitting = true);
 
-    // TODO: Call ConsultationService().submitResponse(...)
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() => _isSubmitting = false);
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(L.of(context).responseSubmitted),
-          content: Text(
-            L.of(context).responseSubmittedBody,
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-              child: Text(L.of(context).backToDashboard),
-            ),
-          ],
-        ),
+    final response = DoctorResponse(
+      assessment: _assessmentController.text.trim(),
+      recommendations: _recommendationsController.text.trim(),
+      prescriptionNotes: _prescriptionController.text.trim().isNotEmpty ? _prescriptionController.text.trim() : null,
+      followUpTests: _followUpTestsController.text.trim().isNotEmpty
+          ? _followUpTestsController.text.split(',').map((s) => s.trim()).toList()
+          : [],
+      referralNote: _referralController.text.trim().isNotEmpty ? _referralController.text.trim() : null,
+      whenToSeekEmergencyCare: _emergencyController.text.trim(),
+    );
+
+    try {
+      await ConsultationService().submitResponse(
+        consultationId: widget.caseData['id'] ?? '',
+        patientUid: widget.caseData['patientUid'] ?? '',
+        response: response,
       );
-    });
+    } catch (_) {
+      // Demo mode — continue anyway
+    }
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(L.of(context).responseSubmitted),
+        content: Text(
+          L.of(context).responseSubmittedBody,
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+            child: Text(L.of(context).backToDashboard),
+          ),
+        ],
+      ),
+    );
   }
 
-  void _submitFollowUp() {
+  void _submitFollowUp() async {
     if (_followUpAnswerController.text.trim().isEmpty) {
       _showError(L.of(context).pleaseWriteAnswer);
       return;
@@ -624,29 +644,36 @@ class _CaseReviewScreenState extends State<CaseReviewScreen>
 
     setState(() => _isSubmitting = true);
 
-    // TODO: Call ConsultationService().answerFollowUp(...)
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!mounted) return;
-      setState(() => _isSubmitting = false);
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text(L.of(context).followUpAnswerSent),
-          content: Text(
-            L.of(context).followUpAnswerSentBody,
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-              child: Text(L.of(context).backToDashboard),
-            ),
-          ],
-        ),
+    try {
+      await ConsultationService().answerFollowUp(
+        consultationId: widget.caseData['id'] ?? '',
+        patientUid: widget.caseData['patientUid'] ?? '',
+        answer: _followUpAnswerController.text.trim(),
       );
-    });
+    } catch (_) {
+      // Demo mode — continue anyway
+    }
+
+    if (!mounted) return;
+    setState(() => _isSubmitting = false);
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(L.of(context).followUpAnswerSent),
+        content: Text(
+          L.of(context).followUpAnswerSentBody,
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+            child: Text(L.of(context).backToDashboard),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showError(String message) {

@@ -3284,6 +3284,480 @@ abstract class L {
   /// In en, this message translates to:
   /// **'Request Consultation'**
   String get requestConsultation;
+
+  /// No description provided for @addChild.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Child'**
+  String get addChild;
+
+  /// No description provided for @editChild.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Child'**
+  String get editChild;
+
+  /// No description provided for @childName.
+  ///
+  /// In en, this message translates to:
+  /// **'Child\'s name'**
+  String get childName;
+
+  /// No description provided for @noChildrenYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No children yet'**
+  String get noChildrenYet;
+
+  /// No description provided for @addChildToStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap + to add your first child'**
+  String get addChildToStart;
+
+  /// No description provided for @removeChild.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Child'**
+  String get removeChild;
+
+  /// No description provided for @removeChildConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from your family? This cannot be undone.'**
+  String removeChildConfirm(String name);
+
+  /// No description provided for @selectDueDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select due date'**
+  String get selectDueDate;
+
+  /// No description provided for @selectBirthDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select birth date'**
+  String get selectBirthDate;
+
+  /// No description provided for @selectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date'**
+  String get selectDate;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @active.
+  ///
+  /// In en, this message translates to:
+  /// **'ACTIVE'**
+  String get active;
+
+  /// No description provided for @stage.
+  ///
+  /// In en, this message translates to:
+  /// **'Stage'**
+  String get stage;
+
+  /// No description provided for @notificationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification Settings'**
+  String get notificationSettings;
+
+  /// No description provided for @notificationSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what alerts you receive'**
+  String get notificationSettingsSubtitle;
+
+  /// No description provided for @appSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'App Settings'**
+  String get appSettings;
+
+  /// No description provided for @appSettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Language, theme, data'**
+  String get appSettingsSubtitle;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming Soon'**
+  String get comingSoon;
+
+  /// No description provided for @featureComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature is coming in a future update!'**
+  String get featureComingSoon;
+
+  /// No description provided for @createPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Post'**
+  String get createPost;
+
+  /// No description provided for @whatsOnYourMind.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s on your mind?'**
+  String get whatsOnYourMind;
+
+  /// No description provided for @post.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get post;
+
+  /// No description provided for @likedPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Liked!'**
+  String get likedPost;
+
+  /// No description provided for @searchCommunity.
+  ///
+  /// In en, this message translates to:
+  /// **'Search community...'**
+  String get searchCommunity;
+
+  /// No description provided for @productDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Product Details'**
+  String get productDetails;
+
+  /// No description provided for @addToCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Cart'**
+  String get addToCart;
+
+  /// No description provided for @cartEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your cart is empty'**
+  String get cartEmpty;
+
+  /// No description provided for @editEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Entry'**
+  String get editEntry;
+
+  /// No description provided for @deleteEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Entry'**
+  String get deleteEntry;
+
+  /// No description provided for @deleteEntryConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this entry? This cannot be undone.'**
+  String get deleteEntryConfirm;
+
+  /// No description provided for @entryDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry deleted'**
+  String get entryDeleted;
+
+  /// No description provided for @tellUsAboutBaby.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your baby'**
+  String get tellUsAboutBaby;
+
+  /// No description provided for @babyName.
+  ///
+  /// In en, this message translates to:
+  /// **'Baby\'s name'**
+  String get babyName;
+
+  /// No description provided for @photoUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo updated!'**
+  String get photoUpdated;
+
+  /// No description provided for @childrenCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No children} =1{1 child} other{{count} children}}'**
+  String childrenCount(int count);
+
+  /// No description provided for @noPostsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No posts match your search'**
+  String get noPostsFound;
+
+  /// No description provided for @postPublished.
+  ///
+  /// In en, this message translates to:
+  /// **'Post published!'**
+  String get postPublished;
+
+  /// No description provided for @commentsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get commentsTitle;
+
+  /// No description provided for @commentsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments will appear here'**
+  String get commentsPlaceholder;
+
+  /// No description provided for @writeComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a comment...'**
+  String get writeComment;
+
+  /// No description provided for @commentPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment posted!'**
+  String get commentPosted;
+
+  /// No description provided for @reportPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Report post'**
+  String get reportPost;
+
+  /// No description provided for @postReported.
+  ///
+  /// In en, this message translates to:
+  /// **'Post reported. Thank you.'**
+  String get postReported;
+
+  /// No description provided for @deletePost.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete post'**
+  String get deletePost;
+
+  /// No description provided for @chokingSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn infant/child CPR. Supervise every meal.'**
+  String get chokingSafety;
+
+  /// No description provided for @noNotificationsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get noNotificationsYet;
+
+  /// No description provided for @notificationsEmptyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll see updates about consultations,\ninsights, and reminders here.'**
+  String get notificationsEmptyDesc;
+
+  /// No description provided for @speechMilestones.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech milestones'**
+  String get speechMilestones;
+
+  /// No description provided for @handleTantrums.
+  ///
+  /// In en, this message translates to:
+  /// **'Handle tantrums'**
+  String get handleTantrums;
+
+  /// No description provided for @activitiesForToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Activities for today'**
+  String get activitiesForToday;
+
+  /// No description provided for @developmentOnTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'On track?'**
+  String get developmentOnTrack;
+
+  /// No description provided for @bondingTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonding tips'**
+  String get bondingTips;
+
+  /// No description provided for @parentingTeacherSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}, {months} mo — Teacher'**
+  String parentingTeacherSubtitle(String name, int months);
+
+  /// No description provided for @toddlerToolkit.
+  ///
+  /// In en, this message translates to:
+  /// **'Toddler Toolkit'**
+  String get toddlerToolkit;
+
+  /// No description provided for @speechLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech & Language'**
+  String get speechLanguage;
+
+  /// No description provided for @speechLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Milestones & tips'**
+  String get speechLanguageSubtitle;
+
+  /// No description provided for @montessoriActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Montessori Activities'**
+  String get montessoriActivities;
+
+  /// No description provided for @montessoriActivitiesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn through play'**
+  String get montessoriActivitiesSubtitle;
+
+  /// No description provided for @emotionalConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection'**
+  String get emotionalConnection;
+
+  /// No description provided for @emotionalConnectionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to love well'**
+  String get emotionalConnectionSubtitle;
+
+  /// No description provided for @behaviorBoundaries.
+  ///
+  /// In en, this message translates to:
+  /// **'Behavior'**
+  String get behaviorBoundaries;
+
+  /// No description provided for @behaviorBoundariesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Boundaries with love'**
+  String get behaviorBoundariesSubtitle;
+
+  /// No description provided for @mealsAndSnacks.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals & snacks'**
+  String get mealsAndSnacks;
+
+  /// No description provided for @navToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get navToday;
+
+  /// No description provided for @navMyChild.
+  ///
+  /// In en, this message translates to:
+  /// **'My Child'**
+  String get navMyChild;
+
+  /// No description provided for @thisWeeksFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week\'s Focus'**
+  String get thisWeeksFocus;
+
+  /// No description provided for @todaysActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Activity'**
+  String get todaysActivity;
+
+  /// No description provided for @isThisNormalCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Is This Normal?'**
+  String get isThisNormalCard;
+
+  /// No description provided for @dailyInsightCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Insight'**
+  String get dailyInsightCard;
+
+  /// No description provided for @askBalamAboutThis.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask Balam about this'**
+  String get askBalamAboutThis;
+
+  /// No description provided for @tryThisToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Try this today'**
+  String get tryThisToday;
+
+  /// No description provided for @developmentDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Development'**
+  String get developmentDashboard;
+
+  /// No description provided for @myToolkit.
+  ///
+  /// In en, this message translates to:
+  /// **'Toolkit'**
+  String get myToolkit;
+
+  /// No description provided for @guidesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Guides'**
+  String get guidesSection;
+
+  /// No description provided for @healthSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get healthSection;
+
+  /// No description provided for @quickLinksSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Links'**
+  String get quickLinksSection;
+
+  /// No description provided for @pregnancyTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Pregnancy Tools'**
+  String get pregnancyTools;
+
+  /// No description provided for @firstMoments.
+  ///
+  /// In en, this message translates to:
+  /// **'First Moments'**
+  String get firstMoments;
+
+  /// No description provided for @captureFirsts.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture your baby\'s firsts'**
+  String get captureFirsts;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

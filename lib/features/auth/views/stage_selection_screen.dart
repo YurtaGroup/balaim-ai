@@ -26,12 +26,89 @@ class StageSelectionScreen extends ConsumerWidget {
     AnalyticsService().logStageSelected(stage.name);
     AnalyticsService().setUserProperties(stage: stage.name);
 
-    // Route pregnant users to due date; others to home
+    // Route based on stage
     if (stage == ParentingStage.pregnant) {
       context.go('/due-date');
+    } else if (stage == ParentingStage.newborn || stage == ParentingStage.toddler) {
+      _askBabyDetails(context, ref, stage);
     } else {
       context.go('/');
     }
+  }
+
+  void _askBabyDetails(BuildContext context, WidgetRef ref, ParentingStage stage) {
+    final nameController = TextEditingController();
+    DateTime? birthDate;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => Container(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                L.of(context).tellUsAboutBaby,
+                style: Theme.of(ctx).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: nameController,
+                textCapitalization: TextCapitalization.words,
+                decoration: InputDecoration(
+                  labelText: L.of(context).babyName,
+                  prefixIcon: const Icon(Icons.child_care),
+                ),
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: stage == ParentingStage.newborn
+                        ? DateTime.now().subtract(const Duration(days: 90))
+                        : DateTime.now().subtract(const Duration(days: 540)),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                  );
+                  if (picked != null) setSheetState(() => birthDate = picked);
+                },
+                icon: const Icon(Icons.calendar_today),
+                label: Text(birthDate != null
+                    ? '${birthDate!.day}/${birthDate!.month}/${birthDate!.year}'
+                    : L.of(context).selectBirthDate),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final name = nameController.text.trim();
+                    if (name.isNotEmpty) {
+                      ref.read(userProfileProvider.notifier).updateBabyName(name);
+                    }
+                    if (birthDate != null) {
+                      ref.read(userProfileProvider.notifier).updateBabyBirthDate(birthDate!);
+                    }
+                    Navigator.of(ctx).pop();
+                    context.go('/');
+                  },
+                  child: Text(L.of(context).continueButton),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override

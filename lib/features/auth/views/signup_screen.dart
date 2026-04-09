@@ -43,7 +43,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     );
     if (!mounted) return;
     if (result.success) {
-      // Navigate to stage selection; router redirect will kick in naturally
+      // New user — needs to pick their stage
       context.go('/stage-select');
     } else {
       setState(() {

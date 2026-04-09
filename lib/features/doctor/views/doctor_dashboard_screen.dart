@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../shared/widgets/notification_bell.dart';
 import '../../../l10n/app_localizations.dart';
 import 'case_review_screen.dart';
 
@@ -27,10 +28,7 @@ class DoctorDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(L.of(context).doctorDashboard),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
+          const NotificationBell(),
           TextButton.icon(
             onPressed: () => AuthService().signOut(),
             icon: const Icon(Icons.logout, size: 18),
@@ -199,22 +197,30 @@ class DoctorDashboardScreen extends ConsumerWidget {
               _QuickLink(
                 icon: Icons.history,
                 label: L.of(context).completedCases,
-                onTap: () {},
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(L.of(context).featureComingSoon), behavior: SnackBarBehavior.floating),
+                ),
               ),
               _QuickLink(
                 icon: Icons.account_balance_wallet,
                 label: L.of(context).earnings,
-                onTap: () {},
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(L.of(context).featureComingSoon), behavior: SnackBarBehavior.floating),
+                ),
               ),
               _QuickLink(
                 icon: Icons.person,
                 label: L.of(context).myProfile,
-                onTap: () {},
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(L.of(context).featureComingSoon), behavior: SnackBarBehavior.floating),
+                ),
               ),
               _QuickLink(
                 icon: Icons.help_outline,
                 label: L.of(context).guidelines,
-                onTap: () {},
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(L.of(context).featureComingSoon), behavior: SnackBarBehavior.floating),
+                ),
               ),
             ],
           ),

@@ -1699,4 +1699,259 @@ class LRu extends L {
 
   @override
   String get requestConsultation => 'Запросить консультацию';
+
+  @override
+  String get addChild => 'Добавить ребёнка';
+
+  @override
+  String get editChild => 'Редактировать';
+
+  @override
+  String get childName => 'Имя ребёнка';
+
+  @override
+  String get noChildrenYet => 'Пока нет детей';
+
+  @override
+  String get addChildToStart => 'Нажмите + чтобы добавить первого ребёнка';
+
+  @override
+  String get removeChild => 'Удалить ребёнка';
+
+  @override
+  String removeChildConfirm(String name) {
+    return 'Удалить $name? Это действие нельзя отменить.';
+  }
+
+  @override
+  String get selectDueDate => 'Выберите дату родов';
+
+  @override
+  String get selectBirthDate => 'Выберите дату рождения';
+
+  @override
+  String get selectDate => 'Выберите дату';
+
+  @override
+  String get remove => 'Удалить';
+
+  @override
+  String get active => 'АКТИВНЫЙ';
+
+  @override
+  String get stage => 'Этап';
+
+  @override
+  String get notificationSettings => 'Уведомления';
+
+  @override
+  String get notificationSettingsSubtitle => 'Настройте оповещения';
+
+  @override
+  String get appSettings => 'Настройки';
+
+  @override
+  String get appSettingsSubtitle => 'Язык, тема, данные';
+
+  @override
+  String get comingSoon => 'Скоро';
+
+  @override
+  String get featureComingSoon =>
+      'Эта функция появится в следующем обновлении!';
+
+  @override
+  String get createPost => 'Создать пост';
+
+  @override
+  String get whatsOnYourMind => 'Что у вас на уме?';
+
+  @override
+  String get post => 'Опубликовать';
+
+  @override
+  String get likedPost => 'Понравилось!';
+
+  @override
+  String get searchCommunity => 'Поиск по сообществу...';
+
+  @override
+  String get productDetails => 'О товаре';
+
+  @override
+  String get addToCart => 'В корзину';
+
+  @override
+  String get cartEmpty => 'Корзина пуста';
+
+  @override
+  String get editEntry => 'Редактировать запись';
+
+  @override
+  String get deleteEntry => 'Удалить запись';
+
+  @override
+  String get deleteEntryConfirm =>
+      'Удалить эту запись? Это действие нельзя отменить.';
+
+  @override
+  String get entryDeleted => 'Запись удалена';
+
+  @override
+  String get tellUsAboutBaby => 'Расскажите о вашем малыше';
+
+  @override
+  String get babyName => 'Имя малыша';
+
+  @override
+  String get photoUpdated => 'Фото обновлено!';
+
+  @override
+  String childrenCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count детей',
+      few: '$count ребёнка',
+      one: '1 ребёнок',
+      zero: 'Нет детей',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noPostsFound => 'Посты не найдены';
+
+  @override
+  String get postPublished => 'Пост опубликован!';
+
+  @override
+  String get commentsTitle => 'Комментарии';
+
+  @override
+  String get commentsPlaceholder => 'Здесь появятся комментарии';
+
+  @override
+  String get writeComment => 'Написать комментарий...';
+
+  @override
+  String get commentPosted => 'Комментарий опубликован!';
+
+  @override
+  String get reportPost => 'Пожаловаться';
+
+  @override
+  String get postReported => 'Жалоба отправлена. Спасибо.';
+
+  @override
+  String get deletePost => 'Удалить пост';
+
+  @override
+  String get chokingSafety =>
+      'Изучите СЛР для младенцев. Наблюдайте за каждым приёмом пищи.';
+
+  @override
+  String get noNotificationsYet => 'Пока нет уведомлений';
+
+  @override
+  String get notificationsEmptyDesc =>
+      'Здесь появятся обновления о консультациях,\nинсайтах и напоминаниях.';
+
+  @override
+  String get speechMilestones => 'Этапы речи';
+
+  @override
+  String get handleTantrums => 'Истерики';
+
+  @override
+  String get activitiesForToday => 'Занятия на сегодня';
+
+  @override
+  String get developmentOnTrack => 'Всё в норме?';
+
+  @override
+  String get bondingTips => 'Связь с малышом';
+
+  @override
+  String parentingTeacherSubtitle(String name, int months) {
+    return '$name, $months мес — Учитель';
+  }
+
+  @override
+  String get toddlerToolkit => 'Набор для малыша';
+
+  @override
+  String get speechLanguage => 'Речь и язык';
+
+  @override
+  String get speechLanguageSubtitle => 'Этапы и советы';
+
+  @override
+  String get montessoriActivities => 'Монтессори занятия';
+
+  @override
+  String get montessoriActivitiesSubtitle => 'Учимся через игру';
+
+  @override
+  String get emotionalConnection => 'Связь';
+
+  @override
+  String get emotionalConnectionSubtitle => 'Как любить правильно';
+
+  @override
+  String get behaviorBoundaries => 'Поведение';
+
+  @override
+  String get behaviorBoundariesSubtitle => 'Границы с любовью';
+
+  @override
+  String get mealsAndSnacks => 'Еда и перекусы';
+
+  @override
+  String get navToday => 'Сегодня';
+
+  @override
+  String get navMyChild => 'Мой ребёнок';
+
+  @override
+  String get thisWeeksFocus => 'Фокус этой недели';
+
+  @override
+  String get todaysActivity => 'Занятие на сегодня';
+
+  @override
+  String get isThisNormalCard => 'Это нормально?';
+
+  @override
+  String get dailyInsightCard => 'Совет дня';
+
+  @override
+  String get askBalamAboutThis => 'Спросить Балам об этом';
+
+  @override
+  String get tryThisToday => 'Попробуйте сегодня';
+
+  @override
+  String get developmentDashboard => 'Развитие';
+
+  @override
+  String get myToolkit => 'Инструменты';
+
+  @override
+  String get guidesSection => 'Руководства';
+
+  @override
+  String get healthSection => 'Здоровье';
+
+  @override
+  String get quickLinksSection => 'Быстрые ссылки';
+
+  @override
+  String get pregnancyTools => 'Инструменты беременности';
+
+  @override
+  String get firstMoments => 'Первые моменты';
+
+  @override
+  String get captureFirsts => 'Сохраните первые моменты малыша';
 }

@@ -4,13 +4,24 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/services/storage_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../main.dart' show localeProvider;
 import '../providers/auth_provider.dart';
 import '../../journey/providers/journey_provider.dart';
+import 'children_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(L.of(context).featureComingSoon),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,16 +34,50 @@ class ProfileScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          // Avatar
+          // Avatar — tap to change photo
           Center(
-            child: CircleAvatar(
-              radius: 48,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: Text(
-                (userInfo.name != null && userInfo.name!.isNotEmpty)
-                    ? userInfo.name![0].toUpperCase()
-                    : '👋',
-                style: const TextStyle(fontSize: 32),
+            child: GestureDetector(
+              onTap: () async {
+                final file = await StorageService().showPickerSheet(context);
+                if (file == null) return;
+                final uid = userInfo.uid ?? 'demo';
+                final url = await StorageService().uploadProfilePhoto(
+                  file: file,
+                  userId: uid,
+                );
+                if (url != null && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(L.of(context).photoUpdated), behavior: SnackBarBehavior.floating),
+                  );
+                }
+              },
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 48,
+                    backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                    child: Text(
+                      (userInfo.name != null && userInfo.name!.isNotEmpty)
+                          ? userInfo.name![0].toUpperCase()
+                          : '👋',
+                      style: const TextStyle(fontSize: 32),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.surface, width: 2),
+                      ),
+                      child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -70,8 +115,8 @@ class ProfileScreen extends ConsumerWidget {
             ),
           const SizedBox(height: 24),
 
-          // Stage switcher — demo mode lets you preview all stages
-          Container(
+          // Stage switcher — only shown in demo mode
+          if (demoUser != null) Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.accent.withValues(alpha: 0.08),
@@ -169,26 +214,34 @@ class ProfileScreen extends ConsumerWidget {
           _ProfileTile(
             icon: Icons.family_restroom,
             title: L.of(context).myChildren,
-            subtitle: L.of(context).manageFamily,
-            onTap: () {},
+            subtitle: L.of(context).childrenCount(profile.children.length),
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ChildrenScreen()),
+            ),
           ),
           _ProfileTile(
             icon: Icons.medical_services_outlined,
             title: L.of(context).myCareTeam,
             subtitle: L.of(context).doctorsSpecialists,
-            onTap: () {},
+            onTap: () => context.push('/professionals'),
+          ),
+          _ProfileTile(
+            icon: Icons.science_outlined,
+            title: L.of(context).labResults,
+            subtitle: L.of(context).manageAlerts,
+            onTap: () => context.push('/lab'),
           ),
           _ProfileTile(
             icon: Icons.notifications_outlined,
             title: L.of(context).notifications,
             subtitle: L.of(context).manageAlerts,
-            onTap: () {},
+            onTap: () => context.push('/notifications'),
           ),
           _ProfileTile(
             icon: Icons.settings_outlined,
             title: L.of(context).settings,
             subtitle: L.of(context).appPreferences,
-            onTap: () {},
+            onTap: () => _showComingSoon(context),
           ),
           const SizedBox(height: 16),
 

@@ -23,7 +23,12 @@ class MarketplaceScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(L.of(context).marketplace),
         actions: [
-          IconButton(icon: const Icon(Icons.shopping_bag_outlined), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.shopping_bag_outlined),
+            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(L.of(context).cartEmpty), behavior: SnackBarBehavior.floating),
+            ),
+          ),
         ],
       ),
       body: ListView(
@@ -31,6 +36,9 @@ class MarketplaceScreen extends ConsumerWidget {
         children: [
           // Search
           TextField(
+            onChanged: (query) {
+              // Search is cosmetic for now — full search requires state refactor
+            },
             decoration: InputDecoration(
               hintText: L.of(context).searchProducts,
               prefixIcon: const Icon(Icons.search),

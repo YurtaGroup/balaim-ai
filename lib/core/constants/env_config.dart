@@ -7,10 +7,10 @@
 class EnvConfig {
   EnvConfig._();
 
-  // Cloud Functions base URL (update after deploying)
+  // Cloud Functions base URL
   static const cloudFunctionsBaseUrl = String.fromEnvironment(
     'CLOUD_FUNCTIONS_URL',
-    defaultValue: 'http://localhost:5001/balam-ai/us-central1',
+    defaultValue: 'https://us-central1-balam-ai-2a037.cloudfunctions.net',
   );
 
   // Claude API is called server-side via Cloud Functions (never from client)

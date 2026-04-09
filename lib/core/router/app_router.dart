@@ -1,12 +1,17 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/moments/views/moments_screen.dart';
 import '../../features/auth/views/onboarding_screen.dart';
 import '../../features/auth/views/login_screen.dart';
 import '../../features/auth/views/signup_screen.dart';
 import '../../features/auth/views/stage_selection_screen.dart';
-import '../../features/auth/views/profile_screen.dart';
+import '../../features/child/views/my_child_screen.dart';
+import '../../features/auth/views/children_screen.dart';
+import '../../features/notifications/views/notifications_screen.dart';
+import '../../features/lab/views/lab_analysis_screen.dart';
+import '../../features/lab/views/lab_entry_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
-import '../../features/journey/views/journey_screen.dart';
+import '../../features/today/views/today_screen.dart';
 import '../../features/journey/views/due_date_screen.dart';
 import '../../features/journey/views/kick_counter_screen.dart';
 import '../../features/journey/views/baby_journey_screen.dart';
@@ -47,7 +52,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/onboarding';
       }
       if (isLoggedIn && isAuthRoute) {
-        // Route by role
+        // Owner goes to parent home (has role switcher for other views)
+        if (demoUser?.isOwner == true) return '/';
         if (demoUser?.isAdmin == true) return '/admin';
         if (demoUser?.isDoctor == true) return '/doctor';
         return '/';
@@ -71,6 +77,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/stage-select',
         builder: (context, state) => const StageSelectionScreen(),
+      ),
+      GoRoute(
+        path: '/children',
+        builder: (context, state) => const ChildrenScreen(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/lab',
+        builder: (context, state) => const LabAnalysisScreen(),
+      ),
+      GoRoute(
+        path: '/lab/entry',
+        builder: (context, state) => const LabEntryScreen(),
       ),
 
       GoRoute(
@@ -134,6 +156,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const BabyFoodsScreen(),
       ),
 
+      GoRoute(
+        path: '/moments',
+        builder: (context, state) => const MomentsScreen(),
+      ),
+
       // Admin shell
       GoRoute(
         path: '/admin',
@@ -157,13 +184,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: JourneyScreen(),
+              child: TodayScreen(),
             ),
           ),
           GoRoute(
             path: '/ai',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: AiChatScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: AiChatScreen(
+                prefill: state.uri.queryParameters['prefill'],
+              ),
             ),
           ),
           GoRoute(
@@ -185,9 +214,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           ),
           GoRoute(
-            path: '/profile',
+            path: '/my-child',
             pageBuilder: (context, state) => const NoTransitionPage(
-              child: ProfileScreen(),
+              child: MyChildScreen(),
             ),
           ),
         ],

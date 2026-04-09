@@ -1699,4 +1699,257 @@ class LKy extends L {
 
   @override
   String get requestConsultation => 'Консультация сурамжылоо';
+
+  @override
+  String get addChild => 'Бала кошуу';
+
+  @override
+  String get editChild => 'Баланы оңдоо';
+
+  @override
+  String get childName => 'Баланын аты';
+
+  @override
+  String get noChildrenYet => 'Азырынча балдар жок';
+
+  @override
+  String get addChildToStart => 'Биринчи баланы кошуу үчүн + басыңыз';
+
+  @override
+  String get removeChild => 'Баланы алып салуу';
+
+  @override
+  String removeChildConfirm(String name) {
+    return '$name алып салынсынбы? Бул аракетти кайтаруу мүмкүн эмес.';
+  }
+
+  @override
+  String get selectDueDate => 'Төрөт күнүн тандаңыз';
+
+  @override
+  String get selectBirthDate => 'Туулган күндү тандаңыз';
+
+  @override
+  String get selectDate => 'Күндү тандаңыз';
+
+  @override
+  String get remove => 'Алып салуу';
+
+  @override
+  String get active => 'АКТИВДҮҮ';
+
+  @override
+  String get stage => 'Этап';
+
+  @override
+  String get notificationSettings => 'Билдирмелер';
+
+  @override
+  String get notificationSettingsSubtitle => 'Эскертүүлөрдү тууралоо';
+
+  @override
+  String get appSettings => 'Жөндөөлөр';
+
+  @override
+  String get appSettingsSubtitle => 'Тил, тема, маалыматтар';
+
+  @override
+  String get comingSoon => 'Жакында';
+
+  @override
+  String get featureComingSoon => 'Бул функция кийинки жаңыртууда пайда болот!';
+
+  @override
+  String get createPost => 'Пост жазуу';
+
+  @override
+  String get whatsOnYourMind => 'Эмнени ойлоп жатасыз?';
+
+  @override
+  String get post => 'Жарыялоо';
+
+  @override
+  String get likedPost => 'Жакты!';
+
+  @override
+  String get searchCommunity => 'Коомдоштуктан издөө...';
+
+  @override
+  String get productDetails => 'Товар жөнүндө';
+
+  @override
+  String get addToCart => 'Себетке кошуу';
+
+  @override
+  String get cartEmpty => 'Себет бош';
+
+  @override
+  String get editEntry => 'Жазууну оңдоо';
+
+  @override
+  String get deleteEntry => 'Жазууну өчүрүү';
+
+  @override
+  String get deleteEntryConfirm =>
+      'Бул жазуу өчүрүлсүнбү? Кайра калыбына келтирүүгө болбойт.';
+
+  @override
+  String get entryDeleted => 'Жазуу өчүрүлдү';
+
+  @override
+  String get tellUsAboutBaby => 'Балаңыз жөнүндө айтып бериңиз';
+
+  @override
+  String get babyName => 'Баланын аты';
+
+  @override
+  String get photoUpdated => 'Сүрөт жаңыланды!';
+
+  @override
+  String childrenCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count бала',
+      one: '1 бала',
+      zero: 'Балдар жок',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noPostsFound => 'Посттор табылган жок';
+
+  @override
+  String get postPublished => 'Пост жарыяланды!';
+
+  @override
+  String get commentsTitle => 'Комментарийлер';
+
+  @override
+  String get commentsPlaceholder => 'Комментарийлер бул жерде пайда болот';
+
+  @override
+  String get writeComment => 'Комментарий жазуу...';
+
+  @override
+  String get commentPosted => 'Комментарий жарыяланды!';
+
+  @override
+  String get reportPost => 'Даттануу';
+
+  @override
+  String get postReported => 'Даттануу жөнөтүлдү. Рахмат.';
+
+  @override
+  String get deletePost => 'Постту өчүрүү';
+
+  @override
+  String get chokingSafety =>
+      'Ымыркай/бала үчүн ЖКА үйрөнүңүз. Ар бир тамактанууну көзөмөлдөңүз.';
+
+  @override
+  String get noNotificationsYet => 'Азырынча билдирмелер жок';
+
+  @override
+  String get notificationsEmptyDesc =>
+      'Бул жерде консультациялар,\nинсайттар жана эскертүүлөр жөнүндө жаңыртуулар пайда болот.';
+
+  @override
+  String get speechMilestones => 'Сүйлөө этаптары';
+
+  @override
+  String get handleTantrums => 'Каприздер';
+
+  @override
+  String get activitiesForToday => 'Бүгүнкү иш-чаралар';
+
+  @override
+  String get developmentOnTrack => 'Баары жакшыбы?';
+
+  @override
+  String get bondingTips => 'Байланыш кеңештери';
+
+  @override
+  String parentingTeacherSubtitle(String name, int months) {
+    return '$name, $months ай — Мугалим';
+  }
+
+  @override
+  String get toddlerToolkit => 'Бөбөк жыйнагы';
+
+  @override
+  String get speechLanguage => 'Сүйлөө жана тил';
+
+  @override
+  String get speechLanguageSubtitle => 'Этаптар жана кеңештер';
+
+  @override
+  String get montessoriActivities => 'Монтессори иш-чаралар';
+
+  @override
+  String get montessoriActivitiesSubtitle => 'Оюн аркылуу үйрөнүү';
+
+  @override
+  String get emotionalConnection => 'Байланыш';
+
+  @override
+  String get emotionalConnectionSubtitle => 'Кантип сүйүү керек';
+
+  @override
+  String get behaviorBoundaries => 'Жүрүм-турум';
+
+  @override
+  String get behaviorBoundariesSubtitle => 'Сүйүү менен чектер';
+
+  @override
+  String get mealsAndSnacks => 'Тамак жана тамак-аш';
+
+  @override
+  String get navToday => 'Бүгүн';
+
+  @override
+  String get navMyChild => 'Балам';
+
+  @override
+  String get thisWeeksFocus => 'Бул жуманын фокусу';
+
+  @override
+  String get todaysActivity => 'Бүгүнкү иш-чара';
+
+  @override
+  String get isThisNormalCard => 'Бул нормалдуубу?';
+
+  @override
+  String get dailyInsightCard => 'Күндүн кеңеши';
+
+  @override
+  String get askBalamAboutThis => 'Балам\'дан сураңыз';
+
+  @override
+  String get tryThisToday => 'Бүгүн аракет кылыңыз';
+
+  @override
+  String get developmentDashboard => 'Өнүгүү';
+
+  @override
+  String get myToolkit => 'Куралдар';
+
+  @override
+  String get guidesSection => 'Колдонмолор';
+
+  @override
+  String get healthSection => 'Ден соолук';
+
+  @override
+  String get quickLinksSection => 'Тез шилтемелер';
+
+  @override
+  String get pregnancyTools => 'Кош бойлуулук куралдары';
+
+  @override
+  String get firstMoments => 'Биринчи учурлар';
+
+  @override
+  String get captureFirsts => 'Бөбөгүңүздүн биринчилерин сактаңыз';
 }

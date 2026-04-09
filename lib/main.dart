@@ -21,10 +21,10 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     isFirebaseInitialized = true;
-    debugPrint('✅ Firebase initialized — running in LIVE mode');
+    debugPrint('[Balam] Firebase initialized — running in LIVE mode');
   } catch (e) {
     isFirebaseInitialized = false;
-    debugPrint('⚠️ Firebase not configured — running in DEMO mode');
+    debugPrint('[Balam] Firebase not configured — running in DEMO mode');
   }
 
   runApp(const ProviderScope(child: BalamApp()));

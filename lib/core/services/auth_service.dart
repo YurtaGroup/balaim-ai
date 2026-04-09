@@ -1,9 +1,15 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import '../../main.dart' show isFirebaseInitialized;
 import 'demo_auth_service.dart';
 import 'analytics_service.dart';
+import 'notification_service.dart';
+import 'payment_service.dart';
 
 /// Unified auth service — Firebase when configured, demo fallback otherwise.
 /// SINGLETON: ensures auth state is consistent across the entire app.
@@ -133,10 +139,142 @@ class AuthService {
   // ==========================================================
 
   Future<void> signOut() async {
+    final uid = currentUid;
+    if (uid != null) {
+      await NotificationService().clearToken(uid);
+    }
+    await PaymentService().logOut();
     if (_useFirebase) {
       await fb.FirebaseAuth.instance.signOut();
     } else {
       await demo.signOut();
+    }
+  }
+
+  // ==========================================================
+  // GOOGLE SIGN-IN
+  // ==========================================================
+
+  Future<AuthResult> signInWithGoogle() async {
+    try {
+      if (!_useFirebase) {
+        final user = await demo.signIn('parent@balam.ai', 'demo123');
+        AnalyticsService().logLogin(method: 'google_demo');
+        return AuthResult.success(user.uid);
+      }
+
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      final googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        return AuthResult.failure('Sign-in cancelled.');
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final credential = fb.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCred = await fb.FirebaseAuth.instance.signInWithCredential(credential);
+
+      // Create Firestore profile if new user
+      if (userCred.additionalUserInfo?.isNewUser == true && userCred.user != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCred.user!.uid)
+            .set({
+          'uid': userCred.user!.uid,
+          'email': userCred.user!.email,
+          'displayName': userCred.user!.displayName,
+          'photoUrl': userCred.user!.photoURL,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      AnalyticsService().logLogin(method: 'google');
+      return AuthResult.success(userCred.user!.uid);
+    } on fb.FirebaseAuthException catch (e) {
+      return AuthResult.failure(_friendlyError(e));
+    } on PlatformException catch (e) {
+      debugPrint('[Auth] Google PlatformException: ${e.code} ${e.message}');
+      if (e.code == 'sign_in_canceled') {
+        return AuthResult.failure('Sign-in cancelled.');
+      }
+      return AuthResult.failure('Google sign-in is not available. Please use email sign-in.');
+    } catch (e) {
+      debugPrint('[Auth] Google sign-in error: $e');
+      return AuthResult.failure('Google sign-in failed. Please use email sign-in.');
+    }
+  }
+
+  // ==========================================================
+  // APPLE SIGN-IN
+  // ==========================================================
+
+  Future<AuthResult> signInWithApple() async {
+    try {
+      if (!_useFirebase) {
+        final user = await demo.signIn('parent@balam.ai', 'demo123');
+        AnalyticsService().logLogin(method: 'apple_demo');
+        return AuthResult.success(user.uid);
+      }
+
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final oauthCredential = fb.OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      final userCred = await fb.FirebaseAuth.instance.signInWithCredential(oauthCredential);
+
+      // Apple only provides name on first sign-in
+      if (userCred.user != null) {
+        final appleDisplayName = [
+          appleCredential.givenName,
+          appleCredential.familyName,
+        ].where((s) => s != null && s.isNotEmpty).join(' ');
+
+        if (appleDisplayName.isNotEmpty && (userCred.user!.displayName == null || userCred.user!.displayName!.isEmpty)) {
+          await userCred.user!.updateDisplayName(appleDisplayName);
+        }
+
+        if (userCred.additionalUserInfo?.isNewUser == true) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userCred.user!.uid)
+              .set({
+            'uid': userCred.user!.uid,
+            'email': userCred.user!.email ?? appleCredential.email,
+            'displayName': appleDisplayName.isNotEmpty ? appleDisplayName : 'Parent',
+            'createdAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      AnalyticsService().logLogin(method: 'apple');
+      return AuthResult.success(userCred.user!.uid);
+    } on SignInWithAppleAuthorizationException catch (e) {
+      debugPrint('[Auth] Apple auth exception: ${e.code} ${e.message}');
+      if (e.code == AuthorizationErrorCode.canceled) {
+        return AuthResult.failure('Sign-in cancelled.');
+      }
+      return AuthResult.failure('Apple sign-in failed. Please use email sign-in.');
+    } on fb.FirebaseAuthException catch (e) {
+      return AuthResult.failure(_friendlyError(e));
+    } on PlatformException catch (e) {
+      debugPrint('[Auth] Apple PlatformException: ${e.code} ${e.message}');
+      return AuthResult.failure('Apple sign-in is not available. Please use email sign-in.');
+    } catch (e) {
+      debugPrint('[Auth] Apple sign-in error: $e');
+      return AuthResult.failure('Apple sign-in failed. Please use email sign-in.');
     }
   }
 

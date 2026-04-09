@@ -57,8 +57,8 @@ export const dailyInsight = functions
       );
     }
 
-    const { week, stage } = data;
-    const insight = await generateDailyInsight(week, stage);
+    const { week, stage, ageMonths, babyName } = data;
+    const insight = await generateDailyInsight(week, stage, ageMonths, babyName);
 
     // Save to Firestore
     await admin.firestore().collection("insights").add({
@@ -90,9 +90,20 @@ export const scheduledDailyInsights = functions.pubsub
 
     for (const doc of usersSnapshot.docs) {
       const userData = doc.data();
+      // Compute ageMonths from babyBirthDate if available
+      let ageMonths: number | undefined;
+      if (userData.babyBirthDate) {
+        const birth = new Date(userData.babyBirthDate);
+        const now = new Date();
+        ageMonths = Math.floor(
+          (now.getTime() - birth.getTime()) / (30.44 * 24 * 60 * 60 * 1000)
+        );
+      }
       const insight = await generateDailyInsight(
         userData.currentWeek || 24,
-        userData.stage || "pregnant"
+        userData.stage || "pregnant",
+        ageMonths,
+        userData.babyName
       );
 
       const insightRef = admin.firestore().collection("insights").doc();

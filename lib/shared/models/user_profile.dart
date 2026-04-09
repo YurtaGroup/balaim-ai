@@ -1,4 +1,5 @@
 import '../../core/constants/app_constants.dart';
+import 'child_model.dart';
 
 class UserProfile {
   final String uid;
@@ -12,6 +13,8 @@ class UserProfile {
   final String? partnerName;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final List<Child> children;
+  final String? selectedChildId;
 
   const UserProfile({
     required this.uid,
@@ -25,7 +28,19 @@ class UserProfile {
     this.partnerName,
     required this.createdAt,
     required this.updatedAt,
+    this.children = const [],
+    this.selectedChildId,
   });
+
+  /// The currently selected child, or the first child if none selected
+  Child? get selectedChild {
+    if (children.isEmpty) return null;
+    if (selectedChildId != null) {
+      final match = children.where((c) => c.id == selectedChildId);
+      if (match.isNotEmpty) return match.first;
+    }
+    return children.first;
+  }
 
   /// Current pregnancy week (1-42) based on due date
   int? get currentWeek {
@@ -79,6 +94,8 @@ class UserProfile {
       'partnerName': partnerName,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': DateTime.now().toIso8601String(),
+      'children': children.map((c) => c.toFirestore()).toList(),
+      'selectedChildId': selectedChildId,
     };
   }
 
@@ -100,6 +117,11 @@ class UserProfile {
       partnerName: data['partnerName'] as String?,
       createdAt: DateTime.parse(data['createdAt']),
       updatedAt: DateTime.parse(data['updatedAt']),
+      children: (data['children'] as List<dynamic>?)
+              ?.map((c) => Child.fromFirestore(c as Map<String, dynamic>))
+              .toList() ??
+          [],
+      selectedChildId: data['selectedChildId'] as String?,
     );
   }
 
@@ -111,6 +133,8 @@ class UserProfile {
     DateTime? babyBirthDate,
     String? babyName,
     String? partnerName,
+    List<Child>? children,
+    String? selectedChildId,
   }) {
     return UserProfile(
       uid: uid,
@@ -124,6 +148,8 @@ class UserProfile {
       partnerName: partnerName ?? this.partnerName,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
+      children: children ?? this.children,
+      selectedChildId: selectedChildId ?? this.selectedChildId,
     );
   }
 }

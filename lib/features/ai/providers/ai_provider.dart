@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/app_constants.dart' show ParentingStage;
+import '../../journey/providers/journey_provider.dart';
 import '../services/ai_service.dart';
 
 class ChatMessage {
@@ -26,19 +28,50 @@ class ChatMessagesNotifier extends StateNotifier<List<ChatMessage>> {
   final Ref _ref;
 
   ChatMessagesNotifier(this._ref)
-      : super([
-          ChatMessage(
-            id: 'welcome',
-            isAi: true,
-            text:
-                "Hi! I'm Balam, your AI parenting companion 🐆\n\n"
-                "I know you're on an amazing journey right now. "
-                "Ask me anything about your pregnancy, symptoms, nutrition, "
-                "baby development, or just vent — I'm here for you!\n\n"
-                "Try tapping one of the suggestions below to get started.",
-            timestamp: DateTime.now(),
-          ),
-        ]);
+      : super([]) {
+    _initWelcome();
+  }
+
+  void _initWelcome() {
+    final profile = _ref.read(userProfileProvider);
+    final stage = profile.stage;
+
+    final name = profile.babyName ?? 'your little one';
+    final age = profile.babyAgeMonths ?? 0;
+
+    String welcomeText;
+    if (stage == ParentingStage.toddler) {
+      welcomeText =
+          "Hi! I'm Balam, your Montessori parenting teacher 🐆\n\n"
+          "$name is $age months — what an amazing age! They're becoming their own little person "
+          "with big feelings, big ideas, and a need for independence.\n\n"
+          "Ask me about speech, tantrums, Montessori activities, boundaries, "
+          "or just \"am I doing this right?\" — I'm here to teach and reassure.";
+    } else if (stage == ParentingStage.newborn) {
+      welcomeText =
+          "Hi! I'm Balam, your parenting guide 🐆\n\n"
+          "$name is $age months old. These early months are intense — feeding, sleep, "
+          "bonding, and wondering if everything is normal. You're not alone.\n\n"
+          "Ask me about feeding schedules, sleep patterns, milestones, tummy time, "
+          "or anything that's worrying you. No question is too small.";
+    } else {
+      welcomeText =
+          "Hi! I'm Balam, your AI parenting companion 🐆\n\n"
+          "I know you're on an amazing journey right now. "
+          "Ask me anything about your pregnancy, symptoms, nutrition, "
+          "baby development, or just vent — I'm here for you!\n\n"
+          "Try tapping one of the suggestions below to get started.";
+    }
+
+    state = [
+      ChatMessage(
+        id: 'welcome',
+        isAi: true,
+        text: welcomeText,
+        timestamp: DateTime.now(),
+      ),
+    ];
+  }
 
   Future<void> sendMessage(String text) async {
     // Add user message

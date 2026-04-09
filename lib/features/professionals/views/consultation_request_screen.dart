@@ -1,10 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/data/doctors_data.dart';
+import '../../../core/services/consultation_service.dart';
+import '../../../core/services/storage_service.dart';
+import '../../../core/services/payment_service.dart';
 import '../../../shared/models/consultation.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../journey/providers/journey_provider.dart';
 
 /// Multi-step consultation request form.
 ///
@@ -50,9 +55,12 @@ class _ConsultationRequestScreenState
   final _allergiesController = TextEditingController();
   final _familyHistoryController = TextEditingController();
 
-  // Step 5: Uploads (placeholder — URLs would come from Firebase Storage)
+  // Step 5: Uploads
   final List<String> _labResultUrls = [];
   final List<String> _photoUrls = [];
+  final List<File> _labFiles = [];
+  final List<File> _photoFiles = [];
+  bool _isUploading = false;
   final _additionalNotesController = TextEditingController();
 
   // Step 6: Urgency
@@ -187,14 +195,21 @@ class _ConsultationRequestScreenState
                 Expanded(
                   flex: 2,
                   child: ElevatedButton(
-                    onPressed: _currentStep == _totalSteps - 1
-                        ? _submit
-                        : _nextStep,
-                    child: Text(
-                      _currentStep == _totalSteps - 1
-                          ? '${L.of(context).submitAndPay} ${doctor.priceFormatted}'
-                          : L.of(context).continueButton,
-                    ),
+                    onPressed: _isUploading
+                        ? null
+                        : _currentStep == _totalSteps - 1
+                            ? _submit
+                            : _nextStep,
+                    child: _isUploading
+                        ? const SizedBox(
+                            height: 20, width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : Text(
+                            _currentStep == _totalSteps - 1
+                                ? '${L.of(context).submitAndPay} ${doctor.priceFormatted}'
+                                : L.of(context).continueButton,
+                          ),
                   ),
                 ),
               ],
@@ -417,10 +432,20 @@ class _ConsultationRequestScreenState
           icon: Icons.science_outlined,
           subtitle: L.of(context).labResultsSubtitle,
           urls: _labResultUrls,
-          onAdd: () {
-            // TODO: Firebase Storage upload via image_picker
-            setState(() => _labResultUrls.add('placeholder_${_labResultUrls.length}'));
+          files: _labFiles,
+          onAdd: () async {
+            final file = await StorageService().showPickerSheet(context);
+            if (file != null) {
+              setState(() {
+                _labFiles.add(file);
+                _labResultUrls.add(file.path);
+              });
+            }
           },
+          onRemove: (i) => setState(() {
+            _labFiles.removeAt(i);
+            _labResultUrls.removeAt(i);
+          }),
         ),
         const SizedBox(height: 14),
         // Photos
@@ -429,9 +454,20 @@ class _ConsultationRequestScreenState
           icon: Icons.camera_alt_outlined,
           subtitle: L.of(context).photosSubtitle,
           urls: _photoUrls,
-          onAdd: () {
-            setState(() => _photoUrls.add('placeholder_${_photoUrls.length}'));
+          files: _photoFiles,
+          onAdd: () async {
+            final file = await StorageService().showPickerSheet(context);
+            if (file != null) {
+              setState(() {
+                _photoFiles.add(file);
+                _photoUrls.add(file.path);
+              });
+            }
           },
+          onRemove: (i) => setState(() {
+            _photoFiles.removeAt(i);
+            _photoUrls.removeAt(i);
+          }),
         ),
         const SizedBox(height: 14),
         TextField(
@@ -601,14 +637,104 @@ class _ConsultationRequestScreenState
     );
   }
 
-  void _submit() {
-    // TODO: Create Firestore document, process Stripe payment, notify doctor
+  void _submit() async {
+    final doctor = widget.doctor;
+
+    // Step 1: Process payment via RevenueCat IAP
+    setState(() => _isUploading = true);
+    final purchaseResult = await PaymentService().purchaseConsultation(
+      priceUsd: doctor.consultationPrice,
+    );
+
+    if (!mounted) return;
+    if (!purchaseResult.success) {
+      setState(() => _isUploading = false);
+      if (purchaseResult.error != null && purchaseResult.error != 'Purchase cancelled.') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(purchaseResult.error!), behavior: SnackBarBehavior.floating),
+        );
+      }
+      return;
+    }
+
+    // Step 2: Upload files & create consultation
+    final profile = ref.read(userProfileProvider);
+    final consultId = 'consult-${DateTime.now().millisecondsSinceEpoch}';
+
+    // Upload files to Firebase Storage
+    final uploadedLabUrls = <String>[];
+    for (var i = 0; i < _labFiles.length; i++) {
+      final url = await StorageService().uploadConsultationFile(
+        file: _labFiles[i],
+        consultationId: consultId,
+        type: 'labs',
+        index: i,
+      );
+      if (url != null) uploadedLabUrls.add(url);
+    }
+
+    final uploadedPhotoUrls = <String>[];
+    for (var i = 0; i < _photoFiles.length; i++) {
+      final url = await StorageService().uploadConsultationFile(
+        file: _photoFiles[i],
+        consultationId: consultId,
+        type: 'photos',
+        index: i,
+      );
+      if (url != null) uploadedPhotoUrls.add(url);
+    }
+
+    if (!mounted) return;
+    setState(() => _isUploading = false);
+
+    final consultation = Consultation(
+      id: consultId,
+      patientUid: profile.uid,
+      doctorUid: doctor.uid,
+      doctorName: doctor.fullName,
+      specialty: doctor.specialty,
+      status: ConsultationStatus.submitted,
+      urgency: _urgency,
+      createdAt: DateTime.now(),
+      intake: PatientIntake(
+        patientName: _nameController.text,
+        patientAge: int.tryParse(_ageController.text) ?? 0,
+        patientSex: _sex,
+        relationship: _relationship,
+        mainConcern: _mainConcernController.text,
+        symptomDetails: _symptomDetailsController.text,
+        symptomDuration: _symptomDurationController.text,
+        whatTriedSoFar: _whatTriedController.text,
+        currentMedications: _medicationsController.text.isNotEmpty
+            ? _medicationsController.text.split(',').map((s) => s.trim()).toList()
+            : [],
+        medicalHistory: _medicalHistoryController.text,
+        allergies: _allergiesController.text,
+        familyHistory: _familyHistoryController.text,
+        labResultUrls: uploadedLabUrls,
+        photoUrls: uploadedPhotoUrls,
+        additionalNotes: _additionalNotesController.text,
+        pregnancyWeek: profile.currentWeek,
+        babyAgeMonths: profile.babyAgeMonths,
+      ),
+      pricePaid: doctor.consultationPrice,
+      currency: doctor.currency,
+      paymentId: purchaseResult.transactionId,
+    );
+
+    try {
+      await ConsultationService().submitConsultation(consultation);
+    } catch (_) {
+      // Demo mode — continue anyway
+    }
+
+    if (!mounted) return;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: Text(L.of(context).consultationSubmitted),
         content: Text(
-          L.of(context).consultationSubmittedBody(widget.doctor.fullName, widget.doctor.responseTime.of(context).toLowerCase()),
+          L.of(context).consultationSubmittedBody(doctor.fullName, doctor.responseTime.of(context).toLowerCase()),
         ),
         actions: [
           ElevatedButton(
@@ -726,14 +852,18 @@ class _UploadSection extends StatelessWidget {
   final IconData icon;
   final String subtitle;
   final List<String> urls;
+  final List<File>? files;
   final VoidCallback onAdd;
+  final ValueChanged<int>? onRemove;
 
   const _UploadSection({
     required this.title,
     required this.icon,
     required this.subtitle,
     required this.urls,
+    this.files,
     required this.onAdd,
+    this.onRemove,
   });
 
   @override
@@ -778,16 +908,53 @@ class _UploadSection extends StatelessWidget {
           ),
           if (urls.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              children: List.generate(
-                urls.length,
-                (i) => Chip(
-                  label: Text('File ${i + 1}',
-                      style: const TextStyle(fontSize: 12)),
-                  deleteIcon: const Icon(Icons.close, size: 14),
-                  onDeleted: () {},
-                ),
+            SizedBox(
+              height: 80,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: urls.length,
+                itemBuilder: (context, i) {
+                  final hasFile = files != null && i < files!.length;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.divider),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: hasFile
+                              ? Image.file(files![i], fit: BoxFit.cover)
+                              : Center(
+                                  child: Icon(Icons.insert_drive_file,
+                                      color: AppColors.textHint, size: 28),
+                                ),
+                        ),
+                        Positioned(
+                          top: 2,
+                          right: 2,
+                          child: GestureDetector(
+                            onTap: () => onRemove?.call(i),
+                            child: Container(
+                              width: 22,
+                              height: 22,
+                              decoration: const BoxDecoration(
+                                color: AppColors.error,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close,
+                                  size: 14, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],

@@ -22,4 +22,18 @@ class DiaperEntry {
     required this.timestamp,
     this.note,
   });
+
+  Map<String, dynamic> toFirestore() => {
+    'id': id,
+    'type': type.name,
+    'timestamp': timestamp.toIso8601String(),
+    'note': note,
+  };
+
+  factory DiaperEntry.fromFirestore(Map<String, dynamic> data) => DiaperEntry(
+    id: data['id'] as String,
+    type: DiaperType.values.firstWhere((t) => t.name == data['type']),
+    timestamp: DateTime.parse(data['timestamp']),
+    note: data['note'] as String?,
+  );
 }
