@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,13 +6,14 @@ import '../../core/theme/app_colors.dart';
 import '../../core/services/demo_auth_service.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
-/// Floating role-switcher chip — only visible for the app owner.
-/// Lets the owner view the app as any role (Parent, Admin, Doctor).
+/// Floating role-switcher chip — only visible to the app owner in debug builds.
+/// Release builds hide it entirely so screenshots and real users never see it.
 class RoleSwitcher extends ConsumerWidget {
   const RoleSwitcher({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    if (!kDebugMode) return const SizedBox.shrink();
     final isOwner = ref.watch(isOwnerProvider);
     if (!isOwner) return const SizedBox.shrink();
 

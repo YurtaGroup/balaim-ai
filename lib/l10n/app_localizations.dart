@@ -3758,6 +3758,162 @@ abstract class L {
   /// In en, this message translates to:
   /// **'Capture your baby\'s firsts'**
   String get captureFirsts;
+
+  /// No description provided for @momentsCaptureHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture a Moment'**
+  String get momentsCaptureHeading;
+
+  /// No description provided for @momentsAddPhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo (optional)'**
+  String get momentsAddPhotoHint;
+
+  /// No description provided for @momentsKindQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'What kind of moment?'**
+  String get momentsKindQuestion;
+
+  /// No description provided for @momentsCaptureFirstsFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture {name}\'s firsts'**
+  String momentsCaptureFirstsFor(String name);
+
+  /// No description provided for @momentsFirstsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'First smile, first word, first steps —\nthese moments fly by. Save them here.'**
+  String get momentsFirstsDescription;
+
+  /// No description provided for @momentsAddFirstButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add First Moment'**
+  String get momentsAddFirstButton;
+
+  /// No description provided for @momentsCaptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened? \"Those first wobbly steps...\"'**
+  String get momentsCaptionHint;
+
+  /// No description provided for @momentsSaveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Moment'**
+  String get momentsSaveButton;
+
+  /// No description provided for @feedLoggedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Feed logged at {time}'**
+  String feedLoggedToast(String time);
+
+  /// No description provided for @diaperLoggedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Diaper logged at {time}'**
+  String diaperLoggedToast(String time);
+
+  /// No description provided for @todayConsultDoctorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Consult a real doctor'**
+  String get todayConsultDoctorTitle;
+
+  /// No description provided for @todayConsultDoctorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Async answers from verified pediatricians & specialists — from \$50'**
+  String get todayConsultDoctorBody;
+
+  /// No description provided for @todayConsultDoctorCta.
+  ///
+  /// In en, this message translates to:
+  /// **'See doctors'**
+  String get todayConsultDoctorCta;
+
+  /// No description provided for @comingSoonMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More coming soon'**
+  String get comingSoonMore;
+
+  /// No description provided for @comingSoonCommunityMarket.
+  ///
+  /// In en, this message translates to:
+  /// **'Community and marketplace are being built with care — we\'ll notify you.'**
+  String get comingSoonCommunityMarket;
+
+  /// No description provided for @noResultsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResultsFound;
+
+  /// No description provided for @triageHighTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This sounds like it needs a doctor'**
+  String get triageHighTitle;
+
+  /// No description provided for @triageHighBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Consider an async consult with a verified pediatrician — typically answered in 4h.'**
+  String get triageHighBody;
+
+  /// No description provided for @triageEmergencyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This could be an emergency'**
+  String get triageEmergencyTitle;
+
+  /// No description provided for @triageEmergencyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If your baby is in immediate danger, call emergency services. For urgent but non-critical concerns, book a consult.'**
+  String get triageEmergencyBody;
+
+  /// No description provided for @triageConsultCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Consult a doctor'**
+  String get triageConsultCta;
+
+  /// No description provided for @triageCallEmergencyCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Call emergency services'**
+  String get triageCallEmergencyCta;
+
+  /// No description provided for @nightModeBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Night mode · brief replies'**
+  String get nightModeBadge;
+
+  /// No description provided for @myConsultations.
+  ///
+  /// In en, this message translates to:
+  /// **'My consultations'**
+  String get myConsultations;
+
+  /// No description provided for @noConsultationsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No consultations yet'**
+  String get noConsultationsYet;
+
+  /// No description provided for @browseAndConsult.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse verified doctors and ask your first question. Answers typically arrive within 24 hours.'**
+  String get browseAndConsult;
 }
 
 class _LDelegate extends LocalizationsDelegate<L> {

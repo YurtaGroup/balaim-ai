@@ -16,14 +16,6 @@ class ProfessionalsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.findProfessionals),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(L.of(context).featureComingSoon), behavior: SnackBarBehavior.floating),
-            ),
-          ),
-        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

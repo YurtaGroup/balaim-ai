@@ -665,5 +665,42 @@
   "quickLinksSection": "Тез шилтемелер",
   "pregnancyTools": "Кош бойлуулук куралдары",
   "firstMoments": "Биринчи учурлар",
-  "captureFirsts": "Бөбөгүңүздүн биринчилерин сактаңыз"
+  "captureFirsts": "Бөбөгүңүздүн биринчилерин сактаңыз",
+
+  "momentsCaptureHeading": "Учурду сактоо",
+  "momentsAddPhotoHint": "Сүрөт кошуу (милдеттүү эмес)",
+  "momentsKindQuestion": "Бул кандай учур?",
+  "momentsCaptureFirstsFor": "{name} баланын биринчилери",
+  "@momentsCaptureFirstsFor": { "placeholders": { "name": { "type": "String" } } },
+  "momentsFirstsDescription": "Биринчи жылмаюу, биринчи сөз, биринчи кадамдар —\nбул учурлар тез өтөт. Бул жерде сактаңыз.",
+  "momentsAddFirstButton": "Биринчи учурду кошуу",
+  "momentsCaptionHint": "Эмне болду? «Ал биринчи кадамдар...»",
+  "momentsSaveButton": "Учурду сактоо",
+
+  "feedLoggedToast": "Тамак {time}-да жазылды",
+  "@feedLoggedToast": { "placeholders": { "time": { "type": "String" } } },
+  "diaperLoggedToast": "Жөргөк {time}-да белгиленди",
+  "@diaperLoggedToast": { "placeholders": { "time": { "type": "String" } } },
+
+  "todayConsultDoctorTitle": "Чыныгы дарыгер менен кеңеш",
+  "todayConsultDoctorBody": "Текшерилген педиатрлар жана адистерден асинхрондук жооптор — $50'дан баштап",
+  "todayConsultDoctorCta": "Дарыгерлерди көрүү",
+
+  "comingSoonMore": "Жакында",
+  "comingSoonCommunityMarket": "Коомчулук жана маркетти кылдаттык менен даярдап жатабыз — даяр болгондо билдиребиз.",
+
+  "noResultsFound": "Эч нерсе табылган жок",
+
+  "triageHighTitle": "Бул дарыгерди көрүү керек окшойт",
+  "triageHighBody": "Текшерилген педиатр менен асинхрондук кеңеш — адатта 4 сааттын ичинде жооп.",
+  "triageEmergencyTitle": "Бул шашылыш учур болушу мүмкүн",
+  "triageEmergencyBody": "Балаңыз коркунучта болсо — тез жардамга чалыңыз. Шашылыш, бирок критикалык эмес учурда — кеңешке жазылыңыз.",
+  "triageConsultCta": "Дарыгер менен кеңеш",
+  "triageCallEmergencyCta": "Тез жардамга чалуу",
+
+  "nightModeBadge": "Түнкү режим · кыска жооптор",
+
+  "myConsultations": "Менин кеңештерим",
+  "noConsultationsYet": "Азырынча кеңеш жок",
+  "browseAndConsult": "Текшерилген дарыгерди тандап, биринчи сурооңузду бериңиз. Жооп адатта 24 сааттын ичинде келет."
 }

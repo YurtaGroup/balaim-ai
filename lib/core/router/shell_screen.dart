@@ -13,9 +13,9 @@ class ShellScreen extends ConsumerWidget {
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith('/ai')) return 1;
-    if (location.startsWith('/community')) return 2;
-    if (location.startsWith('/marketplace')) return 3;
-    if (location.startsWith('/my-child')) return 4;
+    if (location.startsWith('/my-child')) return 2;
+    // Community, Marketplace, Professionals are reachable via deep links + Today
+    // but don't map to any bottom nav tab — fall back to Today.
     return 0;
   }
 
@@ -38,10 +38,6 @@ class ShellScreen extends ConsumerWidget {
             case 1:
               context.go('/ai');
             case 2:
-              context.go('/community');
-            case 3:
-              context.go('/marketplace');
-            case 4:
               context.go('/my-child');
           }
         },
@@ -57,16 +53,6 @@ class ShellScreen extends ConsumerWidget {
             icon: const Icon(Icons.auto_awesome_outlined),
             selectedIcon: const Icon(Icons.auto_awesome, color: AppColors.primary),
             label: l.navBalamAI,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.people_outline),
-            selectedIcon: const Icon(Icons.people, color: AppColors.primary),
-            label: l.navCommunity,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.storefront_outlined),
-            selectedIcon: const Icon(Icons.storefront, color: AppColors.primary),
-            label: l.navMarket,
           ),
           NavigationDestination(
             icon: const Icon(Icons.face_outlined),

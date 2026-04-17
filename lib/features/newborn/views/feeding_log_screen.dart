@@ -1,5 +1,6 @@
 import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
@@ -188,6 +189,7 @@ class FeedingLogScreen extends ConsumerWidget {
             durationMinutes: duration,
           ),
         );
+    if (context.mounted) _celebrate(context);
   }
 
   Future<void> _logBottle(
@@ -208,6 +210,27 @@ class FeedingLogScreen extends ConsumerWidget {
             amountMl: amount,
           ),
         );
+    if (context.mounted) _celebrate(context);
+  }
+
+  void _celebrate(BuildContext context) {
+    HapticFeedback.mediumImpact();
+    final now = DateTime.now();
+    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Expanded(child: Text(L.of(context).feedLoggedToast(timeStr))),
+          ],
+        ),
+        backgroundColor: AppColors.primary,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }
 

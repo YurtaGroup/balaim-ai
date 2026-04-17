@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/app_localizations.dart';
@@ -90,6 +91,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = L.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -107,13 +109,13 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Capture $name\'s firsts',
+              l.momentsCaptureFirstsFor(name),
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'First smile, first word, first steps —\nthese moments fly by. Save them here.',
+              l.momentsFirstsDescription,
               style: TextStyle(color: AppColors.textHint, fontSize: 14, height: 1.5),
               textAlign: TextAlign.center,
             ),
@@ -121,7 +123,7 @@ class _EmptyState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onAdd,
               icon: const Icon(Icons.add),
-              label: const Text('Add First Moment'),
+              label: Text(l.momentsAddFirstButton),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -145,7 +147,8 @@ class _MomentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateStr = _formatDate(moment.date);
+    final dateStr = DateFormat.yMMMd(Localizations.localeOf(context).toString())
+        .format(moment.date);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,10 +258,6 @@ class _MomentCard extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${months[date.month]} ${date.day}, ${date.year}';
-  }
 }
 
 // ─────────────────────────────────────────────
@@ -308,7 +307,7 @@ class _AddMomentSheetState extends State<_AddMomentSheet> {
             ),
             const SizedBox(height: 20),
 
-            Text('Capture a Moment', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+            Text(L.of(context).momentsCaptureHeading, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 20),
 
             // Photo picker
@@ -332,7 +331,7 @@ class _AddMomentSheetState extends State<_AddMomentSheet> {
                         children: [
                           Icon(Icons.add_a_photo, color: AppColors.primary, size: 36),
                           const SizedBox(height: 8),
-                          Text('Add a photo (optional)', style: TextStyle(color: AppColors.textHint, fontSize: 13)),
+                          Text(L.of(context).momentsAddPhotoHint, style: TextStyle(color: AppColors.textHint, fontSize: 13)),
                         ],
                       ),
               ),
@@ -343,7 +342,7 @@ class _AddMomentSheetState extends State<_AddMomentSheet> {
             TextField(
               controller: _captionController,
               decoration: InputDecoration(
-                hintText: 'What happened? "Those first wobbly steps..."',
+                hintText: L.of(context).momentsCaptionHint,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.divider)),
                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppColors.primary)),
                 contentPadding: const EdgeInsets.all(16),
@@ -354,7 +353,7 @@ class _AddMomentSheetState extends State<_AddMomentSheet> {
             const SizedBox(height: 16),
 
             // Milestone tag
-            Text('What kind of moment?', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+            Text(L.of(context).momentsKindQuestion, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
@@ -399,7 +398,7 @@ class _AddMomentSheetState extends State<_AddMomentSheet> {
                     const Icon(Icons.calendar_today, color: AppColors.primary, size: 18),
                     const SizedBox(width: 10),
                     Text(
-                      '${_date.month}/${_date.day}/${_date.year}',
+                      DateFormat.yMMMd(Localizations.localeOf(context).toString()).format(_date),
                       style: const TextStyle(fontSize: 14),
                     ),
                     const Spacer(),
@@ -420,7 +419,7 @@ class _AddMomentSheetState extends State<_AddMomentSheet> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('Save Moment', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                child: Text(L.of(context).momentsSaveButton, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
               ),
             ),
           ],

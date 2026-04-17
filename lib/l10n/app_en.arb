@@ -678,5 +678,42 @@
   "quickLinksSection": "Quick Links",
   "pregnancyTools": "Pregnancy Tools",
   "firstMoments": "First Moments",
-  "captureFirsts": "Capture your baby's firsts"
+  "captureFirsts": "Capture your baby's firsts",
+
+  "momentsCaptureHeading": "Capture a Moment",
+  "momentsAddPhotoHint": "Add a photo (optional)",
+  "momentsKindQuestion": "What kind of moment?",
+  "momentsCaptureFirstsFor": "Capture {name}'s firsts",
+  "@momentsCaptureFirstsFor": { "placeholders": { "name": { "type": "String" } } },
+  "momentsFirstsDescription": "First smile, first word, first steps —\nthese moments fly by. Save them here.",
+  "momentsAddFirstButton": "Add First Moment",
+  "momentsCaptionHint": "What happened? \"Those first wobbly steps...\"",
+  "momentsSaveButton": "Save Moment",
+
+  "feedLoggedToast": "Feed logged at {time}",
+  "@feedLoggedToast": { "placeholders": { "time": { "type": "String" } } },
+  "diaperLoggedToast": "Diaper logged at {time}",
+  "@diaperLoggedToast": { "placeholders": { "time": { "type": "String" } } },
+
+  "todayConsultDoctorTitle": "Consult a real doctor",
+  "todayConsultDoctorBody": "Async answers from verified pediatricians & specialists — from $50",
+  "todayConsultDoctorCta": "See doctors",
+
+  "comingSoonMore": "More coming soon",
+  "comingSoonCommunityMarket": "Community and marketplace are being built with care — we'll notify you.",
+
+  "noResultsFound": "No results found",
+
+  "triageHighTitle": "This sounds like it needs a doctor",
+  "triageHighBody": "Consider an async consult with a verified pediatrician — typically answered in 4h.",
+  "triageEmergencyTitle": "This could be an emergency",
+  "triageEmergencyBody": "If your baby is in immediate danger, call emergency services. For urgent but non-critical concerns, book a consult.",
+  "triageConsultCta": "Consult a doctor",
+  "triageCallEmergencyCta": "Call emergency services",
+
+  "nightModeBadge": "Night mode · brief replies",
+
+  "myConsultations": "My consultations",
+  "noConsultationsYet": "No consultations yet",
+  "browseAndConsult": "Browse verified doctors and ask your first question. Answers typically arrive within 24 hours."
 }

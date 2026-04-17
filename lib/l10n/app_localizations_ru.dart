@@ -1954,4 +1954,95 @@ class LRu extends L {
 
   @override
   String get captureFirsts => 'Сохраните первые моменты малыша';
+
+  @override
+  String get momentsCaptureHeading => 'Запечатлеть момент';
+
+  @override
+  String get momentsAddPhotoHint => 'Добавить фото (необязательно)';
+
+  @override
+  String get momentsKindQuestion => 'Что это за момент?';
+
+  @override
+  String momentsCaptureFirstsFor(String name) {
+    return 'Первые моменты $name';
+  }
+
+  @override
+  String get momentsFirstsDescription =>
+      'Первая улыбка, первое слово, первые шаги —\nэти моменты пролетают быстро. Сохрани их здесь.';
+
+  @override
+  String get momentsAddFirstButton => 'Добавить первый момент';
+
+  @override
+  String get momentsCaptionHint =>
+      'Что произошло? «Первые неуверенные шаги...»';
+
+  @override
+  String get momentsSaveButton => 'Сохранить момент';
+
+  @override
+  String feedLoggedToast(String time) {
+    return 'Кормление записано в $time';
+  }
+
+  @override
+  String diaperLoggedToast(String time) {
+    return 'Подгузник отмечен в $time';
+  }
+
+  @override
+  String get todayConsultDoctorTitle => 'Консультация с врачом';
+
+  @override
+  String get todayConsultDoctorBody =>
+      'Асинхронные ответы от педиатров и специалистов — от \$50';
+
+  @override
+  String get todayConsultDoctorCta => 'Смотреть врачей';
+
+  @override
+  String get comingSoonMore => 'Скоро появится';
+
+  @override
+  String get comingSoonCommunityMarket =>
+      'Сообщество и маркетплейс готовим с заботой — мы сообщим, когда всё будет готово.';
+
+  @override
+  String get noResultsFound => 'Ничего не найдено';
+
+  @override
+  String get triageHighTitle => 'Похоже, нужна консультация врача';
+
+  @override
+  String get triageHighBody =>
+      'Попробуйте асинхронную консультацию с проверенным педиатром — обычно ответ в течение 4 часов.';
+
+  @override
+  String get triageEmergencyTitle => 'Возможно, это экстренный случай';
+
+  @override
+  String get triageEmergencyBody =>
+      'Если малышу угрожает опасность — звоните в скорую. Для срочных, но не критичных вопросов — запишитесь на консультацию.';
+
+  @override
+  String get triageConsultCta => 'Консультация врача';
+
+  @override
+  String get triageCallEmergencyCta => 'Вызвать скорую';
+
+  @override
+  String get nightModeBadge => 'Ночной режим · краткие ответы';
+
+  @override
+  String get myConsultations => 'Мои консультации';
+
+  @override
+  String get noConsultationsYet => 'Пока нет консультаций';
+
+  @override
+  String get browseAndConsult =>
+      'Выбери проверенного врача и задай первый вопрос. Ответ обычно приходит в течение 24 часов.';
 }

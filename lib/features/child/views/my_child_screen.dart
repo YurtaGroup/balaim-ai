@@ -512,9 +512,9 @@ class MyChildScreen extends ConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _langChip('English', const Locale('en'), currentLocale, () => ref.read(localeProvider.notifier).state = const Locale('en')),
-              _langChip('Русский', const Locale('ru'), currentLocale, () => ref.read(localeProvider.notifier).state = const Locale('ru')),
-              _langChip('Кыргызча', const Locale('ky'), currentLocale, () => ref.read(localeProvider.notifier).state = const Locale('ky')),
+              _langChip('English', const Locale('en'), currentLocale, () => ref.read(localeProvider.notifier).setLocale(const Locale('en'))),
+              _langChip('Русский', const Locale('ru'), currentLocale, () => ref.read(localeProvider.notifier).setLocale(const Locale('ru'))),
+              _langChip('Кыргызча', const Locale('ky'), currentLocale, () => ref.read(localeProvider.notifier).setLocale(const Locale('ky'))),
             ],
           ),
         ],

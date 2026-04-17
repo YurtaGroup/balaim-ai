@@ -84,6 +84,15 @@ class TodayScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 14),
 
+            // Card 4.5: Consult a real doctor (funnel to Professionals)
+            _ConsultDoctorCard(
+              title: l.todayConsultDoctorTitle,
+              body: l.todayConsultDoctorBody,
+              cta: l.todayConsultDoctorCta,
+              onTap: () => context.go('/professionals'),
+            ),
+            const SizedBox(height: 14),
+
             // Card 5: Daily Insight
             _InsightCard(
               title: l.dailyInsightCard,
@@ -272,6 +281,92 @@ class _FocusCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ConsultDoctorCard extends StatelessWidget {
+  final String title;
+  final String body;
+  final String cta;
+  final VoidCallback onTap;
+
+  const _ConsultDoctorCard({
+    required this.title,
+    required this.body,
+    required this.cta,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [AppColors.secondary, AppColors.secondaryDark],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.medical_services, color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    body,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        cta,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_forward, color: Colors.white, size: 14),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -6,18 +6,36 @@ import '../../../core/data/seed_data.dart';
 import '../../../shared/models/marketplace_models.dart';
 import '../../journey/providers/journey_provider.dart';
 
-class MarketplaceScreen extends ConsumerWidget {
+class MarketplaceScreen extends ConsumerStatefulWidget {
   const MarketplaceScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MarketplaceScreen> createState() => _MarketplaceScreenState();
+}
+
+class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
+  String _query = '';
+
+  bool _matches(Product p, BuildContext context) {
+    if (_query.isEmpty) return true;
+    final q = _query.toLowerCase();
+    return p.name.en.toLowerCase().contains(q) ||
+        p.name.ru.toLowerCase().contains(q) ||
+        p.name.ky.toLowerCase().contains(q);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profile = ref.watch(userProfileProvider);
-    final stageProducts = SeedData.getProductsForStage(profile.stage);
+    final stageProducts =
+        SeedData.getProductsForStage(profile.stage).where((p) => _matches(p, context)).toList();
     final featured = SeedData.getFeaturedProducts()
         .where((p) => p.relevantStages.contains(profile.stage))
+        .where((p) => _matches(p, context))
         .toList();
     final categories = SeedData.categories;
     final featuredVendors = SeedData.vendors.where((v) => v.isFeatured).toList();
+    final isSearching = _query.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(
@@ -36,9 +54,7 @@ class MarketplaceScreen extends ConsumerWidget {
         children: [
           // Search
           TextField(
-            onChanged: (query) {
-              // Search is cosmetic for now — full search requires state refactor
-            },
+            onChanged: (query) => setState(() => _query = query.trim()),
             decoration: InputDecoration(
               hintText: L.of(context).searchProducts,
               prefixIcon: const Icon(Icons.search),
@@ -52,121 +68,146 @@ class MarketplaceScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-          // AI recommendation banner
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.secondary, AppColors.secondary.withValues(alpha: 0.8)],
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.auto_awesome, color: Colors.white, size: 28),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        L.of(context).balamPicksStage(profile.stage.label),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                        ),
-                      ),
-                      Text(
-                        L.of(context).productsCuratedForStage(stageProducts.length),
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
+          if (!isSearching) ...[
+            // AI recommendation banner
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.secondary, AppColors.secondary.withValues(alpha: 0.8)],
                 ),
-                const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Categories
-          Text(L.of(context).categories, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
-              itemBuilder: (context, i) {
-                final cat = categories[i];
-                return Container(
-                  width: 90,
-                  margin: const EdgeInsets.only(right: 12),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.divider),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.auto_awesome, color: Colors.white, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          L.of(context).balamPicksStage(profile.stage.label),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                        Text(
+                          L.of(context).productsCuratedForStage(stageProducts.length),
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(cat.icon, color: cat.color, size: 28),
-                      const SizedBox(height: 6),
-                      Text(
-                        cat.name.of(context),
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text('${cat.productCount}', style: Theme.of(context).textTheme.bodySmall),
-                    ],
-                  ),
-                );
-              },
+                  const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-          // Featured vendors
-          Text(L.of(context).featuredVendors, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          ...featuredVendors.map((v) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _VendorCard(vendor: v),
-              )),
-          const SizedBox(height: 20),
-
-          // Featured products for your stage
-          Text(L.of(context).recommendedForYou, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.72,
+            // Categories
+            Text(L.of(context).categories, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                itemBuilder: (context, i) {
+                  final cat = categories[i];
+                  return Container(
+                    width: 90,
+                    margin: const EdgeInsets.only(right: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.divider),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(cat.icon, color: cat.color, size: 28),
+                        const SizedBox(height: 6),
+                        Text(
+                          cat.name.of(context),
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text('${cat.productCount}', style: Theme.of(context).textTheme.bodySmall),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
-            itemCount: featured.length.clamp(0, 6),
-            itemBuilder: (context, i) => _ProductCard(product: featured[i]),
-          ),
-          const SizedBox(height: 20),
+            const SizedBox(height: 20),
+
+            // Featured vendors
+            Text(L.of(context).featuredVendors, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            ...featuredVendors.map((v) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _VendorCard(vendor: v),
+                )),
+            const SizedBox(height: 20),
+          ],
+
+          // Featured products for your stage (or search results)
+          if (featured.isNotEmpty) ...[
+            Text(
+              isSearching ? L.of(context).recommendedForYou : L.of(context).recommendedForYou,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 12),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.72,
+              ),
+              itemCount: featured.length.clamp(0, 6),
+              itemBuilder: (context, i) => _ProductCard(product: featured[i]),
+            ),
+            const SizedBox(height: 20),
+          ],
 
           // All stage-relevant products
-          Text(L.of(context).allForStage(profile.stage.label), style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
-          ...stageProducts.where((p) => !featured.contains(p)).take(8).map((p) => Padding(
+          if (stageProducts.where((p) => !featured.contains(p)).isNotEmpty) ...[
+            Text(L.of(context).allForStage(profile.stage.label), style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+          ],
+          ...stageProducts.where((p) => !featured.contains(p)).take(isSearching ? 50 : 8).map((p) => Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: _ProductListTile(product: p),
               )),
+          if (isSearching && featured.isEmpty && stageProducts.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: Column(
+                  children: [
+                    const Icon(Icons.search_off, size: 48, color: AppColors.textHint),
+                    const SizedBox(height: 12),
+                    Text(
+                      L.of(context).noResultsFound,
+                      style: const TextStyle(color: AppColors.textHint, fontSize: 15),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           const SizedBox(height: 24),
         ],
       ),

@@ -1,5 +1,6 @@
 import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
@@ -132,7 +133,7 @@ class DiaperLogScreen extends ConsumerWidget {
                   emoji: '💧',
                   label: 'Wet',
                   color: AppColors.secondary,
-                  onTap: () => _log(ref, DiaperType.wet),
+                  onTap: () => _log(context, ref, DiaperType.wet),
                 ),
               ),
               const SizedBox(width: 10),
@@ -141,7 +142,7 @@ class DiaperLogScreen extends ConsumerWidget {
                   emoji: '💩',
                   label: 'Dirty',
                   color: AppColors.accent,
-                  onTap: () => _log(ref, DiaperType.dirty),
+                  onTap: () => _log(context, ref, DiaperType.dirty),
                 ),
               ),
             ],
@@ -154,7 +155,7 @@ class DiaperLogScreen extends ConsumerWidget {
                   emoji: '💧💩',
                   label: 'Both',
                   color: AppColors.primary,
-                  onTap: () => _log(ref, DiaperType.both),
+                  onTap: () => _log(context, ref, DiaperType.both),
                 ),
               ),
               const SizedBox(width: 10),
@@ -163,7 +164,7 @@ class DiaperLogScreen extends ConsumerWidget {
                   emoji: '✓',
                   label: 'Dry',
                   color: AppColors.success,
-                  onTap: () => _log(ref, DiaperType.dry),
+                  onTap: () => _log(context, ref, DiaperType.dry),
                 ),
               ),
             ],
@@ -186,7 +187,7 @@ class DiaperLogScreen extends ConsumerWidget {
     );
   }
 
-  void _log(WidgetRef ref, DiaperType type) {
+  void _log(BuildContext context, WidgetRef ref, DiaperType type) {
     ref.read(diaperEntriesProvider.notifier).add(
           DiaperEntry(
             id: const Uuid().v4(),
@@ -194,6 +195,23 @@ class DiaperLogScreen extends ConsumerWidget {
             timestamp: DateTime.now(),
           ),
         );
+    HapticFeedback.mediumImpact();
+    final now = DateTime.now();
+    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Expanded(child: Text(L.of(context).diaperLoggedToast(timeStr))),
+          ],
+        ),
+        backgroundColor: AppColors.secondary,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 }
 

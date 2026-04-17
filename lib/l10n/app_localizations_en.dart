@@ -1961,4 +1961,95 @@ class LEn extends L {
 
   @override
   String get captureFirsts => 'Capture your baby\'s firsts';
+
+  @override
+  String get momentsCaptureHeading => 'Capture a Moment';
+
+  @override
+  String get momentsAddPhotoHint => 'Add a photo (optional)';
+
+  @override
+  String get momentsKindQuestion => 'What kind of moment?';
+
+  @override
+  String momentsCaptureFirstsFor(String name) {
+    return 'Capture $name\'s firsts';
+  }
+
+  @override
+  String get momentsFirstsDescription =>
+      'First smile, first word, first steps —\nthese moments fly by. Save them here.';
+
+  @override
+  String get momentsAddFirstButton => 'Add First Moment';
+
+  @override
+  String get momentsCaptionHint =>
+      'What happened? \"Those first wobbly steps...\"';
+
+  @override
+  String get momentsSaveButton => 'Save Moment';
+
+  @override
+  String feedLoggedToast(String time) {
+    return 'Feed logged at $time';
+  }
+
+  @override
+  String diaperLoggedToast(String time) {
+    return 'Diaper logged at $time';
+  }
+
+  @override
+  String get todayConsultDoctorTitle => 'Consult a real doctor';
+
+  @override
+  String get todayConsultDoctorBody =>
+      'Async answers from verified pediatricians & specialists — from \$50';
+
+  @override
+  String get todayConsultDoctorCta => 'See doctors';
+
+  @override
+  String get comingSoonMore => 'More coming soon';
+
+  @override
+  String get comingSoonCommunityMarket =>
+      'Community and marketplace are being built with care — we\'ll notify you.';
+
+  @override
+  String get noResultsFound => 'No results found';
+
+  @override
+  String get triageHighTitle => 'This sounds like it needs a doctor';
+
+  @override
+  String get triageHighBody =>
+      'Consider an async consult with a verified pediatrician — typically answered in 4h.';
+
+  @override
+  String get triageEmergencyTitle => 'This could be an emergency';
+
+  @override
+  String get triageEmergencyBody =>
+      'If your baby is in immediate danger, call emergency services. For urgent but non-critical concerns, book a consult.';
+
+  @override
+  String get triageConsultCta => 'Consult a doctor';
+
+  @override
+  String get triageCallEmergencyCta => 'Call emergency services';
+
+  @override
+  String get nightModeBadge => 'Night mode · brief replies';
+
+  @override
+  String get myConsultations => 'My consultations';
+
+  @override
+  String get noConsultationsYet => 'No consultations yet';
+
+  @override
+  String get browseAndConsult =>
+      'Browse verified doctors and ask your first question. Answers typically arrive within 24 hours.';
 }

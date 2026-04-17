@@ -1952,4 +1952,94 @@ class LKy extends L {
 
   @override
   String get captureFirsts => 'Бөбөгүңүздүн биринчилерин сактаңыз';
+
+  @override
+  String get momentsCaptureHeading => 'Учурду сактоо';
+
+  @override
+  String get momentsAddPhotoHint => 'Сүрөт кошуу (милдеттүү эмес)';
+
+  @override
+  String get momentsKindQuestion => 'Бул кандай учур?';
+
+  @override
+  String momentsCaptureFirstsFor(String name) {
+    return '$name баланын биринчилери';
+  }
+
+  @override
+  String get momentsFirstsDescription =>
+      'Биринчи жылмаюу, биринчи сөз, биринчи кадамдар —\nбул учурлар тез өтөт. Бул жерде сактаңыз.';
+
+  @override
+  String get momentsAddFirstButton => 'Биринчи учурду кошуу';
+
+  @override
+  String get momentsCaptionHint => 'Эмне болду? «Ал биринчи кадамдар...»';
+
+  @override
+  String get momentsSaveButton => 'Учурду сактоо';
+
+  @override
+  String feedLoggedToast(String time) {
+    return 'Тамак $time-да жазылды';
+  }
+
+  @override
+  String diaperLoggedToast(String time) {
+    return 'Жөргөк $time-да белгиленди';
+  }
+
+  @override
+  String get todayConsultDoctorTitle => 'Чыныгы дарыгер менен кеңеш';
+
+  @override
+  String get todayConsultDoctorBody =>
+      'Текшерилген педиатрлар жана адистерден асинхрондук жооптор — \$50\'дан баштап';
+
+  @override
+  String get todayConsultDoctorCta => 'Дарыгерлерди көрүү';
+
+  @override
+  String get comingSoonMore => 'Жакында';
+
+  @override
+  String get comingSoonCommunityMarket =>
+      'Коомчулук жана маркетти кылдаттык менен даярдап жатабыз — даяр болгондо билдиребиз.';
+
+  @override
+  String get noResultsFound => 'Эч нерсе табылган жок';
+
+  @override
+  String get triageHighTitle => 'Бул дарыгерди көрүү керек окшойт';
+
+  @override
+  String get triageHighBody =>
+      'Текшерилген педиатр менен асинхрондук кеңеш — адатта 4 сааттын ичинде жооп.';
+
+  @override
+  String get triageEmergencyTitle => 'Бул шашылыш учур болушу мүмкүн';
+
+  @override
+  String get triageEmergencyBody =>
+      'Балаңыз коркунучта болсо — тез жардамга чалыңыз. Шашылыш, бирок критикалык эмес учурда — кеңешке жазылыңыз.';
+
+  @override
+  String get triageConsultCta => 'Дарыгер менен кеңеш';
+
+  @override
+  String get triageCallEmergencyCta => 'Тез жардамга чалуу';
+
+  @override
+  String get nightModeBadge => 'Түнкү режим · кыска жооптор';
+
+  @override
+  String get myConsultations => 'Менин кеңештерим';
+
+  @override
+  String get noConsultationsYet => 'Азырынча кеңеш жок';
+
+  @override
+  String get browseAndConsult =>
+      'Текшерилген дарыгерди тандап, биринчи сурооңузду бериңиз. Жооп адатта 24 сааттын ичинде келет.';
 }

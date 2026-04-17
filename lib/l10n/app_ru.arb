@@ -665,5 +665,42 @@
   "quickLinksSection": "Быстрые ссылки",
   "pregnancyTools": "Инструменты беременности",
   "firstMoments": "Первые моменты",
-  "captureFirsts": "Сохраните первые моменты малыша"
+  "captureFirsts": "Сохраните первые моменты малыша",
+
+  "momentsCaptureHeading": "Запечатлеть момент",
+  "momentsAddPhotoHint": "Добавить фото (необязательно)",
+  "momentsKindQuestion": "Что это за момент?",
+  "momentsCaptureFirstsFor": "Первые моменты {name}",
+  "@momentsCaptureFirstsFor": { "placeholders": { "name": { "type": "String" } } },
+  "momentsFirstsDescription": "Первая улыбка, первое слово, первые шаги —\nэти моменты пролетают быстро. Сохрани их здесь.",
+  "momentsAddFirstButton": "Добавить первый момент",
+  "momentsCaptionHint": "Что произошло? «Первые неуверенные шаги...»",
+  "momentsSaveButton": "Сохранить момент",
+
+  "feedLoggedToast": "Кормление записано в {time}",
+  "@feedLoggedToast": { "placeholders": { "time": { "type": "String" } } },
+  "diaperLoggedToast": "Подгузник отмечен в {time}",
+  "@diaperLoggedToast": { "placeholders": { "time": { "type": "String" } } },
+
+  "todayConsultDoctorTitle": "Консультация с врачом",
+  "todayConsultDoctorBody": "Асинхронные ответы от педиатров и специалистов — от $50",
+  "todayConsultDoctorCta": "Смотреть врачей",
+
+  "comingSoonMore": "Скоро появится",
+  "comingSoonCommunityMarket": "Сообщество и маркетплейс готовим с заботой — мы сообщим, когда всё будет готово.",
+
+  "noResultsFound": "Ничего не найдено",
+
+  "triageHighTitle": "Похоже, нужна консультация врача",
+  "triageHighBody": "Попробуйте асинхронную консультацию с проверенным педиатром — обычно ответ в течение 4 часов.",
+  "triageEmergencyTitle": "Возможно, это экстренный случай",
+  "triageEmergencyBody": "Если малышу угрожает опасность — звоните в скорую. Для срочных, но не критичных вопросов — запишитесь на консультацию.",
+  "triageConsultCta": "Консультация врача",
+  "triageCallEmergencyCta": "Вызвать скорую",
+
+  "nightModeBadge": "Ночной режим · краткие ответы",
+
+  "myConsultations": "Мои консультации",
+  "noConsultationsYet": "Пока нет консультаций",
+  "browseAndConsult": "Выбери проверенного врача и задай первый вопрос. Ответ обычно приходит в течение 24 часов."
 }
