@@ -1,51 +1,59 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { defineSecret } from "firebase-functions/params";
 import { balamChat as balamChatInternal } from "./ai/balam-chat";
 import { generateDailyInsight } from "./ai/daily-insights";
 
 admin.initializeApp();
+
+const anthropicKey = defineSecret("ANTHROPIC_API_KEY");
 
 // ============================================================
 // AI ENDPOINTS
 // ============================================================
 
 /**
- * Balam AI Chat — personalized parenting AI powered by Claude
+ * Balam AI Chat — personalized parenting AI powered by Claude.
+ *
+ * 2nd-gen callable function (avoids the missing default Compute Engine
+ * service account that blocks 1st-gen deploys on this project).
  *
  * Accepts: { message, userContext: { locale, briefMode, stage, week, babyName, ageMonths, recentTracking }, history: [{role, text}] }
  * Returns: { response: string, triage: { urgency, reason } | null }
  */
-export const balamChat = functions
-  .runWith({ secrets: ["ANTHROPIC_API_KEY"] })
-  .https.onCall(async (data, context) => {
-    // Auth check
-    if (!context.auth) {
-      throw new functions.https.HttpsError(
+export const balamChat = onCall(
+  { secrets: [anthropicKey], region: "us-central1" },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError(
         "unauthenticated",
         "Must be signed in to use Balam AI"
       );
     }
 
-    const { message, userContext, history } = data;
+    const { message, userContext, history } = request.data as {
+      message?: string;
+      userContext?: Record<string, unknown>;
+      history?: unknown;
+    };
 
     if (!message || typeof message !== "string") {
-      throw new functions.https.HttpsError(
-        "invalid-argument",
-        "Message is required"
-      );
+      throw new HttpsError("invalid-argument", "Message is required");
     }
 
     const result = await balamChatInternal(
       message,
       {
-        uid: context.auth.uid,
-        ...userContext,
+        uid: request.auth.uid,
+        ...(userContext ?? {}),
       },
       Array.isArray(history) ? history : []
     );
 
     return result;
-  });
+  }
+);
 
 /**
  * Generate daily insight for a user based on their stage/week
