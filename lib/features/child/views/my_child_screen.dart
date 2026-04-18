@@ -149,21 +149,8 @@ class MyChildScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-          // ── Section 9: Settings ──
-          if (demoUser != null) ...[
-            _buildStageSwitcher(context, ref, profile, demoUser),
-            const SizedBox(height: 16),
-          ],
-          _buildLanguageSwitcher(context, ref),
-          const SizedBox(height: 16),
-          OutlinedButton(
-            onPressed: () => AuthService().signOut(),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.error,
-              side: const BorderSide(color: AppColors.error),
-            ),
-            child: Text(l.signOut),
-          ),
+          // ── Section 9: Stage switcher (language + sign out moved to Today gear) ──
+          _buildStageSwitcher(context, ref, profile, demoUser),
           const SizedBox(height: 32),
         ],
       ),

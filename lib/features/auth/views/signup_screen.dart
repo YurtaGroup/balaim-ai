@@ -23,6 +23,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    // Pre-fill demo values so testers can ship through signup in seconds.
+    // Email uses a timestamp so repeated signups don't collide on Firebase.
+    final t = DateTime.now().millisecondsSinceEpoch.toString().substring(6);
+    _nameController.text = 'Sarah Johnson';
+    _emailController.text = 'demo+$t@balam.ai';
+    _passwordController.text = 'demo1234';
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
@@ -70,7 +81,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
-            child: Column(
+            child: AutofillGroup(child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Logo
@@ -141,6 +152,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 TextFormField(
                   controller: _nameController,
                   textCapitalization: TextCapitalization.words,
+                  autofillHints: const [AutofillHints.name, AutofillHints.givenName],
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     labelText: L.of(context).yourName,
                     prefixIcon: Icon(Icons.person_outline),
@@ -155,6 +168,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email, AutofillHints.username],
+                  textInputAction: TextInputAction.next,
                   decoration: InputDecoration(
                     labelText: L.of(context).email,
                     prefixIcon: Icon(Icons.email_outlined),
@@ -172,6 +187,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  autofillHints: const [AutofillHints.newPassword],
+                  textInputAction: TextInputAction.done,
                   decoration: InputDecoration(
                     labelText: L.of(context).password,
                     prefixIcon: const Icon(Icons.lock_outlined),
@@ -264,7 +281,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   ),
                 ),
               ],
-            ),
+            )),
           ),
         ),
       ),

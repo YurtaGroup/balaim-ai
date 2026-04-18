@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/data/seed_data.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/services/auth_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../main.dart' show localeProvider;
 import '../../../shared/models/tracking_entry.dart';
 import '../../../shared/widgets/notification_bell.dart';
 import '../../journey/providers/journey_provider.dart';
@@ -30,7 +32,14 @@ class TodayScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.navToday),
-        actions: const [NotificationBell()],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune_outlined),
+            tooltip: l.settings,
+            onPressed: () => _showSettingsSheet(context, ref),
+          ),
+          const NotificationBell(),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -45,6 +54,39 @@ class TodayScreen extends ConsumerWidget {
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
+            ),
+            const SizedBox(height: 16),
+
+            // Quick Access row — Lab, Doctors, Moments (or Notifications if pregnant)
+            Row(
+              children: [
+                Expanded(
+                  child: _QuickAccessTile(
+                    icon: Icons.science_outlined,
+                    label: l.labResults,
+                    gradient: const [Color(0xFF34C759), Color(0xFF1DA34F)],
+                    onTap: () => context.push('/lab'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _QuickAccessTile(
+                    icon: Icons.medical_services_outlined,
+                    label: l.myCareTeam,
+                    gradient: const [Color(0xFF5E8CF7), Color(0xFF3A6EE2)],
+                    onTap: () => context.push('/professionals'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _QuickAccessTile(
+                    icon: isPregnant ? Icons.notifications_outlined : Icons.camera_alt_outlined,
+                    label: isPregnant ? l.notifications : l.firstMoments,
+                    gradient: const [Color(0xFFE8787A), Color(0xFFBE5053)],
+                    onTap: () => context.push(isPregnant ? '/notifications' : '/moments'),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
 
@@ -100,51 +142,7 @@ class TodayScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 14),
 
-            // Card 6: First Moments CTA (baby stages only)
-            if (!isPregnant)
-              GestureDetector(
-                onTap: () => context.push('/moments'),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.secondary.withValues(alpha: 0.1), AppColors.accent.withValues(alpha: 0.1)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.secondary.withValues(alpha: 0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: AppColors.secondary.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.camera_alt, color: AppColors.secondary, size: 22),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(l.firstMoments, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                            Text(l.captureFirsts, style: TextStyle(fontSize: 12, color: AppColors.textHint)),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.arrow_forward_ios, color: AppColors.textHint, size: 14),
-                    ],
-                  ),
-                ),
-              ),
-            if (!isPregnant) const SizedBox(height: 14),
-
-            // Card 7: Recommended Product
+            // Card 6: Recommended Product
             Builder(builder: (context) {
               final products = isPregnant
                   ? SeedData.getProductsForStage(profile.stage)
@@ -697,6 +695,183 @@ class _ProductCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Quick Access Tile
+// ─────────────────────────────────────────────
+
+class _QuickAccessTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final List<Color> gradient;
+  final VoidCallback onTap;
+
+  const _QuickAccessTile({
+    required this.icon,
+    required this.label,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Ink(
+          height: 92,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: gradient,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: gradient.first.withValues(alpha: 0.28),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(icon, color: Colors.white, size: 26),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    height: 1.15,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Settings bottom sheet (accessed from AppBar gear)
+// ─────────────────────────────────────────────
+
+void _showSettingsSheet(BuildContext context, WidgetRef ref) {
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (sheetCtx) {
+      final l = L.of(sheetCtx);
+      final current = ref.read(localeProvider)?.languageCode;
+      return Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 44, height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(l.settings, style: Theme.of(sheetCtx).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+            const SizedBox(height: 20),
+
+            Text('Language / Тил / Язык',
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.textHint)),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _LangPill(label: 'English', code: 'en', current: current),
+                _LangPill(label: 'Русский', code: 'ru', current: current),
+                _LangPill(label: 'Кыргызча', code: 'ky', current: current),
+              ],
+            ),
+            const SizedBox(height: 20),
+
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.notifications_outlined, color: AppColors.primary),
+              title: Text(l.notifications),
+              trailing: const Icon(Icons.chevron_right, color: AppColors.textHint),
+              onTap: () {
+                Navigator.of(sheetCtx).pop();
+                context.push('/notifications');
+              },
+            ),
+            const Divider(height: 1),
+
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.logout, color: AppColors.error),
+              title: Text(l.signOut, style: const TextStyle(color: AppColors.error)),
+              onTap: () async {
+                Navigator.of(sheetCtx).pop();
+                await AuthService().signOut();
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+class _LangPill extends ConsumerWidget {
+  final String label;
+  final String code;
+  final String? current;
+
+  const _LangPill({required this.label, required this.code, required this.current});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selected = current == code;
+    return GestureDetector(
+      onTap: () => ref.read(localeProvider.notifier).setLocale(Locale(code)),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : AppColors.background,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: selected ? AppColors.primary : AppColors.divider),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
         ),
       ),
     );
