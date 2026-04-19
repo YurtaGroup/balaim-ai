@@ -30,7 +30,7 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
     final auth = AuthService();
     final email = auth.currentEmail ?? '';
 
-    // Owner gets Altair pre-populated
+    // Owner gets Altair pre-populated + Timur himself as a household member
     if (email == 'owner@balam.ai') {
       return UserProfile(
         uid: auth.currentUid ?? 'demo-owner-001',
@@ -41,15 +41,22 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
         babyName: 'Altair',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        children: [
-          Child(
+        members: [
+          HouseholdMember(
+            id: 'self-demo-owner-001',
+            name: 'Timur Mone',
+            role: MemberRole.self,
+            birthDate: DateTime(1990, 1, 1),
+          ),
+          HouseholdMember(
             id: 'child-altair',
             name: 'Altair',
             birthDate: DateTime(2024, 3, 16),
             stage: ParentingStage.toddler,
+            role: MemberRole.child,
           ),
         ],
-        selectedChildId: 'child-altair',
+        selectedMemberId: 'child-altair',
       );
     }
 
@@ -63,15 +70,21 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
         dueDate: DateTime.now().add(const Duration(days: 112)),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        children: [
-          Child(
+        members: [
+          HouseholdMember(
+            id: 'self-demo-parent-001',
+            name: auth.currentDisplayName ?? 'Sarah Johnson',
+            role: MemberRole.self,
+          ),
+          HouseholdMember(
             id: 'child-demo-1',
             name: 'Baby Johnson',
             dueDate: DateTime.now().add(const Duration(days: 112)),
             stage: ParentingStage.pregnant,
+            role: MemberRole.child,
           ),
         ],
-        selectedChildId: 'child-demo-1',
+        selectedMemberId: 'child-demo-1',
       );
     }
 
@@ -98,7 +111,8 @@ class UserProfileNotifier extends StateNotifier<UserProfile> {
         .listen((doc) {
       if (doc.exists && doc.data() != null) {
         try {
-          state = UserProfile.fromFirestore(doc.data()!);
+          // Ensure every account has a `self` member on first load post-upgrade.
+          state = UserProfile.fromFirestore(doc.data()!).withSelfIfMissing();
         } catch (e) {
           debugPrint('[Profile] Firestore parse error: $e');
         }

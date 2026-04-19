@@ -13,8 +13,14 @@ class UserProfile {
   final String? partnerName;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final List<Child> children;
-  final String? selectedChildId;
+
+  /// All members of the household (baby, self, partner, grandparents...).
+  /// Previously `children: List<Child>`; legacy name preserved as a getter
+  /// for backward compat.
+  final List<HouseholdMember> members;
+
+  /// Currently-active member for tracking / AI / labs.
+  final String? selectedMemberId;
 
   const UserProfile({
     required this.uid,
@@ -28,38 +34,48 @@ class UserProfile {
     this.partnerName,
     required this.createdAt,
     required this.updatedAt,
-    this.children = const [],
-    this.selectedChildId,
+    this.members = const [],
+    this.selectedMemberId,
   });
 
-  /// The currently selected child, or the first child if none selected
-  Child? get selectedChild {
-    if (children.isEmpty) return null;
-    if (selectedChildId != null) {
-      final match = children.where((c) => c.id == selectedChildId);
+  // ── Backward-compatible aliases ────────────────────────────────────
+  // Existing code referenced `children`, `selectedChildId`, `selectedChild`.
+  // These keep working while we migrate callsites gradually.
+
+  List<HouseholdMember> get children => members;
+  String? get selectedChildId => selectedMemberId;
+
+  /// The currently selected member, or the first child member if none
+  /// selected. Prefers child over self so parenting UX still leads.
+  HouseholdMember? get selectedMember {
+    if (members.isEmpty) return null;
+    if (selectedMemberId != null) {
+      final match = members.where((m) => m.id == selectedMemberId);
       if (match.isNotEmpty) return match.first;
     }
-    return children.first;
+    final firstChild = members.where((m) => m.role == MemberRole.child);
+    if (firstChild.isNotEmpty) return firstChild.first;
+    return members.first;
   }
 
-  /// Current pregnancy week (1-42) based on due date
+  HouseholdMember? get selectedChild => selectedMember;
+
+  // ── Owner-level pregnancy helpers (unchanged) ─────────────────────
+
   int? get currentWeek {
     if (dueDate == null) return null;
     final now = DateTime.now();
-    // Pregnancy is 40 weeks (280 days) from LMP
     final lmp = dueDate!.subtract(const Duration(days: 280));
     final daysSinceLmp = now.difference(lmp).inDays;
     final week = (daysSinceLmp / 7).ceil();
     return week.clamp(1, 42);
   }
 
-  /// Days remaining until due date
   int? get daysRemaining {
     if (dueDate == null) return null;
     return dueDate!.difference(DateTime.now()).inDays;
   }
 
-  /// Trimester (1, 2, or 3)
   int? get trimester {
     final week = currentWeek;
     if (week == null) return null;
@@ -68,13 +84,11 @@ class UserProfile {
     return 3;
   }
 
-  /// Baby's age in days (for newborn/toddler stage)
   int? get babyAgeDays {
     if (babyBirthDate == null) return null;
     return DateTime.now().difference(babyBirthDate!).inDays;
   }
 
-  /// Baby's age in months
   int? get babyAgeMonths {
     final days = babyAgeDays;
     if (days == null) return null;
@@ -94,12 +108,21 @@ class UserProfile {
       'partnerName': partnerName,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': DateTime.now().toIso8601String(),
-      'children': children.map((c) => c.toFirestore()).toList(),
-      'selectedChildId': selectedChildId,
+      // Write to `members` going forward. Also write legacy `children` key
+      // so older clients keep reading the account correctly for one release.
+      'members': members.map((m) => m.toFirestore()).toList(),
+      'children': members.map((m) => m.toFirestore()).toList(),
+      'selectedMemberId': selectedMemberId,
+      'selectedChildId': selectedMemberId,
     };
   }
 
   factory UserProfile.fromFirestore(Map<String, dynamic> data) {
+    // Dual-read: prefer `members`, fall back to legacy `children`.
+    final rawMembers = (data['members'] as List<dynamic>?) ??
+        (data['children'] as List<dynamic>?) ??
+        const [];
+
     return UserProfile(
       uid: data['uid'] as String,
       email: data['email'] as String,
@@ -117,11 +140,10 @@ class UserProfile {
       partnerName: data['partnerName'] as String?,
       createdAt: DateTime.parse(data['createdAt']),
       updatedAt: DateTime.parse(data['updatedAt']),
-      children: (data['children'] as List<dynamic>?)
-              ?.map((c) => Child.fromFirestore(c as Map<String, dynamic>))
-              .toList() ??
-          [],
-      selectedChildId: data['selectedChildId'] as String?,
+      members: rawMembers
+          .map((m) => HouseholdMember.fromFirestore(m as Map<String, dynamic>))
+          .toList(),
+      selectedMemberId: (data['selectedMemberId'] ?? data['selectedChildId']) as String?,
     );
   }
 
@@ -133,7 +155,11 @@ class UserProfile {
     DateTime? babyBirthDate,
     String? babyName,
     String? partnerName,
-    List<Child>? children,
+    List<HouseholdMember>? members,
+    // Legacy alias — existing callers pass `children:`; accept and forward.
+    List<HouseholdMember>? children,
+    String? selectedMemberId,
+    // Legacy alias — existing callers pass `selectedChildId:`.
     String? selectedChildId,
   }) {
     return UserProfile(
@@ -148,8 +174,23 @@ class UserProfile {
       partnerName: partnerName ?? this.partnerName,
       createdAt: createdAt,
       updatedAt: DateTime.now(),
-      children: children ?? this.children,
-      selectedChildId: selectedChildId ?? this.selectedChildId,
+      members: members ?? children ?? this.members,
+      selectedMemberId: selectedMemberId ?? selectedChildId ?? this.selectedMemberId,
     );
+  }
+
+  /// If the household doesn't yet contain a `self` member, prepend one
+  /// derived from the account owner's profile. Called lazily on app
+  /// start so legacy accounts auto-gain a Self member without manual
+  /// migration.
+  UserProfile withSelfIfMissing() {
+    if (members.any((m) => m.role == MemberRole.self)) return this;
+    final self = HouseholdMember(
+      id: 'self-$uid',
+      name: displayName,
+      role: MemberRole.self,
+      stage: null,
+    );
+    return copyWith(members: [self, ...members]);
   }
 }

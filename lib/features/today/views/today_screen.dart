@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../main.dart' show localeProvider;
+import '../../../shared/models/child_model.dart';
 import '../../../shared/models/tracking_entry.dart';
 import '../../../shared/widgets/notification_bell.dart';
 import '../../journey/providers/journey_provider.dart';
@@ -54,6 +55,17 @@ class TodayScreen extends ConsumerWidget {
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
+            ),
+            const SizedBox(height: 12),
+
+            // Household member switcher — horizontal avatar row
+            _MemberSwitcher(
+              members: profile.members,
+              selectedId: profile.selectedMember?.id,
+              onSelect: (id) {
+                ref.read(userProfileProvider.notifier).selectChild(id);
+              },
+              onAdd: () => context.push('/children'),
             ),
             const SizedBox(height: 16),
 
@@ -696,6 +708,163 @@ class _ProductCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Household member switcher — horizontal avatar row
+// ─────────────────────────────────────────────
+
+class _MemberSwitcher extends StatelessWidget {
+  final List<HouseholdMember> members;
+  final String? selectedId;
+  final ValueChanged<String> onSelect;
+  final VoidCallback onAdd;
+
+  const _MemberSwitcher({
+    required this.members,
+    required this.selectedId,
+    required this.onSelect,
+    required this.onAdd,
+  });
+
+  IconData _iconForRole(MemberRole role, ParentingStage? stage) {
+    if (role == MemberRole.child) {
+      if (stage == ParentingStage.pregnant) return Icons.pregnant_woman;
+      if (stage == ParentingStage.newborn) return Icons.child_care;
+      return Icons.child_friendly;
+    }
+    switch (role) {
+      case MemberRole.self:
+        return Icons.person;
+      case MemberRole.partner:
+        return Icons.favorite;
+      case MemberRole.mother:
+        return Icons.face_3;
+      case MemberRole.father:
+        return Icons.face_6;
+      case MemberRole.grandmother:
+      case MemberRole.grandfather:
+        return Icons.elderly;
+      case MemberRole.sibling:
+        return Icons.people;
+      case MemberRole.uncleAunt:
+        return Icons.group;
+      default:
+        return Icons.person_outline;
+    }
+  }
+
+  Color _colorForRole(MemberRole role) {
+    switch (role) {
+      case MemberRole.child:
+        return AppColors.primary;
+      case MemberRole.self:
+        return AppColors.secondary;
+      case MemberRole.partner:
+        return AppColors.error;
+      case MemberRole.mother:
+      case MemberRole.grandmother:
+        return AppColors.accent;
+      case MemberRole.father:
+      case MemberRole.grandfather:
+        return AppColors.secondaryDark;
+      default:
+        return AppColors.textSecondary;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (members.isEmpty) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 72,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.zero,
+        itemCount: members.length + 1,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (context, i) {
+          if (i == members.length) return _AddMemberChip(onTap: onAdd);
+          final m = members[i];
+          final selected = m.id == selectedId;
+          final color = _colorForRole(m.role);
+          return GestureDetector(
+            onTap: () => onSelect(m.id),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: selected ? color : Colors.transparent,
+                      width: 2.5,
+                    ),
+                  ),
+                  child: Icon(_iconForRole(m.role, m.stage), color: color, size: 24),
+                ),
+                const SizedBox(height: 4),
+                SizedBox(
+                  width: 56,
+                  child: Text(
+                    m.name.split(' ').first,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                      color: selected ? color : AppColors.textSecondary,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AddMemberChip extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AddMemberChip({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.divider, width: 1.5),
+            ),
+            child: const Icon(Icons.add, color: AppColors.textHint, size: 22),
+          ),
+          const SizedBox(height: 4),
+          const SizedBox(
+            width: 56,
+            child: Text(
+              '+',
+              style: TextStyle(fontSize: 11, color: AppColors.textHint),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
       ),
     );
   }

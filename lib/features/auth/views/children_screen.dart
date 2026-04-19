@@ -305,21 +305,32 @@ class _ChildCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stageIcon = switch (child.stage) {
-      ParentingStage.tryingToConceive => Icons.favorite,
-      ParentingStage.pregnant => Icons.pregnant_woman,
-      ParentingStage.newborn => Icons.child_care,
-      ParentingStage.toddler => Icons.child_friendly,
-    };
+    // Stage is null for adult members (self, partner, grandparents…).
+    // Fall back to a generic person icon and role-based subtitle in that case.
+    final stage = child.stage;
+    final IconData stageIcon = stage == null
+        ? Icons.person_outline
+        : switch (stage) {
+            ParentingStage.tryingToConceive => Icons.favorite,
+            ParentingStage.pregnant => Icons.pregnant_woman,
+            ParentingStage.newborn => Icons.child_care,
+            ParentingStage.toddler => Icons.child_friendly,
+          };
 
     String subtitle;
-    if (child.stage == ParentingStage.pregnant) {
+    if (stage == null) {
+      // Adult: show age in years or just the name.
+      final years = child.ageYears;
+      subtitle = years != null ? '$years' : child.role.name;
+    } else if (stage == ParentingStage.pregnant) {
       final weeks = child.currentWeek;
-      subtitle = weeks != null ? '${L.of(context).weekN(weeks)} — ${L.of(context).daysToGo(child.daysRemaining ?? 0)}' : child.stage.label;
+      subtitle = weeks != null
+          ? '${L.of(context).weekN(weeks)} — ${L.of(context).daysToGo(child.daysRemaining ?? 0)}'
+          : stage.label;
     } else if (child.ageMonths != null) {
-      subtitle = '${child.ageMonths} ${L.of(context).months} — ${child.stage.label}';
+      subtitle = '${child.ageMonths} ${L.of(context).months} — ${stage.label}';
     } else {
-      subtitle = child.stage.label;
+      subtitle = stage.label;
     }
 
     return Card(
