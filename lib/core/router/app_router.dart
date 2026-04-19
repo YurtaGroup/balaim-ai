@@ -28,6 +28,7 @@ import '../../features/newborn/views/emergency_reference_screen.dart';
 import '../../features/newborn/views/postpartum_screen.dart';
 import '../../features/newborn/views/baby_foods_screen.dart';
 import '../../features/ai/views/ai_chat_screen.dart';
+import '../../features/ai/views/demo_conversations_screen.dart';
 import '../../features/community/views/community_screen.dart';
 import '../../features/admin/views/admin_dashboard_screen.dart';
 import '../../features/admin/views/admin_metrics_screen.dart';
@@ -161,6 +162,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/moments',
         builder: (context, state) => const MomentsScreen(),
+      ),
+
+      GoRoute(
+        path: '/ai/examples',
+        builder: (context, state) => const DemoConversationsScreen(),
       ),
 
       GoRoute(

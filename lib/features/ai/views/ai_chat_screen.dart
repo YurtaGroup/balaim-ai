@@ -253,6 +253,13 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu_book_outlined),
+            tooltip: L.of(context).exampleConversations,
+            onPressed: () => context.push('/ai/examples'),
+          ),
+        ],
       ),
       body: Column(
         children: [

@@ -2021,6 +2021,12 @@ class LEn extends L {
   String get noResultsFound => 'No results found';
 
   @override
+  String get exampleConversations => 'Example conversations';
+
+  @override
+  String get balamResponds => 'BALAM RESPONDS';
+
+  @override
   String get triageHighTitle => 'This sounds like it needs a doctor';
 
   @override

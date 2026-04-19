@@ -2014,6 +2014,12 @@ class LRu extends L {
   String get noResultsFound => 'Ничего не найдено';
 
   @override
+  String get exampleConversations => 'Примеры диалогов';
+
+  @override
+  String get balamResponds => 'БАЛАМ ОТВЕЧАЕТ';
+
+  @override
   String get triageHighTitle => 'Похоже, нужна консультация врача';
 
   @override

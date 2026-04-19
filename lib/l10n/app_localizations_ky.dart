@@ -2011,6 +2011,12 @@ class LKy extends L {
   String get noResultsFound => 'Эч нерсе табылган жок';
 
   @override
+  String get exampleConversations => 'Үлгү сүйлөшүүлөр';
+
+  @override
+  String get balamResponds => 'БАЛАМ ЖООП БЕРЕТ';
+
+  @override
   String get triageHighTitle => 'Бул дарыгерди көрүү керек окшойт';
 
   @override

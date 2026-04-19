@@ -3855,6 +3855,9 @@ abstract class L {
   /// **'No results found'**
   String get noResultsFound;
 
+  String get exampleConversations;
+  String get balamResponds;
+
   /// No description provided for @triageHighTitle.
   ///
   /// In en, this message translates to:
