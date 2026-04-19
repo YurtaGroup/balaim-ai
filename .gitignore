@@ -106,3 +106,6 @@ venv/
 
 # Claude Code / agent session files
 .claude/
+
+# Claude Design brief zip — regenerated from the folder, not tracked
+docs/*.zip
