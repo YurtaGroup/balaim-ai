@@ -43,6 +43,28 @@ service cloud.firestore {
       allow create, delete: if false; // Only Cloud Functions
     }
 
+    // Proactive notices — "The App That Notices". User reads their own
+    // inbox; Cloud Functions write. Users may update only dismissedAt /
+    // actedAt (never the content) and cannot delete — history is
+    // preserved for the analytics needed by the D30 kill-criteria.
+    match /notices/{userId} {
+      // The parent doc itself can exist as a placeholder; only owner reads.
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+
+      match /items/{noticeId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow update: if request.auth != null && request.auth.uid == userId
+                       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dismissedAt', 'actedAt']);
+        allow create, delete: if false; // Cloud Functions only
+      }
+
+      // Dedup sentinel docs — server-only (clients should never touch).
+      match /_state/{stateId} {
+        allow read, write: if false;
+      }
+    }
+
     // Community posts — any authenticated user can read, author can write
     match /posts/{postId} {
       allow read: if request.auth != null;

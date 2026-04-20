@@ -2027,6 +2027,15 @@ class LEn extends L {
   String get balamResponds => 'BALAM RESPONDS';
 
   @override
+  String get balamNoticed => 'BALAM NOTICED';
+
+  @override
+  String get dismiss => 'Dismiss';
+
+  @override
+  String get readMore => 'Read more';
+
+  @override
   String get triageHighTitle => 'This sounds like it needs a doctor';
 
   @override

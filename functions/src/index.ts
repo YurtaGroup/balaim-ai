@@ -242,6 +242,55 @@ export const proactiveNoticesOnDemand = onCall(
 );
 
 /**
+ * FCM push when a new proactive notice lands. Locale-aware: picks the
+ * title / body variant matching the user's saved language preference,
+ * falls back to English.
+ *
+ * Kept a 1st-gen onCreate trigger for consistency with the existing
+ * onNewInsight notification pattern. If we need to migrate off 1st-gen
+ * later we'll move both together.
+ */
+export const onNewNotice = functions.firestore
+  .document("notices/{uid}/items/{noticeId}")
+  .onCreate(async (snap, context) => {
+    const uid = context.params.uid;
+    const data = snap.data();
+    if (!data) return;
+
+    const userDoc = await admin.firestore().collection("users").doc(uid).get();
+    const userData = userDoc.data();
+    if (!userData?.fcmToken) return;
+
+    const locale = (userData.localeCode as string) ?? "en";
+    const pick = (field: Record<string, string> | undefined): string | undefined => {
+      if (!field) return undefined;
+      return field[locale] ?? field.en;
+    };
+
+    const title = pick(data.title) ?? "Balam noticed something";
+    const body = pick(data.body) ?? "";
+    const truncated = body.length > 140 ? body.slice(0, 137) + "…" : body;
+
+    try {
+      await admin.messaging().send({
+        token: userData.fcmToken,
+        notification: {
+          title,
+          body: truncated,
+        },
+        data: {
+          type: "notice",
+          noticeId: snap.id,
+          memberId: (data.memberId as string) ?? "",
+          route: ((data.action as Record<string, unknown>)?.route as string) ?? "/",
+        },
+      });
+    } catch (err) {
+      functions.logger.warn("[onNewNotice] FCM send failed", { err });
+    }
+  });
+
+/**
  * Scheduled: Generate daily insights for all active users
  * Runs every day at 7 AM UTC
  */

@@ -692,6 +692,9 @@
   "noResultsFound": "Эч нерсе табылган жок",
   "exampleConversations": "Үлгү сүйлөшүүлөр",
   "balamResponds": "БАЛАМ ЖООП БЕРЕТ",
+  "balamNoticed": "БАЛАМ БАЙКАДЫ",
+  "dismiss": "Жабуу",
+  "readMore": "Толугу менен",
 
   "triageHighTitle": "Бул дарыгерди көрүү керек окшойт",
   "triageHighBody": "Текшерилген педиатр менен асинхрондук кеңеш — адатта 4 сааттын ичинде жооп.",

@@ -2020,6 +2020,15 @@ class LRu extends L {
   String get balamResponds => 'БАЛАМ ОТВЕЧАЕТ';
 
   @override
+  String get balamNoticed => 'БАЛАМ ЗАМЕТИЛ';
+
+  @override
+  String get dismiss => 'Скрыть';
+
+  @override
+  String get readMore => 'Подробнее';
+
+  @override
   String get triageHighTitle => 'Похоже, нужна консультация врача';
 
   @override

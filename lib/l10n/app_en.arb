@@ -705,6 +705,9 @@
   "noResultsFound": "No results found",
   "exampleConversations": "Example conversations",
   "balamResponds": "BALAM RESPONDS",
+  "balamNoticed": "BALAM NOTICED",
+  "dismiss": "Dismiss",
+  "readMore": "Read more",
 
   "triageHighTitle": "This sounds like it needs a doctor",
   "triageHighBody": "Consider an async consult with a verified pediatrician — typically answered in 4h.",

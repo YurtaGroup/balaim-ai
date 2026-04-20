@@ -2017,6 +2017,15 @@ class LKy extends L {
   String get balamResponds => 'БАЛАМ ЖООП БЕРЕТ';
 
   @override
+  String get balamNoticed => 'БАЛАМ БАЙКАДЫ';
+
+  @override
+  String get dismiss => 'Жабуу';
+
+  @override
+  String get readMore => 'Толугу менен';
+
+  @override
   String get triageHighTitle => 'Бул дарыгерди көрүү керек окшойт';
 
   @override

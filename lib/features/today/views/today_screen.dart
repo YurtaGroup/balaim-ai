@@ -12,6 +12,7 @@ import '../../../shared/models/tracking_entry.dart';
 import '../../../shared/widgets/notification_bell.dart';
 import '../../journey/providers/journey_provider.dart';
 import '../../journey/views/tracking_sheet.dart';
+import '../../notices/notice_card.dart';
 import '../providers/today_provider.dart';
 
 class TodayScreen extends ConsumerWidget {
@@ -101,6 +102,10 @@ class TodayScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 20),
+
+            // The App That Notices — proactive nudge card
+            // Self-hides if there's nothing to show for the active member.
+            const NoticeCard(),
 
             // Card 1: This Week's Focus
             _FocusCard(

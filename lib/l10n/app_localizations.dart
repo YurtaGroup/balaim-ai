@@ -3855,8 +3855,21 @@ abstract class L {
   /// **'No results found'**
   String get noResultsFound;
 
+  /// No description provided for @exampleConversations.
+  ///
+  /// In en, this message translates to:
+  /// **'Example conversations'**
   String get exampleConversations;
+
+  /// No description provided for @balamResponds.
+  ///
+  /// In en, this message translates to:
+  /// **'BALAM RESPONDS'**
   String get balamResponds;
+
+  String get balamNoticed;
+  String get dismiss;
+  String get readMore;
 
   /// No description provided for @triageHighTitle.
   ///
