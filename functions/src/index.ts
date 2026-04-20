@@ -1,9 +1,14 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import { defineSecret } from "firebase-functions/params";
 import { balamChat as balamChatInternal } from "./ai/balam-chat";
 import { generateDailyInsight } from "./ai/daily-insights";
+import {
+  runScheduleEngineForAllUsers,
+  runScheduleEngineForUser,
+} from "./ai/notices";
 
 admin.initializeApp();
 
@@ -193,6 +198,48 @@ export const dailyInsight = functions
 
     return { insight };
   });
+
+// ============================================================
+// PROACTIVE NOTICES — "The App That Notices"
+// ============================================================
+
+/**
+ * Scheduled: run the proactive-notices schedule engine against every
+ * household. Fires at 07:00 UTC daily; dedup is handled inside the
+ * engine (per-member, per-milestone, per repeatIntervalDays window)
+ * so it's safe to re-run.
+ *
+ * 2nd-gen scheduled function so it co-lives with balamChat's SA
+ * model and doesn't hit the missing default-compute SA.
+ */
+export const proactiveNoticesScheduled = onSchedule(
+  { schedule: "0 7 * * *", timeZone: "UTC", region: "us-central1" },
+  async () => {
+    const result = await runScheduleEngineForAllUsers();
+    functions.logger.info("[proactiveNotices] run complete", result);
+  }
+);
+
+/**
+ * Callable twin: lets us force-run the engine for the invoking user
+ * without waiting for the cron. Useful during development + for the
+ * verification steps.
+ */
+export const proactiveNoticesOnDemand = onCall(
+  { region: "us-central1" },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
+    }
+    const uid = request.auth.uid;
+    const userDoc = await admin.firestore().doc(`users/${uid}`).get();
+    if (!userDoc.exists) {
+      throw new HttpsError("not-found", "User profile not found");
+    }
+    const result = await runScheduleEngineForUser(uid, userDoc.data() ?? {});
+    return result;
+  }
+);
 
 /**
  * Scheduled: Generate daily insights for all active users
