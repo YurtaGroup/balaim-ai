@@ -8,6 +8,7 @@ import { generateDailyInsight } from "./ai/daily-insights";
 import {
   runScheduleEngineForAllUsers,
   runScheduleEngineForUser,
+  runTrendEngineForUser,
 } from "./ai/notices";
 
 admin.initializeApp();
@@ -215,8 +216,30 @@ export const dailyInsight = functions
 export const proactiveNoticesScheduled = onSchedule(
   { schedule: "0 7 * * *", timeZone: "UTC", region: "us-central1" },
   async () => {
-    const result = await runScheduleEngineForAllUsers();
-    functions.logger.info("[proactiveNotices] run complete", result);
+    // Engine 1 — schedule-based, all users
+    const scheduleResult = await runScheduleEngineForAllUsers();
+    functions.logger.info("[proactiveNotices] schedule engine", scheduleResult);
+
+    // Engine 2 — trend-based, all users. Iterate users separately since
+    // each tracking query is per-user and can't be batched like schedule.
+    const usersSnap = await admin.firestore().collection("users").get();
+    let trendFired = 0;
+    let trendSuppressed = 0;
+    const errors: string[] = [];
+    for (const userDoc of usersSnap.docs) {
+      try {
+        const r = await runTrendEngineForUser(userDoc.id, userDoc.data());
+        trendFired += r.noticesFired;
+        trendSuppressed += r.noticesSuppressed;
+      } catch (e) {
+        errors.push(`uid=${userDoc.id}: ${String(e)}`);
+      }
+    }
+    functions.logger.info("[proactiveNotices] trend engine", {
+      trendFired,
+      trendSuppressed,
+      errors,
+    });
   }
 );
 
@@ -236,8 +259,17 @@ export const proactiveNoticesOnDemand = onCall(
     if (!userDoc.exists) {
       throw new HttpsError("not-found", "User profile not found");
     }
-    const result = await runScheduleEngineForUser(uid, userDoc.data() ?? {});
-    return result;
+    const schedule = await runScheduleEngineForUser(uid, userDoc.data() ?? {});
+    const trend = await runTrendEngineForUser(uid, userDoc.data() ?? {});
+    return {
+      schedule,
+      trend,
+      total: {
+        membersEvaluated: Math.max(schedule.membersEvaluated, trend.membersEvaluated),
+        noticesFired: schedule.noticesFired + trend.noticesFired,
+        noticesSuppressed: schedule.noticesSuppressed + trend.noticesSuppressed,
+      },
+    };
   }
 );
 
