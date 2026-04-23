@@ -12,6 +12,8 @@ import '../../features/lab/views/lab_analysis_screen.dart';
 import '../../features/lab/views/lab_entry_screen.dart';
 import '../../features/vault/views/vault_screen.dart';
 import '../../features/pharmacy/views/pharmacy_directory_screen.dart';
+import '../../features/home/views/home_screen.dart';
+import '../feature_flags.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/today/views/today_screen.dart';
 import '../../features/journey/views/due_date_screen.dart';
@@ -212,10 +214,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: TodayScreen(),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: FeatureFlags.v2Surface ? const HomeScreen() : const TodayScreen(),
             ),
           ),
+          // v2 primary: voice-first AI entry. For the first v2 cut we
+          // reuse AiChatScreen directly; a dedicated voice-first surface
+          // lands in week 2 of the reset.
+          GoRoute(
+            path: '/ask',
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: AiChatScreen(
+                prefill: state.uri.queryParameters['prefill'],
+              ),
+            ),
+          ),
+          // v2 primary: Child tab — maps straight onto the Vault surface
+          // (per-member doc timeline is exactly what the Child tab is).
+          GoRoute(
+            path: '/child',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: VaultScreen(),
+            ),
+          ),
+          // Legacy /ai path kept so deep links + existing UI that still
+          // pushes to /ai keep working.
           GoRoute(
             path: '/ai',
             pageBuilder: (context, state) => NoTransitionPage(
@@ -224,30 +247,36 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ),
           ),
-          GoRoute(
-            path: '/community',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: CommunityScreen(),
+          if (FeatureFlags.showCommunityTab)
+            GoRoute(
+              path: '/community',
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: CommunityScreen(),
+              ),
             ),
-          ),
+          // Professionals is reachable in v2 via the Home overflow menu,
+          // not as a bottom-nav tab. Keep the route available in both
+          // shells so links + the Pharmacies AppBar action still work.
           GoRoute(
             path: '/professionals',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: ProfessionalsScreen(),
             ),
           ),
-          GoRoute(
-            path: '/marketplace',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: MarketplaceScreen(),
+          if (FeatureFlags.showMarketplaceTab)
+            GoRoute(
+              path: '/marketplace',
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: MarketplaceScreen(),
+              ),
             ),
-          ),
-          GoRoute(
-            path: '/my-child',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: MyChildScreen(),
+          if (FeatureFlags.showMyChildTab)
+            GoRoute(
+              path: '/my-child',
+              pageBuilder: (context, state) => const NoTransitionPage(
+                child: MyChildScreen(),
+              ),
             ),
-          ),
         ],
       ),
     ],
