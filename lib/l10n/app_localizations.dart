@@ -3867,8 +3867,22 @@ abstract class L {
   /// **'BALAM RESPONDS'**
   String get balamResponds;
 
+  /// No description provided for @balamNoticed.
+  ///
+  /// In en, this message translates to:
+  /// **'BALAM NOTICED'**
   String get balamNoticed;
+
+  /// No description provided for @dismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
   String get dismiss;
+
+  /// No description provided for @readMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Read more'**
   String get readMore;
 
   /// No description provided for @triageHighTitle.

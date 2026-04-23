@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { retrieveVaultContext } from "./vault_retrieval";
 
 interface UserContext {
   uid: string;
@@ -7,6 +8,7 @@ interface UserContext {
   // Household-member-scoped fields (build 14+). When memberRole is set to a
   // non-child role (self / partner / mother / father / grandmother / grandfather
   // / sibling / uncleAunt / other), the adult-coach system prompt branch fires.
+  memberId?: string; // vault retrieval scopes to this member
   memberName?: string;
   memberRole?: string;
   memberAgeYears?: number;
@@ -321,6 +323,8 @@ function buildSystemPrompt(context: UserContext): string {
     prompt += buildToddlerPrompt(ageMonths, context.babyName);
   }
 
+  prompt += `\n\nFAMILY HEALTH VAULT GROUNDING: When the user turn contains a "[Family Health Vault — relevant records …]" block, those are real medical documents this family uploaded. Ground your answer in them: quote values, dates, and providers briefly when relevant (e.g., "on your endocrinologist's Oct-12 note…"). If the vault doesn't contain what they're asking about, say so plainly — never invent. If the vault conflicts with your general knowledge, trust the vault for what's specific to this family.`;
+
   const languageName = LANGUAGE_NAMES[context.locale ?? "en"] ?? "English";
   prompt += `\n\nLANGUAGE (CRITICAL): The user has selected ${languageName}. Respond ONLY in ${languageName}. Keep medical terms and Montessori vocabulary natural to that language. Never mix languages in one response.`;
 
@@ -366,6 +370,24 @@ export async function balamChat(
 
   // Build contextual user message (prepended to current turn only)
   let contextBlock = "";
+
+  // Vault retrieval — grounds the AI in the family's actual records.
+  // Guarded by a 1200ms timeout; failure is silent so chat never blocks
+  // on the vault.
+  if (context.uid && context.memberId) {
+    try {
+      const vaultBlock = await Promise.race([
+        retrieveVaultContext(context.uid, context.memberId, message, { max: 3 }),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 1200)),
+      ]);
+      if (vaultBlock) {
+        contextBlock += `\n${vaultBlock}\n`;
+      }
+    } catch (e) {
+      console.warn("[balamChat] vault retrieval skipped", { err: String(e) });
+    }
+  }
+
   if (context.week) {
     contextBlock += `\n[User is at pregnancy week ${context.week}]`;
   }

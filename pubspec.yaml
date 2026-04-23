@@ -1,7 +1,7 @@
 name: balam_ai
 description: "Balam.AI — The Parenting Super App"
 publish_to: 'none'
-version: 1.4.0+16
+version: 1.5.0+17
 
 environment:
   sdk: ^3.11.3

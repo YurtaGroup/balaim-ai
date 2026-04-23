@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/l10n/content_localizations.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -188,7 +189,7 @@ class ProfileScreen extends ConsumerWidget {
                             Icon(stageIcon, color: isSelected ? Colors.white : AppColors.textPrimary, size: 16),
                             const SizedBox(width: 6),
                             Text(
-                              stage.label,
+                              stage.labelFor(currentLang(context)),
                               style: TextStyle(
                                 color: isSelected ? Colors.white : AppColors.textPrimary,
                                 fontWeight: FontWeight.w600,
@@ -209,7 +210,7 @@ class ProfileScreen extends ConsumerWidget {
           _ProfileTile(
             icon: Icons.child_care,
             title: L.of(context).myJourneyStage,
-            subtitle: '${profile.stage.label} — ${profile.stage == ParentingStage.pregnant ? "Week ${profile.currentWeek ?? 24}" : profile.babyName ?? "My Baby"}',
+            subtitle: '${profile.stage.labelFor(currentLang(context))} — ${profile.stage == ParentingStage.pregnant ? L.of(context).weekN(profile.currentWeek ?? 24) : (profile.babyName ?? L.of(context).myBaby)}',
             onTap: () => context.push('/stage-select'),
           ),
           _ProfileTile(

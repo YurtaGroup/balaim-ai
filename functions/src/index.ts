@@ -10,6 +10,13 @@ import {
   runScheduleEngineForUser,
   runTrendEngineForUser,
 } from "./ai/notices";
+import {
+  classifyAndRecord,
+  BoxReading,
+  ReadingType,
+} from "./ai/box_interpretation";
+import { MemberSnapshot } from "./data/milestones";
+import { buildOnVaultItemCreated } from "./ai/vault_ingest";
 
 admin.initializeApp();
 
@@ -369,6 +376,143 @@ export const scheduledDailyInsights = functions.pubsub
     await batch.commit();
     console.log(`Generated insights for ${usersSnapshot.size} users`);
   });
+
+// ============================================================
+// BALAM VAULT — document ingest pipeline
+// ============================================================
+
+/**
+ * Fired when a client writes a new doc to `vault/{uid}/items/{id}`
+ * with `status: 'pending'`. Downloads the uploaded file from Firebase
+ * Storage, sends it to Claude Vision with a structured extraction
+ * prompt, and writes back the parsed metadata (docType, provider,
+ * date, diagnoses, medications, follow-up, flags, raw text) plus
+ * `status: 'processed'`. On failure writes `status: 'failed'` with
+ * an error code so the client can offer retry.
+ *
+ * 1st-gen onCreate trigger for consistency with `onNewInsight` +
+ * `onNewNotice`. If we migrate off 1st-gen we'll move them together.
+ */
+export const onVaultItemCreated = buildOnVaultItemCreated(
+  () => anthropicKey.value(),
+  { secrets: ["ANTHROPIC_API_KEY"], memory: "512MB", timeoutSeconds: 60 }
+);
+
+// ============================================================
+// BALAM BOX — clinical tier classifier callable
+// ============================================================
+
+/**
+ * Submit a single Balam Box reading (BP / glucose / dipstick /
+ * temperature / weight). The server classifies into Green/Yellow/
+ * Orange/Red per Scope-of-Practice v0.1, writes notice + clinical
+ * audit + (if Red) emergency doc, and returns the full classification
+ * so the client can render the tier-appropriate UI immediately.
+ *
+ * Auth required. Member must belong to the authenticated user's
+ * household (looked up on `users/{uid}.members`).
+ */
+export const submitBoxReading = onCall(
+  { region: "us-central1" },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
+    }
+    const uid = request.auth.uid;
+
+    const reading = request.data?.reading as BoxReading | undefined;
+    if (!reading || typeof reading !== "object") {
+      throw new HttpsError("invalid-argument", "reading is required");
+    }
+    const validTypes: ReadingType[] = [
+      "bloodPressure",
+      "bloodGlucose",
+      "dipstick",
+      "temperature",
+      "weight",
+    ];
+    if (!validTypes.includes(reading.type)) {
+      throw new HttpsError("invalid-argument", `reading.type must be one of ${validTypes.join(", ")}`);
+    }
+    if (!reading.memberId || typeof reading.memberId !== "string") {
+      throw new HttpsError("invalid-argument", "reading.memberId is required");
+    }
+    if (!reading.timestamp || typeof reading.timestamp !== "string") {
+      reading.timestamp = new Date().toISOString();
+    }
+
+    // Resolve the member. Prefer server-side (authoritative) household
+    // record; fall back to a client-supplied snapshot so the app works
+    // even when local profile state hasn't yet synced to Firestore.
+    // We persist any client-supplied member so subsequent calls are
+    // fully server-authoritative.
+    const userRef = admin.firestore().doc(`users/${uid}`);
+    const userDoc = await userRef.get();
+    const rawMembers = ((userDoc.data()?.members as unknown[]) ??
+      (userDoc.data()?.children as unknown[]) ??
+      []) as Record<string, unknown>[];
+    let memberRaw = rawMembers.find((m) => m && m.id === reading.memberId);
+
+    const clientMember = request.data?.member as Record<string, unknown> | undefined;
+    if (!memberRaw && clientMember && clientMember.id === reading.memberId) {
+      memberRaw = clientMember;
+      // Persist back — upsert into users/{uid}.members for next time.
+      const nextMembers = [...rawMembers, clientMember];
+      await userRef.set({ members: nextMembers }, { merge: true });
+    }
+
+    if (!memberRaw) {
+      throw new HttpsError(
+        "not-found",
+        "Member not found in household (and no client snapshot provided)"
+      );
+    }
+    const member: MemberSnapshot = {
+      id: String(memberRaw.id ?? ""),
+      name: String(memberRaw.name ?? ""),
+      role: (memberRaw.role as MemberSnapshot["role"]) ?? "other",
+      birthDate: typeof memberRaw.birthDate === "string" ? memberRaw.birthDate : undefined,
+      conditions: Array.isArray(memberRaw.conditions) ? (memberRaw.conditions as string[]) : undefined,
+      gender: typeof memberRaw.gender === "string" ? memberRaw.gender : undefined,
+    };
+
+    const result = await classifyAndRecord(uid, member, reading);
+
+    // Also append to the user's tracking log so it shows up in history
+    // and feeds the existing trend engine on its next nightly run.
+    await admin.firestore().collection(`users/${uid}/tracking`).add({
+      memberId: member.id,
+      type: reading.type,
+      // Flatten the most commonly-queried numeric value for trend engine
+      value:
+        reading.type === "bloodPressure"
+          ? reading.systolic ?? null
+          : reading.type === "bloodGlucose"
+          ? reading.glucose ?? null
+          : reading.type === "temperature"
+          ? reading.tempC ?? null
+          : reading.type === "weight"
+          ? reading.weightKg ?? null
+          : null,
+      payload: reading,
+      timestamp: reading.timestamp,
+      tier: result.tier,
+      ruleId: result.ruleId,
+      protocolVersion: result.protocolVersion,
+    });
+
+    return {
+      tier: result.tier,
+      ruleId: result.ruleId,
+      protocolVersion: result.protocolVersion,
+      reason: result.reason,
+      noticeId: result.noticeId ?? null,
+      auditId: result.auditId ?? null,
+      emergencyId: result.emergencyId ?? null,
+      emergency: result.emergency ?? null,
+    };
+  }
+);
 
 // ============================================================
 // NOTIFICATION ENDPOINTS

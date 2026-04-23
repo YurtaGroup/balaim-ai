@@ -91,6 +91,7 @@ class AiService {
           'locale': locale,
           'briefMode': briefMode,
           // Member-scoped fields (new, required by build-14 adult branch)
+          'memberId': member?.id,
           'memberName': member?.name ?? profile.babyName,
           'memberRole': memberRole,
           'memberAgeYears': member?.ageYears,

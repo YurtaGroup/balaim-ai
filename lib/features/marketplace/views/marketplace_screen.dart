@@ -2,7 +2,9 @@ import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/constants/app_constants.dart' show ParentingStageX;
 import '../../../core/data/seed_data.dart';
+import '../../../core/l10n/content_localizations.dart';
 import '../../../shared/models/marketplace_models.dart';
 import '../../journey/providers/journey_provider.dart';
 
@@ -88,7 +90,7 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          L.of(context).balamPicksStage(profile.stage.label),
+                          L.of(context).balamPicksStage(profile.stage.labelFor(currentLang(context))),
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
@@ -185,7 +187,7 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
 
           // All stage-relevant products
           if (stageProducts.where((p) => !featured.contains(p)).isNotEmpty) ...[
-            Text(L.of(context).allForStage(profile.stage.label), style: Theme.of(context).textTheme.titleLarge),
+            Text(L.of(context).allForStage(profile.stage.labelFor(currentLang(context))), style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
           ],
           ...stageProducts.where((p) => !featured.contains(p)).take(isSearching ? 50 : 8).map((p) => Padding(

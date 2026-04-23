@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/l10n/content_localizations.dart';
 import '../../../shared/models/child_model.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../journey/providers/journey_provider.dart';
@@ -16,12 +17,18 @@ class ChildrenScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Family'),
+        title: Text(tr(currentLang(context),
+            en: 'My Family',
+            ru: 'Моя семья',
+            ky: 'Менин үй-бүлөм')),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddChildDialog(context, ref),
         icon: const Icon(Icons.person_add),
-        label: const Text('Add member'),
+        label: Text(tr(currentLang(context),
+            en: 'Add member',
+            ru: 'Добавить',
+            ky: 'Кошуу')),
       ),
       body: children.isEmpty
           ? Center(
@@ -80,17 +87,18 @@ class ChildrenScreen extends ConsumerWidget {
     ];
 
     String roleLabel(MemberRole r) {
+      final lang = currentLang(context);
       switch (r) {
-        case MemberRole.child:      return 'Child';
-        case MemberRole.partner:    return 'Partner';
-        case MemberRole.mother:     return 'Mom';
-        case MemberRole.father:     return 'Dad';
-        case MemberRole.grandmother:return 'Grandma';
-        case MemberRole.grandfather:return 'Grandpa';
-        case MemberRole.sibling:    return 'Sibling';
-        case MemberRole.uncleAunt:  return 'Aunt/Uncle';
-        case MemberRole.other:      return 'Other';
-        case MemberRole.self:       return 'Me';
+        case MemberRole.child:      return tr(lang, en: 'Child', ru: 'Ребёнок', ky: 'Бала');
+        case MemberRole.partner:    return tr(lang, en: 'Partner', ru: 'Супруг(а)', ky: 'Жубай');
+        case MemberRole.mother:     return tr(lang, en: 'Mom', ru: 'Мама', ky: 'Апа');
+        case MemberRole.father:     return tr(lang, en: 'Dad', ru: 'Папа', ky: 'Ата');
+        case MemberRole.grandmother:return tr(lang, en: 'Grandma', ru: 'Бабушка', ky: 'Чоң эне');
+        case MemberRole.grandfather:return tr(lang, en: 'Grandpa', ru: 'Дедушка', ky: 'Чоң ата');
+        case MemberRole.sibling:    return tr(lang, en: 'Sibling', ru: 'Брат/Сестра', ky: 'Бир тууган');
+        case MemberRole.uncleAunt:  return tr(lang, en: 'Aunt/Uncle', ru: 'Дядя/Тётя', ky: 'Таяке/Эже');
+        case MemberRole.other:      return tr(lang, en: 'Other', ru: 'Другое', ky: 'Башка');
+        case MemberRole.self:       return tr(lang, en: 'Me', ru: 'Я', ky: 'Мен');
       }
     }
 
@@ -110,15 +118,25 @@ class ChildrenScreen extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Add family member',
+                Text(tr(currentLang(context),
+                        en: 'Add family member',
+                        ru: 'Добавить члена семьи',
+                        ky: 'Үй-бүлө мүчөсүн кошуу'),
                     style: Theme.of(ctx).textTheme.headlineSmall),
                 const SizedBox(height: 6),
-                Text('Anyone you care about — a child, your partner, your parents.',
+                Text(tr(currentLang(context),
+                        en: 'Anyone you care about — a child, your partner, your parents.',
+                        ru: 'Любой, кого ты любишь — ребёнок, супруг(а), родители.',
+                        ky: 'Сиз жакшы көргөн ар ким — бала, жубай, ата-эне.'),
                     style: TextStyle(color: AppColors.textHint, fontSize: 13)),
                 const SizedBox(height: 20),
 
                 // Role chips
-                const Text('Who is this?', style: TextStyle(fontWeight: FontWeight.w600)),
+                Text(tr(currentLang(context),
+                        en: 'Who is this?',
+                        ru: 'Кто это?',
+                        ky: 'Бул ким?'),
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -151,7 +169,10 @@ class ChildrenScreen extends ConsumerWidget {
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(
-                    labelText: 'Name',
+                    labelText: tr(currentLang(context),
+                        en: 'Name',
+                        ru: 'Имя',
+                        ky: 'Аты'),
                     prefixIcon: const Icon(Icons.person_outline),
                   ),
                 ),
@@ -176,7 +197,7 @@ class ChildrenScreen extends ConsumerWidget {
                             border: Border.all(color: isSelected ? AppColors.primary : AppColors.divider),
                           ),
                           child: Text(
-                            stage.label,
+                            stage.labelFor(currentLang(context)),
                             style: TextStyle(
                               color: isSelected ? Colors.white : AppColors.textPrimary,
                               fontWeight: FontWeight.w600,
@@ -210,7 +231,10 @@ class ChildrenScreen extends ConsumerWidget {
                   label: Text(selectedDate != null
                       ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
                       : selectedRole != MemberRole.child
-                          ? 'Date of birth (optional)'
+                          ? tr(currentLang(context),
+                              en: 'Date of birth (optional)',
+                              ru: 'Дата рождения (необязательно)',
+                              ky: 'Туулган күнү (тандамал)')
                           : selectedStage == ParentingStage.pregnant
                               ? L.of(context).selectDueDate
                               : L.of(context).selectBirthDate),
@@ -239,7 +263,10 @@ class ChildrenScreen extends ConsumerWidget {
                       ref.read(userProfileProvider.notifier).addChild(member);
                       Navigator.of(ctx).pop();
                     },
-                    child: const Text('Add family member'),
+                    child: Text(tr(currentLang(context),
+                        en: 'Add family member',
+                        ru: 'Добавить члена семьи',
+                        ky: 'Үй-бүлө мүчөсүн кошуу')),
                   ),
                 ),
               ],
@@ -297,7 +324,7 @@ class ChildrenScreen extends ConsumerWidget {
                         border: Border.all(color: isSelected ? AppColors.primary : AppColors.divider),
                       ),
                       child: Text(
-                        stage.label,
+                        stage.labelFor(currentLang(context)),
                         style: TextStyle(
                           color: isSelected ? Colors.white : AppColors.textPrimary,
                           fontWeight: FontWeight.w600,
@@ -412,11 +439,11 @@ class _ChildCard extends StatelessWidget {
       final weeks = child.currentWeek;
       subtitle = weeks != null
           ? '${L.of(context).weekN(weeks)} — ${L.of(context).daysToGo(child.daysRemaining ?? 0)}'
-          : stage.label;
+          : stage.labelFor(currentLang(context));
     } else if (child.ageMonths != null) {
-      subtitle = '${child.ageMonths} ${L.of(context).months} — ${stage.label}';
+      subtitle = '${child.ageMonths} ${L.of(context).months} — ${stage.labelFor(currentLang(context))}';
     } else {
-      subtitle = stage.label;
+      subtitle = stage.labelFor(currentLang(context));
     }
 
     return Card(

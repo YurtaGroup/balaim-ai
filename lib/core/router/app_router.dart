@@ -10,6 +10,8 @@ import '../../features/auth/views/children_screen.dart';
 import '../../features/notifications/views/notifications_screen.dart';
 import '../../features/lab/views/lab_analysis_screen.dart';
 import '../../features/lab/views/lab_entry_screen.dart';
+import '../../features/vault/views/vault_screen.dart';
+import '../../features/pharmacy/views/pharmacy_directory_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/today/views/today_screen.dart';
 import '../../features/journey/views/due_date_screen.dart';
@@ -96,6 +98,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/lab/entry',
         builder: (context, state) => const LabEntryScreen(),
+      ),
+      GoRoute(
+        path: '/vault',
+        builder: (context, state) => const VaultScreen(),
+      ),
+      GoRoute(
+        path: '/pharmacies',
+        builder: (context, state) => const PharmacyDirectoryScreen(),
       ),
 
       GoRoute(

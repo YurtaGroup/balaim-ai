@@ -3,15 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/data/seed_data.dart';
+import '../../../core/l10n/content_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../main.dart' show localeProvider;
 import '../../../shared/models/child_model.dart';
 import '../../../shared/models/tracking_entry.dart';
+import '../../../shared/models/user_profile.dart';
 import '../../../shared/widgets/notification_bell.dart';
 import '../../journey/providers/journey_provider.dart';
 import '../../journey/views/tracking_sheet.dart';
+import '../../balam_box/views/box_entry_sheet.dart';
+import '../../family/views/add_member_sheet.dart';
+import '../../family/views/family_completeness_card.dart';
 import '../../notices/notice_card.dart';
 import '../providers/today_provider.dart';
 
@@ -26,10 +31,24 @@ class TodayScreen extends ConsumerWidget {
     final activity = ref.watch(todayActivityProvider);
     final worry = ref.watch(todayWorryProvider);
     final insight = ref.watch(todayInsightProvider);
-    final isPregnant = profile.stage == ParentingStage.pregnant ||
-        profile.stage == ParentingStage.tryingToConceive;
-    final name = profile.babyName ?? l.myBaby;
-    final age = profile.babyAgeMonths ?? 0;
+
+    // Member-centric context — the whole screen adapts to who's selected.
+    // `isChildInStage` gates the pregnancy/newborn/toddler cards so adult
+    // members (self/partner/mother/father/grandparent/…) don't see
+    // "Week 24 🤰" or baby-focused tips.
+    final member = profile.selectedMember;
+    final memberStage = member?.stage ?? profile.stage;
+    final isChildInStage = member != null &&
+        member.role.isChild &&
+        (memberStage == ParentingStage.pregnant ||
+            memberStage == ParentingStage.newborn ||
+            memberStage == ParentingStage.toddler);
+    final isPregnantMember = member != null &&
+        member.role.isChild &&
+        memberStage == ParentingStage.pregnant;
+    // Age for the product-recommendation card inside the child block.
+    // The greeting has its own name/age logic in _Greeting.
+    final age = member?.ageMonths ?? profile.babyAgeMonths ?? 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -48,15 +67,9 @@ class TodayScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Greeting
-            Text(
-              isPregnant
-                  ? '${l.weekN(profile.currentWeek ?? 24)} 🤰'
-                  : '$name, $age ${l.months} 🐆',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-            ),
+            // Greeting — adapts to the selected member so switching to
+            // an adult relative doesn't leave pregnancy-week copy on screen.
+            _Greeting(member: member, profile: profile, l: l),
             const SizedBox(height: 12),
 
             // Household member switcher — horizontal avatar row
@@ -66,7 +79,7 @@ class TodayScreen extends ConsumerWidget {
               onSelect: (id) {
                 ref.read(userProfileProvider.notifier).selectChild(id);
               },
-              onAdd: () => context.push('/children'),
+              onAdd: () => AddMemberSheet.show(context),
             ),
             const SizedBox(height: 16),
 
@@ -75,10 +88,13 @@ class TodayScreen extends ConsumerWidget {
               children: [
                 Expanded(
                   child: _QuickAccessTile(
-                    icon: Icons.science_outlined,
-                    label: l.labResults,
+                    icon: Icons.folder_shared_outlined,
+                    label: tr(currentLang(context),
+                        en: 'Vault',
+                        ru: 'Медкарта',
+                        ky: 'Медкарта'),
                     gradient: const [Color(0xFF34C759), Color(0xFF1DA34F)],
-                    onTap: () => context.push('/lab'),
+                    onTap: () => context.push('/vault'),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -93,57 +109,70 @@ class TodayScreen extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _QuickAccessTile(
-                    icon: isPregnant ? Icons.notifications_outlined : Icons.camera_alt_outlined,
-                    label: isPregnant ? l.notifications : l.firstMoments,
+                    icon: isPregnantMember ? Icons.notifications_outlined : Icons.camera_alt_outlined,
+                    label: isPregnantMember ? l.notifications : l.firstMoments,
                     gradient: const [Color(0xFFE8787A), Color(0xFFBE5053)],
-                    onTap: () => context.push(isPregnant ? '/notifications' : '/moments'),
+                    onTap: () => context.push(isPregnantMember ? '/notifications' : '/moments'),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 20),
 
+            // Family Completeness — the viral acquisition card.
+            // Self-hides once the family has 2+ members. Tapping opens
+            // AddMemberSheet which immediately offers a WhatsApp invite.
+            const FamilyCompletenessCard(),
+            const SizedBox(height: 14),
+
+            // Balam Box — primary CTA to log a reading (BP / glucose /
+            // temperature). Server classifies Green/Yellow/Orange/Red and
+            // routes to the notices engine + clinician queue as needed.
+            _BalamBoxCTA(onTap: () => BoxEntrySheet.show(context)),
+            const SizedBox(height: 14),
+
             // The App That Notices — proactive nudge card
             // Self-hides if there's nothing to show for the active member.
             const NoticeCard(),
 
-            // Card 1: This Week's Focus
-            _FocusCard(
-              title: l.thisWeeksFocus,
-              subtitle: focus.title,
-              body: focus.body,
-              icon: focus.icon,
-              actionLabel: l.askBalamAboutThis,
-              onAction: () => context.go('/ai?prefill=${Uri.encodeComponent(focus.aiPrefill)}'),
-            ),
-            const SizedBox(height: 14),
+            // ── Baby / pregnancy / toddler cards ──
+            // These only render when the selected member is a child in
+            // one of the parenting stages. For adult members (self /
+            // partner / mother / father / grandparent / …) we skip them
+            // so the screen doesn't show "Week 24" or toddler tips that
+            // aren't about the person the user is looking at.
+            if (isChildInStage) ...[
+              _FocusCard(
+                title: l.thisWeeksFocus,
+                subtitle: focus.title,
+                body: focus.body,
+                icon: focus.icon,
+                actionLabel: l.askBalamAboutThis,
+                onAction: () => context.go('/ai?prefill=${Uri.encodeComponent(focus.aiPrefill)}'),
+              ),
+              const SizedBox(height: 14),
+              _ActivityCard(
+                title: l.todaysActivity,
+                body: activity,
+                actionLabel: l.tryThisToday,
+              ),
+              const SizedBox(height: 14),
+              _TrackingCard(
+                title: l.trackToday,
+                stage: memberStage,
+                onTrack: (type) => _showSheet(context, type),
+              ),
+              const SizedBox(height: 14),
+              _WorryCard(
+                title: l.isThisNormalCard,
+                worryTitle: worry.$1,
+                worryBody: worry.$2,
+                onTap: () => context.go('/ai?prefill=${Uri.encodeComponent(worry.$3)}'),
+              ),
+              const SizedBox(height: 14),
+            ],
 
-            // Card 2: Today's Activity
-            _ActivityCard(
-              title: l.todaysActivity,
-              body: activity,
-              actionLabel: l.tryThisToday,
-            ),
-            const SizedBox(height: 14),
-
-            // Card 3: Quick Tracking
-            _TrackingCard(
-              title: l.trackToday,
-              stage: profile.stage,
-              onTrack: (type) => _showSheet(context, type),
-            ),
-            const SizedBox(height: 14),
-
-            // Card 4: Is This Normal?
-            _WorryCard(
-              title: l.isThisNormalCard,
-              worryTitle: worry.$1,
-              worryBody: worry.$2,
-              onTap: () => context.go('/ai?prefill=${Uri.encodeComponent(worry.$3)}'),
-            ),
-            const SizedBox(height: 14),
-
-            // Card 4.5: Consult a real doctor (funnel to Professionals)
+            // ── Universal cards (every member, every stage) ──
             _ConsultDoctorCard(
               title: l.todayConsultDoctorTitle,
               body: l.todayConsultDoctorBody,
@@ -152,32 +181,41 @@ class TodayScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 14),
 
-            // Card 5: Daily Insight
-            _InsightCard(
-              title: l.dailyInsightCard,
-              body: insight,
-            ),
-            const SizedBox(height: 14),
+            // Adult members get an "Ask Balam about {name}" shortcut in
+            // place of the baby-focused Focus card. The AI is already
+            // grounded in the member's vault (vault_retrieval.ts), so
+            // tapping opens a productive conversation from zero.
+            if (!isChildInStage && member != null) ...[
+              _AskBalamCard(memberName: member.name),
+              const SizedBox(height: 14),
+            ],
 
-            // Card 6: Recommended Product
-            Builder(builder: (context) {
-              final products = isPregnant
-                  ? SeedData.getProductsForStage(profile.stage)
-                  : SeedData.getProductsForAge(age);
-              if (products.isEmpty) return const SizedBox.shrink();
-              final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year)).inDays;
-              final product = products[dayOfYear % products.length];
-              final vendor = SeedData.getVendor(product.vendorId);
-              return _ProductCard(
-                title: l.recommendedForYou,
-                productName: product.name.en,
-                vendorName: vendor?.name.en ?? '',
-                price: product.priceFormatted,
-                icon: product.icon,
-                iconColor: product.iconColor,
-                onTap: () => context.go('/marketplace'),
-              );
-            }),
+            // ── Child-only footer cards (insight + recommended product) ──
+            if (isChildInStage) ...[
+              _InsightCard(
+                title: l.dailyInsightCard,
+                body: insight,
+              ),
+              const SizedBox(height: 14),
+              Builder(builder: (context) {
+                final products = isPregnantMember
+                    ? SeedData.getProductsForStage(memberStage)
+                    : SeedData.getProductsForAge(age);
+                if (products.isEmpty) return const SizedBox.shrink();
+                final dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year)).inDays;
+                final product = products[dayOfYear % products.length];
+                final vendor = SeedData.getVendor(product.vendorId);
+                return _ProductCard(
+                  title: l.recommendedForYou,
+                  productName: product.name.en,
+                  vendorName: vendor?.name.en ?? '',
+                  price: product.priceFormatted,
+                  icon: product.icon,
+                  iconColor: product.iconColor,
+                  onTap: () => context.go('/marketplace'),
+                );
+              }),
+            ],
 
             const SizedBox(height: 32),
           ],
@@ -872,6 +910,286 @@ class _AddMemberChip extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Member-aware greeting
+// ─────────────────────────────────────────────
+
+class _Greeting extends StatelessWidget {
+  final HouseholdMember? member;
+  final UserProfile profile;
+  final L l;
+
+  const _Greeting({required this.member, required this.profile, required this.l});
+
+  @override
+  Widget build(BuildContext context) {
+    final (title, subtitle) = _compute(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  (String, String?) _compute(BuildContext context) {
+    final m = member;
+    if (m == null) {
+      // Legacy fallback — keep the historical copy while account has no members.
+      final isPregnant = profile.stage == ParentingStage.pregnant ||
+          profile.stage == ParentingStage.tryingToConceive;
+      if (isPregnant) {
+        return ('${l.weekN(profile.currentWeek ?? 24)} 🤰', null);
+      }
+      final name = profile.babyName ?? l.myBaby;
+      final age = profile.babyAgeMonths ?? 0;
+      return ('$name, $age ${l.months} 🐆', null);
+    }
+
+    // Self — owner viewing their own Today.
+    if (m.role == MemberRole.self) {
+      final firstName = m.name.split(' ').first;
+      return (
+        tr(currentLang(context),
+            en: 'Hi, $firstName',
+            ru: 'Привет, $firstName',
+            ky: 'Салам, $firstName'),
+        tr(currentLang(context), en: 'You', ru: 'Вы', ky: 'Сиз'),
+      );
+    }
+
+    // Pregnant child (the classic week-hero).
+    if (m.role.isChild && m.stage == ParentingStage.pregnant) {
+      final week = m.currentWeek ?? profile.currentWeek ?? 24;
+      return ('${l.weekN(week)} 🤰', m.name);
+    }
+
+    // Child under 12 months — age in months with the baby leopard.
+    if (m.role.isChild) {
+      final months = m.ageMonths;
+      if (months != null && months < 12) {
+        return ('${m.name}, $months ${l.months} 🐆', null);
+      }
+      final years = m.ageYears;
+      if (years != null) {
+        return ('${m.name}, ${years}y 🐆', null);
+      }
+      return ('${m.name} 🐆', null);
+    }
+
+    // Adult relative — plain name + role label.
+    return (m.name, _roleLabel(m.role, context));
+  }
+
+  String _roleLabel(MemberRole r, BuildContext ctx) {
+    final lang = currentLang(ctx);
+    switch (r) {
+      case MemberRole.mother:
+        return tr(lang, en: 'Mother', ru: 'Мама', ky: 'Апа');
+      case MemberRole.father:
+        return tr(lang, en: 'Father', ru: 'Папа', ky: 'Ата');
+      case MemberRole.partner:
+        return tr(lang, en: 'Partner', ru: 'Супруг(а)', ky: 'Жубай');
+      case MemberRole.grandmother:
+        return tr(lang, en: 'Grandmother', ru: 'Бабушка', ky: 'Чоң эне');
+      case MemberRole.grandfather:
+        return tr(lang, en: 'Grandfather', ru: 'Дедушка', ky: 'Чоң ата');
+      case MemberRole.sibling:
+        return tr(lang, en: 'Sibling', ru: 'Брат/Сестра', ky: 'Бир тууган');
+      case MemberRole.uncleAunt:
+        return tr(lang, en: 'Uncle/Aunt', ru: 'Дядя/Тётя', ky: 'Таяке/Эже');
+      case MemberRole.other:
+        return tr(lang, en: 'Family', ru: 'Семья', ky: 'Үй-бүлө');
+      case MemberRole.self:
+        return tr(lang, en: 'You', ru: 'Вы', ky: 'Сиз');
+      case MemberRole.child:
+        return tr(lang, en: 'Child', ru: 'Ребёнок', ky: 'Бала');
+    }
+  }
+}
+
+// ─────────────────────────────────────────────
+// Adult "Ask Balam about {name}" shortcut
+// ─────────────────────────────────────────────
+
+class _AskBalamCard extends StatelessWidget {
+  final String memberName;
+  const _AskBalamCard({required this.memberName});
+
+  @override
+  Widget build(BuildContext context) {
+    final firstName = memberName.split(' ').first;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => context.go(
+          '/ai?prefill=${Uri.encodeComponent(tr(currentLang(context), en: "Tell me what you know about $firstName from their records.", ru: "Расскажи, что ты знаешь про $firstName по её записям.", ky: "$firstName тууралуу жазууларынан эмне билесиң айтчы."))}',
+        ),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.divider),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.auto_awesome, color: AppColors.primary, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      tr(currentLang(context),
+                          en: 'Ask Balam about $firstName',
+                          ru: 'Спроси Balam про $firstName',
+                          ky: '$firstName тууралуу Balam-дан сура'),
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      tr(currentLang(context),
+                          en: 'Balam knows their records and reads them before answering.',
+                          ru: 'Balam знает записи и читает их перед ответом.',
+                          ky: 'Balam жазууларды биле алат жана жооп берүү алдында окуйт.'),
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, color: AppColors.textHint, size: 14),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Balam Box CTA
+// ─────────────────────────────────────────────
+
+class _BalamBoxCTA extends ConsumerWidget {
+  final VoidCallback onTap;
+  const _BalamBoxCTA({required this.onTap});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(localeProvider);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFE8787A), Color(0xFFBE5053)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFE8787A).withValues(alpha: 0.25),
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.add_chart, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _pick(context,
+                          en: 'Balam Box',
+                          ru: 'Balam Box',
+                          ky: 'Balam Box'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      _pick(context,
+                          en: 'Log BP, glucose, or temperature — clinician-reviewed',
+                          ru: 'Давление, глюкоза, температура — разбор врачом',
+                          ky: 'Басым, глюкоза, температура — дарыгер карайт'),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.92),
+                        fontSize: 13,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 14),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _pick(BuildContext context, {required String en, required String ru, required String ky}) {
+    final lang = Localizations.localeOf(context).languageCode;
+    if (lang == 'ru') return ru;
+    if (lang == 'ky') return ky;
+    return en;
   }
 }
 

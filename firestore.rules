@@ -65,6 +65,41 @@ service cloud.firestore {
       }
     }
 
+    // Balam Vault — family health documents. Owner creates items with
+    // status 'pending'; the onVaultItemCreated Cloud Function processes
+    // and updates status + extraction metadata server-side. Owner can
+    // update the member tag / user-editable fields but NOT the
+    // extraction payload. Delete allowed for owner (full vault control).
+    match /vault/{userId}/items/{itemId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId
+                     && request.resource.data.status == 'pending';
+      allow update: if request.auth != null && request.auth.uid == userId
+                     && request.resource.data.diff(resource.data).affectedKeys()
+                        .hasOnly(['memberId', 'userNote', 'userTags']);
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Clinical audit log — Balam Box tier classifications. Server writes;
+    // user can read their own records (for transparency); only licensed
+    // clinicians (via server-side role check in Cloud Functions) may
+    // update the mdReviewer* fields. Never deletable — this log is the
+    // defense against any clinical-safety claim.
+    match /clinical_audit/{caseId} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow create, update, delete: if false; // Cloud Functions only
+    }
+
+    // Emergency events — Balam Box Red-tier classifications. User can
+    // read their own; only they can acknowledge (flip ackAt). Server
+    // creates; never deleted.
+    match /emergencies/{emergencyId} {
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null && resource.data.uid == request.auth.uid
+                     && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ackAt']);
+      allow create, delete: if false; // Cloud Functions only
+    }
+
     // Community posts — any authenticated user can read, author can write
     match /posts/{postId} {
       allow read: if request.auth != null;

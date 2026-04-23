@@ -1,5 +1,7 @@
 import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/l10n/content_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/data/doctors_data.dart';
 import '../../../shared/models/consultation.dart';
@@ -16,6 +18,16 @@ class ProfessionalsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l.findProfessionals),
+        actions: [
+          IconButton(
+            tooltip: tr(currentLang(context),
+                en: 'Pharmacies',
+                ru: 'Аптеки',
+                ky: 'Дарыканалар'),
+            icon: const Icon(Icons.local_pharmacy_outlined),
+            onPressed: () => context.push('/pharmacies'),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
