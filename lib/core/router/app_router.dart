@@ -12,6 +12,7 @@ import '../../features/lab/views/lab_analysis_screen.dart';
 import '../../features/lab/views/lab_entry_screen.dart';
 import '../../features/vault/views/vault_screen.dart';
 import '../../features/pharmacy/views/pharmacy_directory_screen.dart';
+import '../../features/ask/views/ask_screen.dart';
 import '../../features/home/views/home_screen.dart';
 import '../feature_flags.dart';
 import '../../features/auth/providers/auth_provider.dart';
@@ -218,15 +219,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               child: FeatureFlags.v2Surface ? const HomeScreen() : const TodayScreen(),
             ),
           ),
-          // v2 primary: voice-first AI entry. For the first v2 cut we
-          // reuse AiChatScreen directly; a dedicated voice-first surface
-          // lands in week 2 of the reset.
+          // v2 primary: voice-first AI entry. AskScreen is the centered
+          // mic + starter-chips surface; tapping a chip or submitting
+          // forwards to AiChatScreen at /ai.
           GoRoute(
             path: '/ask',
-            pageBuilder: (context, state) => NoTransitionPage(
-              child: AiChatScreen(
-                prefill: state.uri.queryParameters['prefill'],
-              ),
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: AskScreen(),
             ),
           ),
           // v2 primary: Child tab — maps straight onto the Vault surface

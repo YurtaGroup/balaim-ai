@@ -150,7 +150,7 @@ class _ChildHeader extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 72,
+          height: 84,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.zero,
