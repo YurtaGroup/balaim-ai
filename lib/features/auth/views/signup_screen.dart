@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../main.dart' show isFirebaseInitialized;
+import '../../consult/consult_config.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -54,8 +55,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     );
     if (!mounted) return;
     if (result.success) {
-      // New user — first step is adding their child.
-      context.go('/children');
+      // The doctor account goes straight to the consult inbox; every
+      // other new user's first step is adding their child.
+      context.go(isDoctorAccount ? '/doctor' : '/children');
     } else {
       setState(() {
         _error = result.error;
