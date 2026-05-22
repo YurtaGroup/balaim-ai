@@ -71,12 +71,6 @@ export interface Milestone {
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
-function ageYears(m: MemberSnapshot, now: Date): number | null {
-  if (!m.birthDate) return null;
-  const bd = new Date(m.birthDate);
-  return (now.getTime() - bd.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-}
-
 function ageMonths(m: MemberSnapshot, now: Date): number | null {
   if (!m.birthDate) return null;
   const bd = new Date(m.birthDate);
@@ -93,16 +87,6 @@ function atAgeMonths(target: number, tolerance = 30) {
     if (am == null) return false;
     return am >= target && am <= target + tolerance / 30.44;
   };
-}
-
-function isAdult(m: MemberSnapshot, now: Date): boolean {
-  if (m.role === "child") return false;
-  const ay = ageYears(m, now);
-  return ay == null || ay >= 16; // treat unknown-age non-child members as adult
-}
-
-function hasCondition(m: MemberSnapshot, cond: string): boolean {
-  return !!m.conditions?.some((c) => c.toLowerCase().includes(cond));
 }
 
 // ─── Pediatric schedule ───────────────────────────────────────────
@@ -124,8 +108,8 @@ const PEDIATRIC: Milestone[] = [
       ky: "2 айда — жаңы төрөлгөн мезгилден кийинки биринчи пландуу педиатриялык текшерүү. Стандарт: салмак, узундук, баш чекитинин өлчөмү, рефлекстер жана биринчи эмдөө топтому (АКДС, ИПВ, Hib, гепатит В, ПКВ13, ротавирус).",
     },
     action: {
-      route: "/professionals",
-      label: { en: "Find a pediatrician", ru: "Найти педиатра", ky: "Педиатр табуу" },
+      route: "/ask",
+      label: { en: "Ask Balam", ru: "Спросить Balam", ky: "Balam'дан сура" },
     },
   },
 
@@ -145,8 +129,8 @@ const PEDIATRIC: Milestone[] = [
       ky: "6 айда стандарт: пландуу текшерүү, экинчи эмдөө топтому, темирге анализ (эмчек эмген балдарда анемия коркунучу бар), жана кошумча тамак киргизүү боюнча кеңеш. Тамактандыруу менен кыйынчылыктар болсо же салмак жай өссө — азыр талкуулаңыз.",
     },
     action: {
-      route: "/professionals",
-      label: { en: "Book a consult", ru: "Записаться на консультацию", ky: "Кеңешке жазылуу" },
+      route: "/ask",
+      label: { en: "Ask Balam", ru: "Спросить Balam", ky: "Balam'дан сура" },
     },
   },
 
@@ -166,8 +150,8 @@ const PEDIATRIC: Milestone[] = [
       ky: "9 айда — пландуу текшерүү: өнүгүү (олтурат, сойлойт, биринчи үндөр), керек болсо темир кайталоо, жана кийинки 3 айдын ичинде — биринчи тиш доктору (алдыңкы тиштердин баары чыккыча). Суудагы фтор жөнүндө сураңыз.",
     },
     action: {
-      route: "/professionals",
-      label: { en: "Book a pediatrician", ru: "Записаться к педиатру", ky: "Педиатрга жазылуу" },
+      route: "/ask",
+      label: { en: "Ask Balam", ru: "Спросить Balam", ky: "Balam'дан сура" },
     },
   },
 
@@ -187,8 +171,8 @@ const PEDIATRIC: Milestone[] = [
       ky: "1 жаш курагында: MMR (кызамык-краснуха-паротит), чечек, гепатит А биринчи дозасы, жана адатта биринчи толук жалпы кан анализи (гемоглобин, темир запасы). Анемиянын коркунучу ушул куракта эң жогору — баары жакшы окшосо да анализ тапшырыңыз.",
     },
     action: {
-      route: "/lab",
-      label: { en: "View lab results", ru: "Результаты анализов", ky: "Анализ жыйынтыктары" },
+      route: "/ask",
+      label: { en: "Ask Balam", ru: "Спросить Balam", ky: "Balam'дан сура" },
     },
   },
 
@@ -208,8 +192,8 @@ const PEDIATRIC: Milestone[] = [
       ky: "18 айлык текшерүү аутизм боюнча стандарттуу скринингди камтыйт (M-CHAT-R). Тынчсыздануу эмес — бул адаттагы иш, ооруксуз, жана эрте байкалса жакшы. Мындан тышкары: сүйлөө текшерүүсү (адатта 5–20 сөз), басуунун сапаты, темирдин кайталама анализи.",
     },
     action: {
-      route: "/professionals",
-      label: { en: "Book a pediatrician", ru: "Записаться к педиатру", ky: "Педиатрга жазылуу" },
+      route: "/ask",
+      label: { en: "Ask Balam", ru: "Спросить Balam", ky: "Balam'дан сура" },
     },
   },
 
@@ -230,8 +214,8 @@ const PEDIATRIC: Milestone[] = [
     },
     claudeContextHint: "Pediatric 2.5-year check. Mention hearing + vision + language specifically.",
     action: {
-      route: "/professionals",
-      label: { en: "Book a consult", ru: "Записаться", ky: "Жазылуу" },
+      route: "/ask",
+      label: { en: "Ask Balam", ru: "Спросить Balam", ky: "Balam'дан сура" },
     },
   },
 
@@ -251,8 +235,8 @@ const PEDIATRIC: Milestone[] = [
       ky: "3 жашта: биринчи жолу артериалдык басым ченелет стандарт катары, көз көрүү жана угуу кайталанат, жана дарыгер менен сүйлөшүү уйку режимине, горшокко үйрөнүүгө, жүрүм-турумга жана бала бакчага даярдыкка өтөт.",
     },
     action: {
-      route: "/professionals",
-      label: { en: "Book a pediatrician", ru: "Записаться к педиатру", ky: "Педиатрга жазылуу" },
+      route: "/ask",
+      label: { en: "Ask Balam", ru: "Спросить Balam", ky: "Balam'дан сура" },
     },
   },
 
@@ -272,126 +256,10 @@ const PEDIATRIC: Milestone[] = [
       ky: "Мектеп алдындагы медосмотр: көз көрүү таблицасы, аудиометрия, бой/салмак перцентили, басым, кайталама эмдөө (АКДС, ИПВ, MMR2, чечек2), жана уйку, тамактануу, экранда өткөн убакыт жөнүндө кыска сүйлөшүү.",
     },
     action: {
-      route: "/professionals",
-      label: { en: "Book a consult", ru: "Записаться", ky: "Жазылуу" },
+      route: "/ask",
+      label: { en: "Ask Balam", ru: "Спросить Balam", ky: "Balam'дан сура" },
     },
   },
 ];
 
-// ─── Adult schedule ───────────────────────────────────────────────
-
-const ADULT: Milestone[] = [
-  {
-    id: "adult-diabetic-a1c",
-    applies: (m, now) => isAdult(m, now) && hasCondition(m, "diabet"),
-    urgency: "medium",
-    repeatIntervalDays: 180,
-    title: {
-      en: "Time for an A1c",
-      ru: "Пора сдать HbA1c",
-      ky: "HbA1c тапшыруу убакыты",
-    },
-    body: {
-      en: "For anyone managing diabetes, HbA1c every 6 months is the standard of care — it shows the 3-month blood-sugar average, not just today's snapshot. If it's trending in the wrong direction, adjustments are most effective caught early.",
-      ru: "Для всех, кто живёт с диабетом, HbA1c раз в 6 месяцев — стандарт. Анализ показывает средний уровень сахара за 3 месяца, а не только сегодняшний снимок. Если тренд неблагоприятный — коррекция эффективнее всего на ранней стадии.",
-      ky: "Диабет менен жашаган ар бир адам үчүн HbA1c 6 ай сайын — стандарт. Бул анализ 3 айдын ичиндеги орточо сахарды көрсөтөт, бүгүнкү сүрөттү эмес. Тренд жаман болсо — эрте коррекция эң натыйжалуу.",
-    },
-    claudeContextHint: "Endocrinology-relevant. Mention Jane Mone NP (endocrinology, trilingual) as in-app consult option.",
-    action: {
-      route: "/professionals",
-      label: { en: "Consult an endocrinologist", ru: "Консультация эндокринолога", ky: "Эндокринолог менен кеңеш" },
-    },
-  },
-
-  {
-    id: "adult-annual-bp",
-    applies: (m, now) => isAdult(m, now),
-    urgency: "low",
-    repeatIntervalDays: 180,
-    title: {
-      en: "Time for a BP check",
-      ru: "Пора проверить давление",
-      ky: "Басым ченөөнүн убакыты",
-    },
-    body: {
-      en: "Blood pressure is a number that quietly climbs for years before you notice. Every 6 months is a reasonable cadence for any adult; every 3 months if over 50, already medicated, or with a family history of heart disease or stroke.",
-      ru: "Артериальное давление — показатель, который тихо растёт годами до того, как это заметишь. Раз в 6 месяцев — разумно для любого взрослого; раз в 3 месяца — если старше 50, уже на препаратах, или есть семейная история ССЗ или инсульта.",
-      ky: "Артериалдык басым — көз көрбөгөн жылдар бою өсүп турган көрсөткүч. 6 ай сайын — ар бир чоң киши үчүн жетиштүү; 3 ай сайын — 50дөн өткөн, дары ичип жүргөн, же үй-бүлөсүндө жүрөк-кан тамыр ооруусу болгон адамдар үчүн.",
-    },
-    action: {
-      route: "/my-child", // Log Vitals UI lives under My Family currently
-      label: { en: "Log a reading", ru: "Записать показания", ky: "Көрсөткүчтү жазуу" },
-    },
-  },
-
-  {
-    id: "adult-annual-physical",
-    applies: (m, now) => isAdult(m, now),
-    urgency: "low",
-    repeatIntervalDays: 365,
-    title: {
-      en: "Time for an annual physical",
-      ru: "Пора пройти ежегодный осмотр",
-      ky: "Жылдык медосмотр убакыты",
-    },
-    body: {
-      en: "A yearly check-in with a general practitioner — weight, BP, a basic blood panel, and a 10-minute conversation — catches more silent conditions than any single test on its own. If there's no GP in the picture, this is a good time to pick one.",
-      ru: "Ежегодный осмотр у терапевта — вес, давление, базовая кровь, 10-минутный разговор — выявляет больше скрытых состояний, чем любой отдельный анализ. Если семейного врача нет — сейчас хорошее время выбрать.",
-      ky: "Терапевт менен жылдык текшерүү — салмак, басым, негизги кан анализи, 10 мүнөттүк сүйлөшүү — өзүнчө анализге караганда көбүрөөк жашыруун абалды аныктайт. Үй-бүлөлүк дарыгер жок болсо — азыр тандай турган жакшы убак.",
-    },
-    action: {
-      route: "/professionals",
-      label: { en: "Find a GP", ru: "Найти терапевта", ky: "Терапевт табуу" },
-    },
-  },
-
-  {
-    id: "adult-45plus-diabetes-screen",
-    applies: (m, now) => {
-      const ay = ageYears(m, now);
-      return isAdult(m, now) && ay != null && ay >= 45 && !hasCondition(m, "diabet");
-    },
-    urgency: "medium",
-    repeatIntervalDays: 365 * 3,
-    title: {
-      en: "Diabetes screening is due",
-      ru: "Пора скрининг на диабет",
-      ky: "Диабет скринингинин убакыты",
-    },
-    body: {
-      en: "After 45, a fasting glucose or HbA1c every 3 years is the screening standard for anyone without a diabetes diagnosis. Type 2 often has zero symptoms for years; this catches it.",
-      ru: "После 45 лет глюкоза натощак или HbA1c раз в 3 года — стандарт скрининга для людей без диагноза диабет. Диабет 2 типа может годами не давать симптомов; этот тест его находит.",
-      ky: "45 жаштан кийин ачкарын глюкоза же HbA1c 3 жыл сайын — диабет диагнозу жок адамдар үчүн стандарттуу скрининг. 2-типтеги диабет жылдар бою симптомсуз болот; бул тест аны табат.",
-    },
-    action: {
-      route: "/professionals",
-      label: { en: "Book a consult", ru: "Записаться", ky: "Жазылуу" },
-    },
-  },
-
-  {
-    id: "adult-40plus-lipid",
-    applies: (m, now) => {
-      const ay = ageYears(m, now);
-      return isAdult(m, now) && ay != null && ay >= 40;
-    },
-    urgency: "low",
-    repeatIntervalDays: 365 * 5,
-    title: {
-      en: "Lipid panel is due",
-      ru: "Пора сдать липидный профиль",
-      ky: "Липиддик профиль тапшыруу убакыты",
-    },
-    body: {
-      en: "A full lipid panel (total cholesterol, LDL, HDL, triglycerides) every 5 years after 40 is the baseline. More often if numbers were borderline last time, or if there's cardiovascular risk in the family.",
-      ru: "Полный липидный профиль (общий холестерин, ЛПНП, ЛПВП, триглицериды) раз в 5 лет после 40 — базовый стандарт. Чаще — если в прошлый раз были пограничные значения, или в семье есть сердечно-сосудистые заболевания.",
-      ky: "Толук липиддик профиль (жалпы холестерин, ЛПНП, ЛПВП, триглицериддер) 40 жаштан кийин 5 жыл сайын — базалык стандарт. Көбүрөөк — эгерде акыркы жолу чектик маанилер болсо же үй-бүлөдө жүрөк-кан тамыр ооруулары болсо.",
-    },
-    action: {
-      route: "/professionals",
-      label: { en: "Book a consult", ru: "Записаться", ky: "Жазылуу" },
-    },
-  },
-];
-
-export const ALL_MILESTONES: Milestone[] = [...PEDIATRIC, ...ADULT];
+export const ALL_MILESTONES: Milestone[] = [...PEDIATRIC];

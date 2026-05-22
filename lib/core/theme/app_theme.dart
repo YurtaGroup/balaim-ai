@@ -67,7 +67,10 @@ class AppTheme {
           fontWeight: FontWeight.w600,
           color: Colors.white,
         ),
-      ),
+        // Plus Jakarta Sans has no emoji glyphs — fall back to the
+        // platform emoji font so milestone tags (🎂 👣 💬) and emoji in
+        // captions/chat render instead of showing tofu boxes.
+      ).apply(fontFamilyFallback: const ['Apple Color Emoji']),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
