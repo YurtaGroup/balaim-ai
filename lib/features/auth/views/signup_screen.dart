@@ -54,8 +54,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     );
     if (!mounted) return;
     if (result.success) {
-      // New user — needs to pick their stage
-      context.go('/stage-select');
+      // New user — first step is adding their child.
+      context.go('/children');
     } else {
       setState(() {
         _error = result.error;

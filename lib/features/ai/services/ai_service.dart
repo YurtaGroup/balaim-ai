@@ -51,7 +51,16 @@ class ChatHistoryMessage {
 class ChatResult {
   final String response;
   final Triage? triage;
-  const ChatResult({required this.response, this.triage});
+
+  /// True when the server refused the call because the free user is over
+  /// their weekly question cap. The UI shows the paywall instead of a reply.
+  final bool limitReached;
+
+  const ChatResult({
+    required this.response,
+    this.triage,
+    this.limitReached = false,
+  });
 }
 
 class AiService {
@@ -134,7 +143,11 @@ class AiService {
             );
           }
         }
-        return ChatResult(response: responseText, triage: triage);
+        return ChatResult(
+          response: responseText,
+          triage: triage,
+          limitReached: data['limitReached'] == true,
+        );
       } catch (e) {
         debugPrint('[AI] Cloud Function error, falling back to demo: $e');
         // Fall through to demo
@@ -286,7 +299,7 @@ class AiService {
       }
       return "At $age months, $name should be showing some exciting development! 🌟\n\n"
           "**Key milestones to watch for:**\n"
-          "${age <= 6 ? '• Rolling over (tummy to back first, then back to tummy)\n• Reaching for and grasping objects\n• Babbling vowel sounds (\"aaah\", \"ooooh\")\n• Social smiling and laughing\n• Recognizing familiar faces' : '• Sitting without support\n• Passing objects between hands\n• Babbling consonants (\"baba\", \"dada\")\n• Responding to their name\n• ${age >= 9 ? 'Pulling to stand, cruising along furniture' : 'Starting to creep or crawl'}'}\n\n"
+          "${age <= 6 ? '• Rolling over (tummy to back first, then back to tummy)\n• Reaching for and grasping objects\n• Babbling vowel sounds ("aaah", "ooooh")\n• Social smiling and laughing\n• Recognizing familiar faces' : '• Sitting without support\n• Passing objects between hands\n• Babbling consonants ("baba", "dada")\n• Responding to their name\n• ${age >= 9 ? 'Pulling to stand, cruising along furniture' : 'Starting to creep or crawl'}'}\n\n"
           "**When to talk to your pediatrician:**\n"
           "If $name isn't ${age <= 6 ? 'making eye contact, responding to sounds, or showing interest in faces' : 'babbling, responding to their name, or showing interest in moving around'}.\n\n"
           "Remember: there's a wide range of normal. Late crawlers become great walkers!";

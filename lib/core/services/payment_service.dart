@@ -1,60 +1,72 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import '../../main.dart' show isFirebaseInitialized;
 import '../constants/env_config.dart';
+import 'auth_service.dart';
 
-/// RevenueCat-powered payment service.
+/// RevenueCat-powered subscription service.
 ///
-/// Business model:
-/// - App is 100% free (tools, AI, community, marketplace browsing)
-/// - Consultations are per-purchase (consumable IAP)
-/// - Doctor gets 80%, Balam gets 20% (minus Apple/Google's cut)
+/// Business model — Balam is a SaaS:
+/// - Free: 1 child, the vault, proactive notices, 3 AI questions / week.
+/// - Balam Premium ($9/mo or $79/yr): unlimited AI, unlimited children,
+///   PDF export, partner sharing.
 ///
-/// RevenueCat product IDs (configure in RevenueCat dashboard):
-/// - balam_consult_50   → $50 consultation (Kyrgyzstan market)
-/// - balam_consult_100  → $100 consultation
-/// - balam_consult_150  → $150 consultation
-/// - balam_consult_200  → $200 consultation
+/// RevenueCat setup (dashboard + App Store Connect):
+/// - Entitlement: `premium`
+/// - Products: `balam_premium_monthly`, `balam_premium_yearly`
+///   exposed through the "current" offering as the monthly/annual packages.
 ///
-/// Each maps to a consumable IAP in App Store Connect / Google Play Console.
+/// Demo mode (no RevenueCat key) stays on the free tier so the paywall
+/// and the free-tier gate are testable without a store connection.
 class PaymentService {
   static final PaymentService _instance = PaymentService._();
   factory PaymentService() => _instance;
   PaymentService._();
 
-  bool _initialized = false;
+  /// RevenueCat entitlement that unlocks Balam Premium.
+  static const entitlementId = 'premium';
 
-  // ── Init ──
+  bool _initialized = false;
+  final ValueNotifier<bool> _premium = ValueNotifier<bool>(false);
+
+  /// Listenable premium status — the source for `isPremiumProvider`.
+  ValueListenable<bool> get premiumListenable => _premium;
+  bool get isPremium => _premium.value;
+
+  // ── Init / identity ──
 
   Future<void> init({required String userId}) async {
     if (_initialized) return;
     if (EnvConfig.revenueCatApiKey.isEmpty) {
-      debugPrint('[Payment] No RevenueCat key — running in demo mode');
+      debugPrint('[Payment] No RevenueCat key — free tier (demo mode)');
       return;
     }
-
     try {
       await Purchases.setLogLevel(LogLevel.warn);
-      final config = PurchasesConfiguration(EnvConfig.revenueCatApiKey)
-        ..appUserID = userId;
-      await Purchases.configure(config);
+      await Purchases.configure(
+        PurchasesConfiguration(EnvConfig.revenueCatApiKey)..appUserID = userId,
+      );
       _initialized = true;
-      debugPrint('[Payment] RevenueCat initialized for user $userId');
+      Purchases.addCustomerInfoUpdateListener(_apply);
+      await _refresh();
+      debugPrint('[Payment] RevenueCat initialized for $userId');
     } catch (e) {
-      debugPrint('[Payment] RevenueCat init failed: $e');
+      debugPrint('[Payment] init failed: $e');
     }
   }
 
-  /// Update RevenueCat user ID after sign-in.
   Future<void> identify(String userId) async {
     if (!_initialized) return;
     try {
-      await Purchases.logIn(userId);
+      final res = await Purchases.logIn(userId);
+      _apply(res.customerInfo);
     } catch (e) {
       debugPrint('[Payment] identify failed: $e');
     }
   }
 
-  /// Log out from RevenueCat on sign-out.
   Future<void> logOut() async {
     if (!_initialized) return;
     try {
@@ -62,101 +74,111 @@ class PaymentService {
     } catch (e) {
       debugPrint('[Payment] logOut failed: $e');
     }
+    _premium.value = false;
   }
 
-  // ── Purchase consultation ──
+  // ── Premium state ──
 
-  /// Purchase a consultation. Returns true if successful.
-  ///
-  /// [priceUsd] is the doctor's consultation price.
-  /// We map it to the nearest available IAP product.
-  Future<PurchaseResult> purchaseConsultation({required double priceUsd}) async {
-    if (!_initialized) {
-      // Demo mode — simulate a successful purchase
-      debugPrint('[Payment] Demo mode — simulating purchase of \$$priceUsd');
-      await Future.delayed(const Duration(milliseconds: 500));
-      return PurchaseResult(
-        success: true,
-        transactionId: 'demo-${DateTime.now().millisecondsSinceEpoch}',
-      );
-    }
-
-    try {
-      // Get available packages
-      final offerings = await Purchases.getOfferings();
-      final offering = offerings.current;
-
-      if (offering == null) {
-        return PurchaseResult(success: false, error: 'No offerings available. Please try again later.');
-      }
-
-      // Find the package matching this consultation price
-      final productId = _productIdForPrice(priceUsd);
-      final package = offering.availablePackages.where(
-        (p) => p.storeProduct.identifier == productId,
-      );
-
-      if (package.isEmpty) {
-        // Fallback: show all available packages and buy the first consumable
-        final consumables = offering.availablePackages.where(
-          (p) => p.packageType == PackageType.custom,
-        );
-        if (consumables.isEmpty) {
-          return PurchaseResult(success: false, error: 'Consultation purchases are not available in your region yet.');
-        }
-        // Purchase the closest match
-        final customerInfo = await Purchases.purchasePackage(consumables.first);
-        return PurchaseResult(
-          success: true,
-          transactionId: customerInfo.originalAppUserId,
-        );
-      }
-
-      final customerInfo = await Purchases.purchasePackage(package.first);
-      return PurchaseResult(
-        success: true,
-        transactionId: customerInfo.originalAppUserId,
-      );
-    } on PurchasesErrorCode catch (e) {
-      if (e == PurchasesErrorCode.purchaseCancelledError) {
-        return PurchaseResult(success: false, error: 'Purchase cancelled.');
-      }
-      return PurchaseResult(success: false, error: 'Purchase failed. Please try again.');
-    } catch (e) {
-      debugPrint('[Payment] Purchase error: $e');
-      return PurchaseResult(success: false, error: 'Something went wrong. Please try again.');
+  void _apply(CustomerInfo info) {
+    final active = info.entitlements.active.containsKey(entitlementId);
+    if (active != _premium.value) {
+      _premium.value = active;
+      _syncToFirestore(active);
     }
   }
 
-  /// Map doctor price to RevenueCat product ID.
-  String _productIdForPrice(double price) {
-    if (price <= 50) return 'balam_consult_50';
-    if (price <= 100) return 'balam_consult_100';
-    if (price <= 150) return 'balam_consult_150';
-    return 'balam_consult_200';
-  }
-
-  // ── Restore ──
-
-  /// Restore previous purchases (e.g., after reinstall).
-  Future<void> restorePurchases() async {
+  Future<void> _refresh() async {
     if (!_initialized) return;
     try {
-      await Purchases.restorePurchases();
+      _apply(await Purchases.getCustomerInfo());
     } catch (e) {
-      debugPrint('[Payment] Restore failed: $e');
+      debugPrint('[Payment] refresh failed: $e');
+    }
+  }
+
+  // ── Offerings / purchase ──
+
+  /// The Balam Premium packages (monthly + yearly) from the current
+  /// offering. Empty in demo mode.
+  Future<List<Package>> premiumPackages() async {
+    if (!_initialized) return const [];
+    try {
+      final offerings = await Purchases.getOfferings();
+      return offerings.current?.availablePackages ?? const [];
+    } catch (e) {
+      debugPrint('[Payment] offerings failed: $e');
+      return const [];
+    }
+  }
+
+  Future<PurchaseResult> purchase(Package package) async {
+    if (!_initialized) {
+      return const PurchaseResult(
+        success: false,
+        error: 'Purchases are not available right now.',
+      );
+    }
+    try {
+      final info = await Purchases.purchasePackage(package);
+      _apply(info);
+      return PurchaseResult(success: _premium.value);
+    } on PlatformException catch (e) {
+      final code = PurchasesErrorHelper.getErrorCode(e);
+      if (code == PurchasesErrorCode.purchaseCancelledError) {
+        return const PurchaseResult(success: false, cancelled: true);
+      }
+      return const PurchaseResult(
+        success: false,
+        error: 'Purchase failed. Please try again.',
+      );
+    } catch (e) {
+      debugPrint('[Payment] purchase error: $e');
+      return const PurchaseResult(
+        success: false,
+        error: 'Something went wrong. Please try again.',
+      );
+    }
+  }
+
+  /// Restore previous purchases (e.g. after reinstall). Returns the
+  /// resulting premium status.
+  Future<bool> restorePurchases() async {
+    if (!_initialized) return false;
+    try {
+      _apply(await Purchases.restorePurchases());
+    } catch (e) {
+      debugPrint('[Payment] restore failed: $e');
+    }
+    return _premium.value;
+  }
+
+  /// Mirror premium status into `users/{uid}.premium` so the balamChat
+  /// Cloud Function can enforce the free-tier gate server-side. A
+  /// RevenueCat webhook should also write this field (defense in depth);
+  /// Firestore rules must keep `premium` non-writable by clients except
+  /// through this trusted path.
+  Future<void> _syncToFirestore(bool premium) async {
+    if (!isFirebaseInitialized) return;
+    final uid = AuthService().currentUid;
+    if (uid == null) return;
+    try {
+      await FirebaseFirestore.instance
+          .doc('users/$uid')
+          .set({'premium': premium}, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint('[Payment] firestore sync failed: $e');
     }
   }
 }
 
 class PurchaseResult {
   final bool success;
-  final String? transactionId;
+  final bool cancelled;
   final String? error;
 
   const PurchaseResult({
     required this.success,
-    this.transactionId,
+    this.cancelled = false,
     this.error,
   });
 }

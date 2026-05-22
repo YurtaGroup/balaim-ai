@@ -6,6 +6,7 @@ import '../../../core/l10n/content_localizations.dart';
 import '../../../shared/models/child_model.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../journey/providers/journey_provider.dart';
+import '../../paywall/add_child_gate.dart';
 
 class ChildrenScreen extends ConsumerWidget {
   const ChildrenScreen({super.key});
@@ -23,7 +24,11 @@ class ChildrenScreen extends ConsumerWidget {
             ky: 'Менин үй-бүлөм')),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddChildDialog(context, ref),
+        onPressed: () {
+          if (ensureCanAddChild(context, ref)) {
+            _showAddChildDialog(context, ref);
+          }
+        },
         icon: const Icon(Icons.person_add),
         label: Text(tr(currentLang(context),
             en: 'Add member',

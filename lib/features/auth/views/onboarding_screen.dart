@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/l10n/content_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -23,10 +24,44 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final l = L.of(context);
+    final lang = currentLang(context);
     final pages = [
-      _OnboardingPage(icon: Icons.favorite, color: AppColors.primary, title: l.onboardingTitle1, subtitle: l.onboardingSubtitle1),
-      _OnboardingPage(icon: Icons.auto_awesome, color: AppColors.secondary, title: l.onboardingTitle2, subtitle: l.onboardingSubtitle2),
-      _OnboardingPage(icon: Icons.people, color: AppColors.accent, title: l.onboardingTitle3, subtitle: l.onboardingSubtitle3),
+      _OnboardingPage(
+        icon: Icons.folder_shared_outlined,
+        color: AppColors.primary,
+        title: tr(lang,
+            en: 'Every detail of your child\'s health',
+            ru: 'Всё о здоровье твоего ребёнка',
+            ky: 'Балаңыздын ден соолугу тууралуу баары'),
+        subtitle: tr(lang,
+            en: 'Doctor visits, vaccines, prescriptions, growth — one place, never lost.',
+            ru: 'Визиты к врачу, прививки, рецепты, рост — в одном месте, ничего не теряется.',
+            ky: 'Дарыгерге баруу, эмдөө, рецепт, өсүү — бир жерде, эч качан жоголбойт.'),
+      ),
+      _OnboardingPage(
+        icon: Icons.auto_awesome,
+        color: AppColors.secondary,
+        title: tr(lang,
+            en: 'Ask anything, day or night',
+            ru: 'Спрашивай в любое время',
+            ky: 'Каалаган убакта сура'),
+        subtitle: tr(lang,
+            en: 'Balam reads your child\'s real records before answering — like a doctor who knows your kid.',
+            ru: 'Balam читает медкарту ребёнка перед ответом — как врач, который знает твоего малыша.',
+            ky: 'Balam жооп бергенге чейин баланын медкартасын окуйт — балаңызды билген дарыгердей.'),
+      ),
+      _OnboardingPage(
+        icon: Icons.notifications_active_outlined,
+        color: AppColors.accent,
+        title: tr(lang,
+            en: 'Know what\'s coming next',
+            ru: 'Знай, что впереди',
+            ky: 'Эмне болорун алдын ала бил'),
+        subtitle: tr(lang,
+            en: 'Vaccines, check-ups, milestones — Balam tells you before you have to ask.',
+            ru: 'Прививки, осмотры, этапы развития — Balam напомнит заранее.',
+            ky: 'Эмдөө, текшерүү, өнүгүү этаптары — Balam алдын ала эскертет.'),
+      ),
     ];
 
     return Scaffold(

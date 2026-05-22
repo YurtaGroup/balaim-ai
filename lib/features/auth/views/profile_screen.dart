@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/l10n/content_localizations.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/storage_service.dart';
@@ -10,6 +9,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../../main.dart' show localeProvider;
 import '../providers/auth_provider.dart';
 import '../../journey/providers/journey_provider.dart';
+import '../../paywall/providers/premium_provider.dart';
 import 'children_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -116,102 +116,30 @@ class ProfileScreen extends ConsumerWidget {
             ),
           const SizedBox(height: 24),
 
-          // Stage switcher — available to everyone. Parents move through
-          // stages (pregnant → newborn → toddler) and the app needs to follow.
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.swap_horiz, color: AppColors.accentDark, size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      L.of(context).switchStageDemo,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.accentDark,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  L.of(context).previewStages,
-                  style: TextStyle(fontSize: 12, color: AppColors.textHint),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: ParentingStage.values.map((stage) {
-                    final isSelected = profile.stage == stage;
-                    final stageIcon = switch (stage) {
-                      ParentingStage.tryingToConceive => Icons.favorite,
-                      ParentingStage.pregnant => Icons.pregnant_woman,
-                      ParentingStage.newborn => Icons.child_care,
-                      ParentingStage.toddler => Icons.child_friendly,
-                    };
-                    return GestureDetector(
-                      onTap: () {
-                        ref.read(userProfileProvider.notifier).updateStage(stage);
-                        if (stage == ParentingStage.newborn) {
-                          ref.read(userProfileProvider.notifier).updateBabyBirthDate(
-                            DateTime.now().subtract(const Duration(days: 180)),
-                          );
-                          ref.read(userProfileProvider.notifier).updateBabyName('Luna');
-                        } else if (stage == ParentingStage.toddler) {
-                          ref.read(userProfileProvider.notifier).updateBabyBirthDate(
-                            DateTime.now().subtract(const Duration(days: 548)),
-                          );
-                          ref.read(userProfileProvider.notifier).updateBabyName('Luna');
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected ? AppColors.primary : AppColors.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: isSelected ? AppColors.primary : AppColors.divider,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(stageIcon, color: isSelected ? Colors.white : AppColors.textPrimary, size: 16),
-                            const SizedBox(width: 6),
-                            Text(
-                              stage.labelFor(currentLang(context)),
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : AppColors.textPrimary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
 
           _ProfileTile(
-            icon: Icons.child_care,
-            title: L.of(context).myJourneyStage,
-            subtitle: '${profile.stage.labelFor(currentLang(context))} — ${profile.stage == ParentingStage.pregnant ? L.of(context).weekN(profile.currentWeek ?? 24) : (profile.babyName ?? L.of(context).myBaby)}',
-            onTap: () => context.push('/stage-select'),
+            icon: ref.watch(isPremiumProvider)
+                ? Icons.verified
+                : Icons.auto_awesome,
+            title: ref.watch(isPremiumProvider)
+                ? tr(currentLang(context),
+                    en: 'Balam Premium',
+                    ru: 'Balam Premium',
+                    ky: 'Balam Premium')
+                : tr(currentLang(context),
+                    en: 'Upgrade to Premium',
+                    ru: 'Подключить Premium',
+                    ky: 'Premium\'ду алуу'),
+            subtitle: ref.watch(isPremiumProvider)
+                ? tr(currentLang(context),
+                    en: 'Active — unlimited everything',
+                    ru: 'Активна — всё без лимитов',
+                    ky: 'Активдүү — баары чексиз')
+                : tr(currentLang(context),
+                    en: 'Unlimited AI, all your children, export',
+                    ru: 'Безлимитный AI, все дети, экспорт',
+                    ky: 'Чексиз AI, бардык балдар, экспорт'),
+            onTap: () => context.push('/paywall'),
           ),
           _ProfileTile(
             icon: Icons.family_restroom,
@@ -220,24 +148,6 @@ class ProfileScreen extends ConsumerWidget {
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const ChildrenScreen()),
             ),
-          ),
-          _ProfileTile(
-            icon: Icons.medical_information_outlined,
-            title: L.of(context).myConsultations,
-            subtitle: L.of(context).browseAndConsult,
-            onTap: () => context.push('/my-consultations'),
-          ),
-          _ProfileTile(
-            icon: Icons.medical_services_outlined,
-            title: L.of(context).myCareTeam,
-            subtitle: L.of(context).doctorsSpecialists,
-            onTap: () => context.push('/professionals'),
-          ),
-          _ProfileTile(
-            icon: Icons.science_outlined,
-            title: L.of(context).labResults,
-            subtitle: L.of(context).manageAlerts,
-            onTap: () => context.push('/lab'),
           ),
           _ProfileTile(
             icon: Icons.notifications_outlined,

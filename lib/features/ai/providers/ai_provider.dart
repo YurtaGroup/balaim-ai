@@ -15,6 +15,10 @@ class ChatMessage {
   final bool isLoading;
   final Triage? triage;
 
+  /// True when this message is the free-tier paywall prompt — the chat
+  /// screen reacts by opening the paywall.
+  final bool limitReached;
+
   ChatMessage({
     required this.id,
     required this.isAi,
@@ -22,6 +26,7 @@ class ChatMessage {
     required this.timestamp,
     this.isLoading = false,
     this.triage,
+    this.limitReached = false,
   });
 }
 
@@ -179,6 +184,7 @@ class ChatMessagesNotifier extends StateNotifier<List<ChatMessage>> {
           text: result.response,
           timestamp: DateTime.now(),
           triage: result.triage,
+          limitReached: result.limitReached,
         ),
       ];
     } catch (e) {

@@ -110,6 +110,71 @@ function friendlyErrorMessage(locale: string): string {
 }
 
 // ============================================================
+// FREE-TIER GATE (the SaaS line)
+// ============================================================
+//
+// Free plan: 3 Balam AI questions per ISO week. Balam Premium:
+// unlimited. This is the authoritative, server-side gate — the
+// client cannot forge its way past it. Premium status is read from
+// `users/{uid}.premium`, which a RevenueCat webhook keeps in sync
+// (see ONBOARDING / Phase 3 notes). Counter doc:
+// `usage/{uid}/weekly/{YYYY-Www}` — resets by key, no cleanup job.
+
+const MAX_FREE_AI_PER_WEEK = 3;
+
+function isoWeekKey(): string {
+  const now = new Date();
+  const date = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  );
+  const dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil(
+    ((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
+  );
+  return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
+}
+
+/** Authoritative premium check — never trust the client. */
+async function isPremium(uid: string): Promise<boolean> {
+  try {
+    const snap = await admin.firestore().doc(`users/${uid}`).get();
+    return (snap.data()?.premium as boolean) === true;
+  } catch {
+    return false;
+  }
+}
+
+/** Returns false (and does NOT increment) once the free user is over the weekly cap. */
+async function checkAndIncrementWeekly(uid: string): Promise<boolean> {
+  const db = admin.firestore();
+  const ref = db.doc(`usage/${uid}/weekly/${isoWeekKey()}`);
+  return db.runTransaction<boolean>(async (tx) => {
+    const snap = await tx.get(ref);
+    const count = ((snap.data() ?? {}).count as number) ?? 0;
+    if (count >= MAX_FREE_AI_PER_WEEK) return false;
+    tx.set(
+      ref,
+      { count: count + 1, updatedAt: admin.firestore.FieldValue.serverTimestamp() },
+      { merge: true }
+    );
+    return true;
+  });
+}
+
+function freeTierMessage(locale: string): string {
+  switch (locale) {
+    case "ru":
+      return "Ты использовал(а) бесплатные вопросы Balam на этой неделе. Открой Balam Premium — безлимитные вопросы о здоровье и развитии ребёнка. 🐆";
+    case "ky":
+      return "Бул жумада Balam'дын акысыз суроолорун колдондуңуз. Balam Premium'ду ачыңыз — бала ден соолугу боюнча чексиз суроолор. 🐆";
+    default:
+      return "You've used your free Balam questions for this week. Unlock Balam Premium for unlimited questions about your child's health and development. 🐆";
+  }
+}
+
+// ============================================================
 // AI ENDPOINTS
 // ============================================================
 
@@ -143,10 +208,28 @@ export const balamChat = onCall(
     }
 
     const locale = (userContext?.locale as string) ?? "en";
+    const uid = request.auth.uid;
+
+    // Free-tier gate (the SaaS line). Free users get 3 questions/week;
+    // premium is unlimited. Checked before the cost-protection caps so a
+    // gated free user never consumes the beta Claude budget. A blocked
+    // call returns a soft message with limitReached:true — the client
+    // shows the paywall instead of rendering it as a chat reply.
+    const premium = await isPremium(uid);
+    if (!premium) {
+      const withinFreeTier = await checkAndIncrementWeekly(uid);
+      if (!withinFreeTier) {
+        return {
+          response: freeTierMessage(locale),
+          triage: null,
+          limitReached: true,
+        };
+      }
+    }
 
     // Rate-limit pre-flight. A blocked call returns a soft message
     // rather than an error so the UI renders it as a normal Claude reply.
-    const rl = await checkAndIncrementRateLimit(request.auth.uid);
+    const rl = await checkAndIncrementRateLimit(uid);
     if (!rl.allowed && rl.reason) {
       return {
         response: rateLimitMessage(locale, rl.reason),

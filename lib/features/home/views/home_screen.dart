@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/child_model.dart';
 import '../../family/views/add_member_sheet.dart';
 import '../../journey/providers/journey_provider.dart';
+import '../../paywall/add_child_gate.dart';
 import '../../notices/notice_card.dart';
 import '../../vault/vault_provider.dart';
 
@@ -53,7 +54,11 @@ class HomeScreen extends ConsumerWidget {
               children: children,
               activeChild: activeChild,
               onSelect: (id) => ref.read(userProfileProvider.notifier).selectChild(id),
-              onAdd: () => AddMemberSheet.show(context),
+              onAdd: () {
+                if (ensureCanAddChild(context, ref)) {
+                  AddMemberSheet.show(context);
+                }
+              },
             ),
             const SizedBox(height: 16),
             // Today's proactive nudge for the selected child. Self-hides
@@ -90,22 +95,6 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 10),
-            _OverflowTile(
-              icon: Icons.local_pharmacy_outlined,
-              label: tr(currentLang(ctx), en: 'Pharmacies', ru: 'Аптеки', ky: 'Дарыканалар'),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                context.push('/pharmacies');
-              },
-            ),
-            _OverflowTile(
-              icon: Icons.medical_services_outlined,
-              label: tr(currentLang(ctx), en: 'Doctors', ru: 'Врачи', ky: 'Дарыгерлер'),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                context.push('/professionals');
-              },
-            ),
             _OverflowTile(
               icon: Icons.tune_outlined,
               label: tr(currentLang(ctx), en: 'Settings', ru: 'Настройки', ky: 'Жөндөөлөр'),
@@ -155,7 +144,7 @@ class _ChildHeader extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.zero,
             itemCount: children.length + 1,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            separatorBuilder: (_, _) => const SizedBox(width: 12),
             itemBuilder: (ctx, i) {
               if (i == children.length) {
                 return _AddChildChip(onTap: onAdd);

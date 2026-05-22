@@ -212,6 +212,16 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // When the server gates a free user (3 questions/week used), the
+    // last AI message comes back flagged — open the paywall.
+    ref.listen(chatMessagesProvider, (prev, next) {
+      if (next.isNotEmpty && next.last.limitReached) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.push('/paywall');
+        });
+      }
+    });
+
     final messages = ref.watch(chatMessagesProvider);
     final profile = ref.watch(userProfileProvider);
     final chips = _getSuggestionChips(profile);
@@ -519,23 +529,10 @@ class _TriageBanner extends StatelessWidget {
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              FilledButton(
-                onPressed: () => context.go('/professionals'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: bg,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                child: Text(
-                  l.triageConsultCta,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                ),
-              ),
-              if (isEmergency) ...[
-                const SizedBox(width: 8),
+          if (isEmergency) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
                 OutlinedButton(
                   onPressed: () async {
                     final uri = Uri.parse('tel:112');
@@ -555,8 +552,8 @@ class _TriageBanner extends StatelessWidget {
                   ),
                 ),
               ],
-            ],
-          ),
+            ),
+          ],
         ],
       ),
     );

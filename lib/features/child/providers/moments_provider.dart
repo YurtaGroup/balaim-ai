@@ -50,6 +50,7 @@ class MomentsNotifier extends StateNotifier<List<Moment>> {
     required String caption,
     required DateTime date,
     required MomentTag tag,
+    String? childId,
     File? photo,
   }) async {
     String? photoUrl;
@@ -74,6 +75,7 @@ class MomentsNotifier extends StateNotifier<List<Moment>> {
       photoUrl: photoUrl,
       localPhotoPath: photo?.path,
       tag: tag,
+      childId: childId,
     );
 
     // Save to Firestore

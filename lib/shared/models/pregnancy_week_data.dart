@@ -1,4 +1,5 @@
 /// Week-by-week pregnancy data — the core of the journey experience
+library;
 import '../../core/l10n/content_localizations.dart';
 
 class PregnancyWeekData {

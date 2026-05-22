@@ -1,75 +1,43 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/moments/views/moments_screen.dart';
 import '../../features/auth/views/onboarding_screen.dart';
 import '../../features/auth/views/login_screen.dart';
 import '../../features/auth/views/signup_screen.dart';
-import '../../features/auth/views/stage_selection_screen.dart';
-import '../../features/child/views/my_child_screen.dart';
 import '../../features/auth/views/children_screen.dart';
+import '../../features/auth/views/profile_screen.dart';
 import '../../features/notifications/views/notifications_screen.dart';
-import '../../features/lab/views/lab_analysis_screen.dart';
-import '../../features/lab/views/lab_entry_screen.dart';
-import '../../features/vault/views/vault_screen.dart';
-import '../../features/pharmacy/views/pharmacy_directory_screen.dart';
+import '../../features/child/views/child_screen.dart';
 import '../../features/ask/views/ask_screen.dart';
 import '../../features/home/views/home_screen.dart';
-import '../feature_flags.dart';
-import '../../features/auth/providers/auth_provider.dart';
-import '../../features/today/views/today_screen.dart';
-import '../../features/journey/views/due_date_screen.dart';
-import '../../features/journey/views/kick_counter_screen.dart';
-import '../../features/journey/views/baby_journey_screen.dart';
-import '../../features/journey/views/contraction_timer_screen.dart';
-import '../../features/journey/views/hospital_bag_screen.dart';
-import '../../features/journey/views/birth_plan_screen.dart';
-import '../../features/journey/views/baby_names_screen.dart';
-import '../../features/journey/views/trimester_guide_screen.dart';
-import '../../features/sounds/views/sounds_screen.dart';
-import '../../features/newborn/views/soothing_techniques_screen.dart';
-import '../../features/newborn/views/feeding_log_screen.dart';
-import '../../features/newborn/views/diaper_log_screen.dart';
-import '../../features/newborn/views/emergency_reference_screen.dart';
-import '../../features/newborn/views/postpartum_screen.dart';
-import '../../features/newborn/views/baby_foods_screen.dart';
 import '../../features/ai/views/ai_chat_screen.dart';
 import '../../features/ai/views/demo_conversations_screen.dart';
-import '../../features/community/views/community_screen.dart';
-import '../../features/admin/views/admin_dashboard_screen.dart';
-import '../../features/admin/views/admin_metrics_screen.dart';
-import '../../features/professionals/views/professionals_screen.dart';
-import '../../features/professionals/views/my_consultations_screen.dart';
-import '../../features/professionals/views/consultation_detail_screen.dart';
-import '../../features/doctor/views/doctor_dashboard_screen.dart';
-import '../../features/marketplace/views/marketplace_screen.dart';
+import '../../features/paywall/views/paywall_screen.dart';
+import '../../features/auth/providers/auth_provider.dart';
 import '../router/shell_screen.dart';
 
+/// v3 router — the hyper-focused, child-first surface.
+///
+/// Three tabs (Home · Ask · Child) inside one shell, plus a handful of
+/// pushed routes (auth, add-a-child, settings, notifications). Every
+/// pregnancy / community / marketplace / professionals route from the
+/// super-app era has been deleted, not flag-hidden.
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
-  final demoUser = ref.watch(currentDemoUserProvider);
 
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
       final isLoggedIn = authState.valueOrNull == true;
-      final isAuthRoute = state.matchedLocation == '/onboarding' ||
-          state.matchedLocation == '/login' ||
-          state.matchedLocation == '/signup';
+      final loc = state.matchedLocation;
+      final isAuthRoute =
+          loc == '/onboarding' || loc == '/login' || loc == '/signup';
 
-      if (!isLoggedIn && !isAuthRoute) {
-        return '/onboarding';
-      }
-      if (isLoggedIn && isAuthRoute) {
-        // Owner goes to parent home (has role switcher for other views)
-        if (demoUser?.isOwner == true) return '/';
-        if (demoUser?.isAdmin == true) return '/admin';
-        if (demoUser?.isDoctor == true) return '/doctor';
-        return '/';
-      }
+      if (!isLoggedIn && !isAuthRoute) return '/onboarding';
+      if (isLoggedIn && isAuthRoute) return '/';
       return null;
     },
     routes: [
-      // Auth routes
+      // ─── Auth ───────────────────────────────────────────────
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
@@ -82,162 +50,52 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
       ),
-      GoRoute(
-        path: '/stage-select',
-        builder: (context, state) => const StageSelectionScreen(),
-      ),
+
+      // ─── Pushed routes ──────────────────────────────────────
       GoRoute(
         path: '/children',
         builder: (context, state) => const ChildrenScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
-        path: '/lab',
-        builder: (context, state) => const LabAnalysisScreen(),
-      ),
-      GoRoute(
-        path: '/lab/entry',
-        builder: (context, state) => const LabEntryScreen(),
-      ),
-      GoRoute(
-        path: '/vault',
-        builder: (context, state) => const VaultScreen(),
-      ),
-      GoRoute(
-        path: '/pharmacies',
-        builder: (context, state) => const PharmacyDirectoryScreen(),
-      ),
-
-      GoRoute(
-        path: '/due-date',
-        builder: (context, state) => const DueDateScreen(),
-      ),
-      GoRoute(
-        path: '/kick-counter',
-        builder: (context, state) => const KickCounterScreen(),
-      ),
-      GoRoute(
-        path: '/baby-journey',
-        builder: (context, state) => const BabyJourneyScreen(),
-      ),
-      GoRoute(
-        path: '/contraction-timer',
-        builder: (context, state) => const ContractionTimerScreen(),
-      ),
-      GoRoute(
-        path: '/hospital-bag',
-        builder: (context, state) => const HospitalBagScreen(),
-      ),
-      GoRoute(
-        path: '/birth-plan',
-        builder: (context, state) => const BirthPlanScreen(),
-      ),
-      GoRoute(
-        path: '/baby-names',
-        builder: (context, state) => const BabyNamesScreen(),
-      ),
-      GoRoute(
-        path: '/trimester-guide',
-        builder: (context, state) => const TrimesterGuideScreen(),
-      ),
-      GoRoute(
-        path: '/sounds',
-        builder: (context, state) => const SoundsScreen(),
-      ),
-      GoRoute(
-        path: '/soothing',
-        builder: (context, state) => const SoothingTechniquesScreen(),
-      ),
-      GoRoute(
-        path: '/feeding-log',
-        builder: (context, state) => const FeedingLogScreen(),
-      ),
-      GoRoute(
-        path: '/diaper-log',
-        builder: (context, state) => const DiaperLogScreen(),
-      ),
-      GoRoute(
-        path: '/emergency',
-        builder: (context, state) => const EmergencyReferenceScreen(),
-      ),
-      GoRoute(
-        path: '/postpartum',
-        builder: (context, state) => const PostpartumScreen(),
-      ),
-      GoRoute(
-        path: '/baby-foods',
-        builder: (context, state) => const BabyFoodsScreen(),
-      ),
-
-      GoRoute(
-        path: '/moments',
-        builder: (context, state) => const MomentsScreen(),
-      ),
-
-      GoRoute(
         path: '/ai/examples',
         builder: (context, state) => const DemoConversationsScreen(),
       ),
-
       GoRoute(
-        path: '/my-consultations',
-        builder: (context, state) => const MyConsultationsScreen(),
-      ),
-      GoRoute(
-        path: '/my-consultations/:id',
-        builder: (context, state) => ConsultationDetailScreen(
-          consultationId: state.pathParameters['id']!,
-        ),
+        path: '/paywall',
+        builder: (context, state) => const PaywallScreen(),
       ),
 
-      // Admin shell
-      GoRoute(
-        path: '/admin',
-        builder: (context, state) => const AdminDashboardScreen(),
-      ),
-      GoRoute(
-        path: '/admin/metrics',
-        builder: (context, state) => const AdminMetricsScreen(),
-      ),
-
-      // Doctor dashboard
-      GoRoute(
-        path: '/doctor',
-        builder: (context, state) => const DoctorDashboardScreen(),
-      ),
-
-      // Main parent app shell with bottom navigation
+      // ─── The three-tab shell ────────────────────────────────
       ShellRoute(
         builder: (context, state, child) => ShellScreen(child: child),
         routes: [
           GoRoute(
             path: '/',
-            pageBuilder: (context, state) => NoTransitionPage(
-              child: FeatureFlags.v2Surface ? const HomeScreen() : const TodayScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HomeScreen()),
           ),
-          // v2 primary: voice-first AI entry. AskScreen is the centered
-          // mic + starter-chips surface; tapping a chip or submitting
-          // forwards to AiChatScreen at /ai.
+          // Ask — voice-first AI entry (mic + starter chips).
           GoRoute(
             path: '/ask',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: AskScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: AskScreen()),
           ),
-          // v2 primary: Child tab — maps straight onto the Vault surface
-          // (per-member doc timeline is exactly what the Child tab is).
+          // Child — the unified child timeline (vault + moments).
           GoRoute(
             path: '/child',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: VaultScreen(),
-            ),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ChildScreen()),
           ),
-          // Legacy /ai path kept so deep links + existing UI that still
-          // pushes to /ai keep working.
+          // Chat surface. /ask and the Home hero forward here; the
+          // ?prefill= query seeds the first message.
           GoRoute(
             path: '/ai',
             pageBuilder: (context, state) => NoTransitionPage(
@@ -246,36 +104,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ),
           ),
-          if (FeatureFlags.showCommunityTab)
-            GoRoute(
-              path: '/community',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: CommunityScreen(),
-              ),
-            ),
-          // Professionals is reachable in v2 via the Home overflow menu,
-          // not as a bottom-nav tab. Keep the route available in both
-          // shells so links + the Pharmacies AppBar action still work.
-          GoRoute(
-            path: '/professionals',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: ProfessionalsScreen(),
-            ),
-          ),
-          if (FeatureFlags.showMarketplaceTab)
-            GoRoute(
-              path: '/marketplace',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: MarketplaceScreen(),
-              ),
-            ),
-          if (FeatureFlags.showMyChildTab)
-            GoRoute(
-              path: '/my-child',
-              pageBuilder: (context, state) => const NoTransitionPage(
-                child: MyChildScreen(),
-              ),
-            ),
         ],
       ),
     ],
