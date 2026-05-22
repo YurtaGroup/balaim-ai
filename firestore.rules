@@ -6,7 +6,7 @@ service cloud.firestore {
     // kDoctorEmail in lib/features/consult/consult_config.dart.
     function isDoctor() {
       return request.auth != null
-             && request.auth.token.email == 'jane.mone@balam.ai';
+             && request.auth.token.email == 'jmone1@aol.com';
     }
 
     // Users — can only read/write their own profile

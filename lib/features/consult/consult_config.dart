@@ -9,8 +9,8 @@ import '../../core/services/auth_service.dart';
 
 /// The doctor's Firebase Auth sign-in email. Signing in with this email
 /// turns the app into the doctor inbox (see app_router redirect).
-/// TODO: set to Jane's real sign-in email before the dogfood.
-const String kDoctorEmail = 'jane.mone@balam.ai';
+/// Keep in sync with isDoctor() in firestore.rules.
+const String kDoctorEmail = 'jmone1@aol.com';
 
 const String kDoctorName = 'Jane Mone, NP';
 const String kDoctorSpecialty = 'Endocrinology';
