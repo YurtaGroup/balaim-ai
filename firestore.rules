@@ -2,6 +2,13 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // The single dogfood doctor account. Keep in sync with
+    // kDoctorEmail in lib/features/consult/consult_config.dart.
+    function isDoctor() {
+      return request.auth != null
+             && request.auth.token.email == 'jane.mone@balam.ai';
+    }
+
     // Users — can only read/write their own profile
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
@@ -31,6 +38,11 @@ service cloud.firestore {
 
       // Lab results — private health data, user only
       match /labResults/{resultId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Milestone moments — photo + caption timeline, private to user.
+      match /moments/{momentId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
@@ -112,6 +124,27 @@ service cloud.firestore {
         allow read: if request.auth != null;
         allow create: if request.auth != null;
         allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+      }
+    }
+
+    // Doctor consultations — async threads between a parent and the
+    // dogfood doctor. The parent reads/writes their own; the doctor
+    // reads/writes every consultation. Stored top-level so the doctor
+    // can query across families.
+    match /consultations/{consultId} {
+      allow read: if request.auth != null
+                   && (resource.data.uid == request.auth.uid || isDoctor());
+      allow create: if request.auth != null
+                     && request.resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null
+                     && (resource.data.uid == request.auth.uid || isDoctor());
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read, create: if request.auth != null
+          && (get(/databases/$(database)/documents/consultations/$(consultId)).data.uid == request.auth.uid
+              || isDoctor());
+        allow update, delete: if false;
       }
     }
 

@@ -12,6 +12,11 @@ import '../../features/home/views/home_screen.dart';
 import '../../features/ai/views/ai_chat_screen.dart';
 import '../../features/ai/views/demo_conversations_screen.dart';
 import '../../features/paywall/views/paywall_screen.dart';
+import '../../features/consult/consult_config.dart';
+import '../../features/consult/views/consult_list_screen.dart';
+import '../../features/consult/views/new_consult_screen.dart';
+import '../../features/consult/views/consult_thread_screen.dart';
+import '../../features/consult/views/doctor_inbox_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../router/shell_screen.dart';
 
@@ -33,7 +38,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           loc == '/onboarding' || loc == '/login' || loc == '/signup';
 
       if (!isLoggedIn && !isAuthRoute) return '/onboarding';
-      if (isLoggedIn && isAuthRoute) return '/';
+      if (isLoggedIn && isAuthRoute) {
+        // The doctor account's home is the consultation inbox, not the
+        // child-first parent app.
+        return isDoctorAccount ? '/doctor' : '/';
+      }
+      // Keep the doctor out of the parent tabs; the inbox + threads only.
+      if (isLoggedIn &&
+          isDoctorAccount &&
+          (loc == '/' || loc == '/ask' || loc == '/child')) {
+        return '/doctor';
+      }
       return null;
     },
     routes: [
@@ -71,6 +86,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/paywall',
         builder: (context, state) => const PaywallScreen(),
+      ),
+
+      // ─── Doctor consultations ───────────────────────────────
+      GoRoute(
+        path: '/consult',
+        builder: (context, state) => const ConsultListScreen(),
+      ),
+      GoRoute(
+        path: '/consult/new',
+        builder: (context, state) => const NewConsultScreen(),
+      ),
+      GoRoute(
+        path: '/consult/:id',
+        builder: (context, state) =>
+            ConsultThreadScreen(consultId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/doctor',
+        builder: (context, state) => const DoctorInboxScreen(),
       ),
 
       // ─── The three-tab shell ────────────────────────────────

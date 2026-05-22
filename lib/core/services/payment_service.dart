@@ -140,6 +140,41 @@ class PaymentService {
     }
   }
 
+  /// Buy a one-off consumable — used for paid doctor consultations.
+  /// In demo mode (no RevenueCat key) the purchase is simulated as
+  /// successful so the consult flow is testable end-to-end.
+  Future<PurchaseResult> purchaseConsult(String productId) async {
+    if (!_initialized) {
+      return const PurchaseResult(success: true); // demo mode
+    }
+    try {
+      final products = await Purchases.getProducts([productId]);
+      if (products.isEmpty) {
+        return const PurchaseResult(
+          success: false,
+          error: 'Consultations are not available in your region yet.',
+        );
+      }
+      await Purchases.purchaseStoreProduct(products.first);
+      return const PurchaseResult(success: true);
+    } on PlatformException catch (e) {
+      final code = PurchasesErrorHelper.getErrorCode(e);
+      if (code == PurchasesErrorCode.purchaseCancelledError) {
+        return const PurchaseResult(success: false, cancelled: true);
+      }
+      return const PurchaseResult(
+        success: false,
+        error: 'Payment failed. Please try again.',
+      );
+    } catch (e) {
+      debugPrint('[Payment] consult purchase error: $e');
+      return const PurchaseResult(
+        success: false,
+        error: 'Something went wrong. Please try again.',
+      );
+    }
+  }
+
   /// Restore previous purchases (e.g. after reinstall). Returns the
   /// resulting premium status.
   Future<bool> restorePurchases() async {

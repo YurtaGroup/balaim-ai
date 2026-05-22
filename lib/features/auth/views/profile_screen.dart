@@ -142,6 +142,18 @@ class ProfileScreen extends ConsumerWidget {
             onTap: () => context.push('/paywall'),
           ),
           _ProfileTile(
+            icon: Icons.medical_services_outlined,
+            title: tr(currentLang(context),
+                en: 'Talk to a doctor',
+                ru: 'Врач-консультант',
+                ky: 'Дарыгер менен кеңеш'),
+            subtitle: tr(currentLang(context),
+                en: 'A paid consultation for mom & dad — your own health',
+                ru: 'Платная консультация для мамы и папы — твоё здоровье',
+                ky: 'Апа жана ата үчүн акылуу консультация — өз ден соолугуң'),
+            onTap: () => context.push('/consult'),
+          ),
+          _ProfileTile(
             icon: Icons.family_restroom,
             title: L.of(context).myChildren,
             subtitle: L.of(context).childrenCount(profile.children.length),
