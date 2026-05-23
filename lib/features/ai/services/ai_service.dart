@@ -6,6 +6,7 @@ import '../../../main.dart' show isFirebaseInitialized;
 import '../../../shared/models/user_profile.dart';
 import '../../../shared/models/tracking_entry.dart';
 import '../../journey/providers/journey_provider.dart';
+import '../providers/active_persona_provider.dart';
 
 final aiServiceProvider = Provider<AiService>((ref) {
   return AiService(ref);
@@ -81,6 +82,7 @@ class AiService {
   }) async {
     final profile = _ref.read(userProfileProvider);
     final tracking = _ref.read(trackingEntriesProvider);
+    final activePersonaId = _ref.read(activePersonaProvider);
     final todayTracking = tracking.where((e) {
       final now = DateTime.now();
       return e.timestamp.year == now.year &&
@@ -99,6 +101,7 @@ class AiService {
         final userContext = {
           'locale': locale,
           'briefMode': briefMode,
+          'personaId': activePersonaId.serverId,
           // Member-scoped fields (new, required by build-14 adult branch)
           'memberId': member?.id,
           'memberName': member?.name ?? profile.babyName,

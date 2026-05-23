@@ -4,6 +4,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { defineSecret } from "firebase-functions/params";
 import { balamChat as balamChatInternal } from "./ai/balam-chat";
+import { isPremiumPersona, isValidPersonaId } from "./ai/personas";
 import { generateDailyInsight } from "./ai/daily-insights";
 import {
   runScheduleEngineForAllUsers,
@@ -210,12 +211,26 @@ export const balamChat = onCall(
     const locale = (userContext?.locale as string) ?? "en";
     const uid = request.auth.uid;
 
+    // Persona selection (M1). Validate against the registry; unknown ids
+    // silently fall back to Balam (the free default). Premium personas
+    // require the premium entitlement — for a free user, we don't reject
+    // the request, we just drop them back onto Balam so the chat never
+    // dead-ends. The UI also gates the picker, so reaching here without
+    // premium implies a stale client or a forged request.
+    const rawPersonaId = userContext?.personaId;
+    const personaId =
+      typeof rawPersonaId === "string" && isValidPersonaId(rawPersonaId)
+        ? rawPersonaId
+        : "balam";
+    const premium = await isPremium(uid);
+    const effectivePersonaId =
+      isPremiumPersona(personaId) && !premium ? "balam" : personaId;
+
     // Free-tier gate (the SaaS line). Free users get 3 questions/week;
     // premium is unlimited. Checked before the cost-protection caps so a
     // gated free user never consumes the beta Claude budget. A blocked
     // call returns a soft message with limitReached:true — the client
     // shows the paywall instead of rendering it as a chat reply.
-    const premium = await isPremium(uid);
     if (!premium) {
       const withinFreeTier = await checkAndIncrementWeekly(uid);
       if (!withinFreeTier) {
@@ -246,6 +261,7 @@ export const balamChat = onCall(
         {
           uid: request.auth.uid,
           ...(userContext ?? {}),
+          personaId: effectivePersonaId,
         },
         Array.isArray(history) ? history : []
       );

@@ -5,8 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart' show ParentingStage;
+import '../../../shared/models/child_model.dart';
 import '../../../shared/models/user_profile.dart';
 import '../providers/ai_provider.dart';
+import '../widgets/persona_pill.dart';
+import '../widgets/prompt_library_carousel.dart';
 import '../../journey/providers/journey_provider.dart';
 
 class AiChatScreen extends ConsumerStatefulWidget {
@@ -61,142 +64,13 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     });
   }
 
-  List<_ChipData> _getSuggestionChips(UserProfile profile) {
-    final stage = profile.stage;
-    final name = profile.babyName ?? 'baby';
-    final age = profile.babyAgeMonths ?? 12;
-    final week = profile.currentWeek ?? 24;
-
-    // ── TODDLER (12+ months) ──
-    // Independence, language explosion, tantrums, Montessori practical life
-    if (stage == ParentingStage.toddler) {
-      return [
-        _ChipData(
-          label: L.of(context).speechMilestones,
-          message: "What speech and language milestones should $name be hitting at $age months? What words or phrases are typical, and when should I consider getting help?",
-        ),
-        _ChipData(
-          label: L.of(context).handleTantrums,
-          message: "How do I handle tantrums with my $age-month-old the Montessori way? $name has been having big meltdowns lately.",
-        ),
-        _ChipData(
-          label: L.of(context).activitiesForToday,
-          message: "What Montessori activities can I do with $name today at $age months? Things I can do at home with everyday items.",
-        ),
-        _ChipData(
-          label: L.of(context).isThisNormal,
-          message: "What's normal development for a $age-month-old? What should I be seeing and what should I not worry about?",
-        ),
-        _ChipData(
-          label: L.of(context).bondingTips,
-          message: "How do I connect with $name at $age months? Quality time ideas and how to show love at this age.",
-        ),
-      ];
+  HouseholdMember? _resolveActiveChild(UserProfile profile) {
+    final selected = profile.selectedMember;
+    if (selected != null && selected.role == MemberRole.child) return selected;
+    for (final m in profile.members) {
+      if (m.role == MemberRole.child) return m;
     }
-
-    // ── NEWBORN (0-12 months) ──
-    // Survival mode: feeding, sleep, crying, milestones, bonding
-    if (stage == ParentingStage.newborn) {
-      if (age <= 3) {
-        // 0-3 months: fourth trimester, feeding marathon, sleep deprivation
-        return [
-          _ChipData(
-            label: L.of(context).sleepHelp,
-            message: "$name is $age months old. What's a normal sleep pattern? How many hours should they sleep and how long between feeds at night?",
-          ),
-          _ChipData(
-            label: L.of(context).nutritionTips,
-            message: "Is $name eating enough at $age months? How do I know if breastfeeding or bottle feeding is going well? How often should they eat?",
-          ),
-          _ChipData(
-            label: L.of(context).isThisNormal,
-            message: "$name is $age months old. What's normal behavior? Crying, spitting up, grunting, hiccups — what should I worry about vs what's just being a newborn?",
-          ),
-          _ChipData(
-            label: L.of(context).developmentOnTrack,
-            message: "What should $name be able to do at $age months? Head control, eye tracking, responses to sound — what milestones should I see?",
-          ),
-          _ChipData(
-            label: L.of(context).bondingTips,
-            message: "How do I bond with $name at $age months? Skin-to-skin, eye contact, talking — what matters most right now?",
-          ),
-        ];
-      } else if (age <= 6) {
-        // 4-6 months: tummy time, rolling, laughing, starting solids
-        return [
-          _ChipData(
-            label: L.of(context).developmentOnTrack,
-            message: "What milestones should $name be hitting at $age months? Rolling, reaching, babbling — what should I see?",
-          ),
-          _ChipData(
-            label: L.of(context).sleepHelp,
-            message: "How should $name's sleep look at $age months? Nap schedule, night wakings, sleep training — what's the right approach?",
-          ),
-          _ChipData(
-            label: age >= 5 ? L.of(context).nutritionTips : L.of(context).activitiesForToday,
-            message: age >= 5
-                ? "Is $name ready for solid foods at $age months? What signs should I look for? What do I introduce first?"
-                : "What activities can I do with $name at $age months? Tummy time variations, sensory play, things that help development.",
-          ),
-          _ChipData(
-            label: L.of(context).isThisNormal,
-            message: "Is $name developing normally at $age months? What's the range of normal and when should I be concerned?",
-          ),
-          _ChipData(
-            label: L.of(context).bondingTips,
-            message: "Best ways to play with and stimulate $name at $age months? What do they need from me right now?",
-          ),
-        ];
-      } else {
-        // 7-12 months: crawling, first foods, separation anxiety, first words
-        return [
-          _ChipData(
-            label: L.of(context).nutritionTips,
-            message: "What foods should $name be eating at $age months? How much solid food vs milk? Textures, portions, meal schedule?",
-          ),
-          _ChipData(
-            label: L.of(context).developmentOnTrack,
-            message: "What should $name be doing at $age months? Crawling, pulling up, babbling, pointing — what milestones matter?",
-          ),
-          _ChipData(
-            label: L.of(context).sleepHelp,
-            message: "$name is $age months. How many naps? What time should bedtime be? They keep waking up at night — is this a regression?",
-          ),
-          _ChipData(
-            label: L.of(context).isThisNormal,
-            message: "$name has separation anxiety at $age months. Is this normal? They cry when I leave the room. How do I handle it?",
-          ),
-          _ChipData(
-            label: L.of(context).activitiesForToday,
-            message: "What activities help $name's development at $age months? They're starting to move around — how do I keep them stimulated and safe?",
-          ),
-        ];
-      }
-    }
-
-    // Pregnancy chips (keep existing)
-    return [
-      _ChipData(
-        label: L.of(context).isThisNormal,
-        message: 'Is it normal to feel Braxton Hicks at week $week?',
-      ),
-      _ChipData(
-        label: L.of(context).whatsBabyDoing,
-        message: "What is my baby doing at week $week?",
-      ),
-      _ChipData(
-        label: L.of(context).nutritionTips,
-        message: 'What should I eat this week for my baby\'s development?',
-      ),
-      _ChipData(
-        label: L.of(context).sleepHelp,
-        message: "I can't sleep well at week $week, any tips?",
-      ),
-      _ChipData(
-        label: L.of(context).partnerTips,
-        message: "How can my partner be more involved at week $week?",
-      ),
-    ];
+    return null;
   }
 
   String _getSubtitle(UserProfile profile) {
@@ -224,7 +98,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
 
     final messages = ref.watch(chatMessagesProvider);
     final profile = ref.watch(userProfileProvider);
-    final chips = _getSuggestionChips(profile);
+    final activeChild = _resolveActiveChild(profile);
     final isNight = ChatMessagesNotifier.isNightMode();
 
     final scaffoldBg = isNight ? const Color(0xFF0E1116) : AppColors.background;
@@ -264,6 +138,10 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
           ],
         ),
         actions: [
+          const Padding(
+            padding: EdgeInsets.only(right: 6),
+            child: Center(child: PersonaPill(compact: true)),
+          ),
           IconButton(
             icon: const Icon(Icons.menu_book_outlined),
             tooltip: L.of(context).exampleConversations,
@@ -273,17 +151,12 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       ),
       body: Column(
         children: [
-          // Suggestion chips (hidden in 3am mode — user needs focus, not options)
+          // Library carousel — age-bucketed prompts in the active persona's
+          // voice. Hidden in 3am mode (parent needs focus, not options).
           if (!isNight) ...[
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: chips.map((chip) => _SuggestionChip(
-                  label: chip.label,
-                  onTap: () => _send(chip.message),
-                )).toList(),
-              ),
+            PromptLibraryCarousel(
+              activeChild: activeChild,
+              onPick: _send,
             ),
             const Divider(height: 1),
           ],
@@ -356,12 +229,6 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       ),
     );
   }
-}
-
-class _ChipData {
-  final String label;
-  final String message;
-  const _ChipData({required this.label, required this.message});
 }
 
 class _MessageBubble extends StatelessWidget {
@@ -608,23 +475,3 @@ class _TypingDotState extends State<_TypingDot>
   }
 }
 
-class _SuggestionChip extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _SuggestionChip({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ActionChip(
-        label: Text(label, style: const TextStyle(fontSize: 13)),
-        onPressed: onTap,
-        backgroundColor: AppColors.secondary.withValues(alpha: 0.1),
-        side: BorderSide.none,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      ),
-    );
-  }
-}

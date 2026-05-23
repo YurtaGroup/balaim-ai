@@ -94,6 +94,7 @@ flutter:
     - assets/icons/
     - assets/branding/
     - assets/demo/
+    - assets/prompt_library/
 
 flutter_launcher_icons:
   android: "launcher_icon"
