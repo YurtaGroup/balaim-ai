@@ -35,7 +35,13 @@ final dailyBriefProvider = StreamProvider<DailyBrief?>((ref) async* {
   // Kick off generation in the background — only one in-flight per child/day.
   _ensureGenerated(uid, activeChild.id, docId);
 
-  await for (final snap in docRef.snapshots()) {
+  // Stream errors (e.g. permission-denied before rules deploy) must
+  // never crash the app — yield null and let the UI keep the loading
+  // shimmer up. Generation will retry on next provider rebuild.
+  final stream = docRef.snapshots().handleError((Object e, StackTrace _) {
+    debugPrint('[dailyBrief] stream error: $e');
+  });
+  await for (final snap in stream) {
     if (!snap.exists) {
       yield null;
       continue;

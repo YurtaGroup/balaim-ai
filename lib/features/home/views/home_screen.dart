@@ -284,12 +284,14 @@ class _DebriefLoading extends StatelessWidget {
                 child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
               ),
               const SizedBox(width: 10),
-              Text(
-                tr(currentLang(context),
-                    en: 'Balam is putting today together…',
-                    ru: 'Balam собирает сегодняшний бриф…',
-                    ky: 'Balam бүгүнкү маалыматтаманы даярдап жатат…'),
-                style: const TextStyle(color: AppColors.textHint, fontSize: 13),
+              Expanded(
+                child: Text(
+                  tr(currentLang(context),
+                      en: 'Balam is putting today together…',
+                      ru: 'Balam собирает сегодняшний бриф…',
+                      ky: 'Balam бүгүнкү маалыматтаманы даярдап жатат…'),
+                  style: const TextStyle(color: AppColors.textHint, fontSize: 13),
+                ),
               ),
             ],
           ),
