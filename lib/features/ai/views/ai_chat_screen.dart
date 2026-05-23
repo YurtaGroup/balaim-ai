@@ -2,11 +2,12 @@ import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../../../core/l10n/content_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/constants/app_constants.dart' show ParentingStage;
 import '../../../shared/models/child_model.dart';
 import '../../../shared/models/user_profile.dart';
+import '../../emergency/emergency_dial.dart';
 import '../providers/ai_provider.dart';
 import '../widgets/persona_pill.dart';
 import '../widgets/prompt_library_carousel.dart';
@@ -14,8 +15,9 @@ import '../../journey/providers/journey_provider.dart';
 
 class AiChatScreen extends ConsumerStatefulWidget {
   final String? prefill;
+  final bool emergency;
 
-  const AiChatScreen({super.key, this.prefill});
+  const AiChatScreen({super.key, this.prefill, this.emergency = false});
 
   @override
   ConsumerState<AiChatScreen> createState() => _AiChatScreenState();
@@ -50,7 +52,9 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     if (text.isEmpty) return;
 
     _controller.clear();
-    ref.read(chatMessagesProvider.notifier).sendMessage(text);
+    ref
+        .read(chatMessagesProvider.notifier)
+        .sendMessage(text, emergencyMode: widget.emergency);
 
     // Scroll to bottom
     Future.delayed(const Duration(milliseconds: 100), () {
@@ -87,9 +91,12 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   @override
   Widget build(BuildContext context) {
     // When the server gates a free user (3 questions/week used), the
-    // last AI message comes back flagged — open the paywall.
+    // last AI message comes back flagged — open the paywall. Suppressed
+    // in emergency mode (the server already bypasses the gate there).
     ref.listen(chatMessagesProvider, (prev, next) {
-      if (next.isNotEmpty && next.last.limitReached) {
+      if (!widget.emergency &&
+          next.isNotEmpty &&
+          next.last.limitReached) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) context.push('/paywall');
         });
@@ -99,7 +106,9 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     final messages = ref.watch(chatMessagesProvider);
     final profile = ref.watch(userProfileProvider);
     final activeChild = _resolveActiveChild(profile);
-    final isNight = ChatMessagesNotifier.isNightMode();
+    final isEmergency = widget.emergency;
+    final isNight = !isEmergency && ChatMessagesNotifier.isNightMode();
+    final lang = currentLang(context);
 
     final scaffoldBg = isNight ? const Color(0xFF0E1116) : AppColors.background;
     final surfaceBg = isNight ? const Color(0xFF181C22) : AppColors.surface;
@@ -110,50 +119,103 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     return Scaffold(
       backgroundColor: scaffoldBg,
       appBar: AppBar(
-        backgroundColor: isNight ? surfaceBg : null,
-        foregroundColor: isNight ? Colors.white : null,
+        backgroundColor: isEmergency
+            ? AppColors.error
+            : (isNight ? surfaceBg : null),
+        foregroundColor: isEmergency
+            ? Colors.white
+            : (isNight ? Colors.white : null),
         title: Row(
           children: [
             Container(
               width: 32,
               height: 32,
-              decoration: const BoxDecoration(
-                color: AppColors.secondary,
+              decoration: BoxDecoration(
+                color: isEmergency
+                    ? Colors.white.withValues(alpha: 0.22)
+                    : AppColors.secondary,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+              child: Icon(
+                isEmergency ? Icons.medical_services : Icons.auto_awesome,
+                color: Colors.white,
+                size: 18,
+              ),
             ),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(L.of(context).balamAI,
-                    style: TextStyle(fontSize: 16, color: textPrimary)),
-                Text(
-                  isNight ? L.of(context).nightModeBadge : _getSubtitle(profile),
-                  style: TextStyle(fontSize: 11, color: textHint),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isEmergency
+                        ? tr(lang,
+                            en: 'AI Pediatrician',
+                            ru: 'AI Педиатр',
+                            ky: 'AI Педиатр')
+                        : L.of(context).balamAI,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isEmergency ? Colors.white : textPrimary,
+                      fontWeight: isEmergency ? FontWeight.w800 : null,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    isEmergency
+                        ? tr(lang,
+                            en: 'Emergency mode — brief, free',
+                            ru: 'Экстренный режим — кратко, бесплатно',
+                            ky: 'Шашылыш режим — кыска, акысыз')
+                        : (isNight
+                            ? L.of(context).nightModeBadge
+                            : _getSubtitle(profile)),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isEmergency
+                          ? Colors.white.withValues(alpha: 0.92)
+                          : textHint,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-        actions: [
-          const Padding(
-            padding: EdgeInsets.only(right: 6),
-            child: Center(child: PersonaPill(compact: true)),
-          ),
-          IconButton(
-            icon: const Icon(Icons.menu_book_outlined),
-            tooltip: L.of(context).exampleConversations,
-            onPressed: () => context.push('/ai/examples'),
-          ),
-        ],
+        actions: isEmergency
+            ? [
+                IconButton(
+                  tooltip: tr(lang,
+                      en: 'Call emergency services',
+                      ru: 'Вызвать экстренную службу',
+                      ky: 'Шашылыш кызматка чал'),
+                  icon: const Icon(Icons.call),
+                  onPressed: () => dialEmergency(lang),
+                ),
+              ]
+            : [
+                const Padding(
+                  padding: EdgeInsets.only(right: 6),
+                  child: Center(child: PersonaPill(compact: true)),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.menu_book_outlined),
+                  tooltip: L.of(context).exampleConversations,
+                  onPressed: () => context.push('/ai/examples'),
+                ),
+              ],
       ),
       body: Column(
         children: [
+          // Emergency banner — always visible while in emergency mode so the
+          // "helping, not replacing" promise stays on screen.
+          if (isEmergency) _EmergencyDisclaimer(lang: lang),
+
           // Library carousel — age-bucketed prompts in the active persona's
-          // voice. Hidden in 3am mode (parent needs focus, not options).
-          if (!isNight) ...[
+          // voice. Hidden in 3am mode and emergency mode (parent needs
+          // focus, not options).
+          if (!isNight && !isEmergency) ...[
             PromptLibraryCarousel(
               activeChild: activeChild,
               onPick: _send,
@@ -172,6 +234,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 return _MessageBubble(
                   message: msg,
                   night: isNight,
+                  emergency: isEmergency,
                   fontSize: messageFontSize,
                 );
               },
@@ -234,11 +297,13 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
 class _MessageBubble extends StatelessWidget {
   final ChatMessage message;
   final bool night;
+  final bool emergency;
   final double fontSize;
 
   const _MessageBubble({
     required this.message,
     this.night = false,
+    this.emergency = false,
     this.fontSize = 15,
   });
 
@@ -333,9 +398,14 @@ class _MessageBubble extends StatelessWidget {
               ),
             ],
           ),
-          if (message.isAi && message.triage != null && message.triage!.isRedFlag) ...[
+          // In normal mode we only surface high/emergency triage. In
+          // emergency mode every urgency level is rendered — the parent
+          // came here for a verdict, low/medium counts.
+          if (message.isAi &&
+              message.triage != null &&
+              (emergency || message.triage!.isRedFlag)) ...[
             const SizedBox(height: 10),
-            _TriageBanner(triage: message.triage!, night: night),
+            _TriageBanner(triage: message.triage!, night: night, emergency: emergency),
           ],
         ],
       ),
@@ -346,23 +416,30 @@ class _MessageBubble extends StatelessWidget {
 class _TriageBanner extends StatelessWidget {
   final Triage triage;
   final bool night;
+  final bool emergency;
 
-  const _TriageBanner({required this.triage, required this.night});
+  const _TriageBanner({
+    required this.triage,
+    required this.night,
+    this.emergency = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final l = L.of(context);
-    final isEmergency = triage.urgency == TriageUrgency.emergency;
-    final bg = isEmergency ? AppColors.error : AppColors.accentDark;
-    final title = isEmergency ? l.triageEmergencyTitle : l.triageHighTitle;
-    final body = isEmergency ? l.triageEmergencyBody : l.triageHighBody;
+    final lang = currentLang(context);
+    final urgency = triage.urgency;
+    final colorScheme = _colorFor(urgency);
+    final title = _titleFor(lang, urgency, l);
+    final body = _bodyFor(lang, urgency, l);
+    final showCallCta = urgency == TriageUrgency.emergency;
 
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: bg.withValues(alpha: night ? 0.22 : 0.12),
+        color: colorScheme.withValues(alpha: night ? 0.22 : 0.12),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: bg.withValues(alpha: 0.5)),
+        border: Border.all(color: colorScheme.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,8 +447,8 @@ class _TriageBanner extends StatelessWidget {
           Row(
             children: [
               Icon(
-                isEmergency ? Icons.emergency : Icons.medical_services,
-                color: bg,
+                _iconFor(urgency),
+                color: colorScheme,
                 size: 18,
               ),
               const SizedBox(width: 8),
@@ -379,7 +456,7 @@ class _TriageBanner extends StatelessWidget {
                 child: Text(
                   title,
                   style: TextStyle(
-                    color: night ? Colors.white : bg,
+                    color: night ? Colors.white : colorScheme,
                     fontWeight: FontWeight.w700,
                     fontSize: 14,
                   ),
@@ -396,31 +473,124 @@ class _TriageBanner extends StatelessWidget {
               height: 1.4,
             ),
           ),
-          if (isEmergency) ...[
+          if (showCallCta) ...[
             const SizedBox(height: 10),
             Row(
               children: [
-                OutlinedButton(
-                  onPressed: () async {
-                    final uri = Uri.parse('tel:112');
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri);
-                    }
-                  },
+                OutlinedButton.icon(
+                  onPressed: () => dialEmergency(lang),
+                  icon: const Icon(Icons.call, size: 16),
+                  label: Text(
+                    '${l.triageCallEmergencyCta} (${emergencyDialNumber(lang)})',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                  ),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: bg,
-                    side: BorderSide(color: bg),
+                    foregroundColor: colorScheme,
+                    side: BorderSide(color: colorScheme),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  child: Text(
-                    l.triageCallEmergencyCta,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Color _colorFor(TriageUrgency u) {
+    switch (u) {
+      case TriageUrgency.low:
+        return AppColors.success;
+      case TriageUrgency.medium:
+        return AppColors.warning;
+      case TriageUrgency.high:
+        return AppColors.accentDark;
+      case TriageUrgency.emergency:
+        return AppColors.error;
+    }
+  }
+
+  IconData _iconFor(TriageUrgency u) {
+    switch (u) {
+      case TriageUrgency.low:
+        return Icons.check_circle_outline;
+      case TriageUrgency.medium:
+        return Icons.schedule;
+      case TriageUrgency.high:
+        return Icons.medical_services;
+      case TriageUrgency.emergency:
+        return Icons.emergency;
+    }
+  }
+
+  String _titleFor(String lang, TriageUrgency u, L l) {
+    switch (u) {
+      case TriageUrgency.low:
+        return tr(lang,
+            en: 'Watch at home',
+            ru: 'Наблюдай дома',
+            ky: 'Үйдө карап тур');
+      case TriageUrgency.medium:
+        return tr(lang,
+            en: 'Schedule a visit this week',
+            ru: 'Запишись к врачу на этой неделе',
+            ky: 'Бул жуманын ичинде дарыгерге жазыл');
+      case TriageUrgency.high:
+        return l.triageHighTitle;
+      case TriageUrgency.emergency:
+        return l.triageEmergencyTitle;
+    }
+  }
+
+  String _bodyFor(String lang, TriageUrgency u, L l) {
+    switch (u) {
+      case TriageUrgency.low:
+        return tr(lang,
+            en: 'No red flags right now. Keep an eye on it and recheck in a few hours.',
+            ru: 'Серьёзных признаков нет. Понаблюдай и проверь через несколько часов.',
+            ky: 'Олуттуу белгилер жок. Бир нече сааттан кийин кайра текшер.');
+      case TriageUrgency.medium:
+        return tr(lang,
+            en: 'Worth a non-urgent visit or a call to your clinic this week.',
+            ru: 'Стоит сходить или позвонить в клинику на этой неделе.',
+            ky: 'Бул жума ичинде клиникага барсаң же чалсаң жакшы.');
+      case TriageUrgency.high:
+        return l.triageHighBody;
+      case TriageUrgency.emergency:
+        return l.triageEmergencyBody;
+    }
+  }
+}
+
+class _EmergencyDisclaimer extends StatelessWidget {
+  final String lang;
+  const _EmergencyDisclaimer({required this.lang});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      color: AppColors.error.withValues(alpha: 0.10),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, color: AppColors.error, size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              tr(lang,
+                  en: 'I\'m helping you decide — I\'m not a doctor. If you sense danger, call ${emergencyDialNumber(lang)} now.',
+                  ru: 'Я помогаю тебе сориентироваться — я не врач. Если чувствуешь опасность — звони ${emergencyDialNumber(lang)} сейчас.',
+                  ky: 'Мен сага чечүүгө жардам берем — мен дарыгер эмесмин. Коркунуч сезсең, азыр ${emergencyDialNumber(lang)} чал.'),
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 12,
+                height: 1.35,
+              ),
+            ),
+          ),
         ],
       ),
     );

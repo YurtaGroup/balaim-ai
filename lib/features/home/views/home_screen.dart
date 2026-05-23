@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/l10n/content_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/child_model.dart';
+import '../../emergency/widgets/emergency_entry_pill.dart';
 import '../../family/views/add_member_sheet.dart';
 import '../../journey/providers/journey_provider.dart';
 import '../../paywall/add_child_gate.dart';
@@ -66,6 +67,8 @@ class HomeScreen extends ConsumerWidget {
             const NoticeCard(),
             const SizedBox(height: 12),
             _AskBalamHero(childName: activeChild?.name),
+            const SizedBox(height: 10),
+            const EmergencyEntryPill(),
             const SizedBox(height: 16),
             _VaultStrip(items: vaultItems, activeChild: activeChild),
           ],

@@ -73,11 +73,14 @@ class AiService {
   /// Uses real Cloud Function when Firebase is connected, demo responses otherwise.
   /// [locale] is the user's language code ('en', 'ru', 'ky') — the AI responds in that language.
   /// [briefMode] when true asks for 1-2 sentence replies (3am mode).
+  /// [emergencyMode] when true tells the server to pin to AI Pediatrician,
+  /// force brief replies, and bypass the weekly free-tier cap.
   /// [history] is the recent conversation (excluding the current message).
   Future<ChatResult> chat(
     String message, {
     String locale = 'en',
     bool briefMode = false,
+    bool emergencyMode = false,
     List<ChatHistoryMessage> history = const [],
   }) async {
     final profile = _ref.read(userProfileProvider);
@@ -100,8 +103,9 @@ class AiService {
 
         final userContext = {
           'locale': locale,
-          'briefMode': briefMode,
+          'briefMode': briefMode || emergencyMode,
           'personaId': activePersonaId.serverId,
+          'emergencyMode': emergencyMode,
           // Member-scoped fields (new, required by build-14 adult branch)
           'memberId': member?.id,
           'memberName': member?.name ?? profile.babyName,

@@ -134,7 +134,7 @@ class ChatMessagesNotifier extends StateNotifier<List<ChatMessage>> {
     return h >= 23 || h < 5;
   }
 
-  Future<void> sendMessage(String text) async {
+  Future<void> sendMessage(String text, {bool emergencyMode = false}) async {
     // Snapshot history BEFORE we add the new user message — last 10 non-loading,
     // non-welcome messages (the welcome is stage-specific and lives in system prompt anyway).
     final historySource = state.where((m) => !m.isLoading && m.id != 'welcome').toList();
@@ -171,7 +171,8 @@ class ChatMessagesNotifier extends StateNotifier<List<ChatMessage>> {
       final result = await aiService.chat(
         text,
         locale: normalized,
-        briefMode: isNightMode(),
+        briefMode: isNightMode() || emergencyMode,
+        emergencyMode: emergencyMode,
         history: history,
       );
 

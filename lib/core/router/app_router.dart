@@ -11,6 +11,7 @@ import '../../features/ask/views/ask_screen.dart';
 import '../../features/home/views/home_screen.dart';
 import '../../features/ai/views/ai_chat_screen.dart';
 import '../../features/ai/views/demo_conversations_screen.dart';
+import '../../features/emergency/views/emergency_screen.dart';
 import '../../features/paywall/views/paywall_screen.dart';
 import '../../features/consult/consult_config.dart';
 import '../../features/consult/views/consult_list_screen.dart';
@@ -87,6 +88,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/paywall',
         builder: (context, state) => const PaywallScreen(),
       ),
+      GoRoute(
+        path: '/emergency',
+        builder: (context, state) => const EmergencyScreen(),
+      ),
 
       // ─── Doctor consultations ───────────────────────────────
       GoRoute(
@@ -129,12 +134,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                 const NoTransitionPage(child: ChildScreen()),
           ),
           // Chat surface. /ask and the Home hero forward here; the
-          // ?prefill= query seeds the first message.
+          // ?prefill= query seeds the first message. ?emergency=1 puts
+          // the chat into emergency mode (AI Pediatrician, brief, free).
           GoRoute(
             path: '/ai',
             pageBuilder: (context, state) => NoTransitionPage(
               child: AiChatScreen(
                 prefill: state.uri.queryParameters['prefill'],
+                emergency: state.uri.queryParameters['emergency'] == '1',
               ),
             ),
           ),

@@ -211,27 +211,42 @@ export const balamChat = onCall(
     const locale = (userContext?.locale as string) ?? "en";
     const uid = request.auth.uid;
 
-    // Persona selection (M1). Validate against the registry; unknown ids
-    // silently fall back to Balam (the free default). Premium personas
+    // Emergency mode (M3). The client sets this when the chat originated
+    // from the red emergency button. We force AI Pediatrician, force
+    // brief mode (panicked parents need short answers), and bypass the
+    // weekly free-tier gate so the 3am promise stays unconditional. The
+    // per-user / global daily cost caps still apply — those are
+    // cost-protection, not a SaaS lever.
+    const emergencyMode = userContext?.emergencyMode === true;
+
+    // Persona selection (M1 + M3). Validate against the registry; unknown
+    // ids silently fall back to Balam (the free default). Premium personas
     // require the premium entitlement — for a free user, we don't reject
     // the request, we just drop them back onto Balam so the chat never
-    // dead-ends. The UI also gates the picker, so reaching here without
-    // premium implies a stale client or a forged request.
+    // dead-ends. Emergency mode overrides everything and pins to
+    // pediatrician regardless of premium status or client selection.
     const rawPersonaId = userContext?.personaId;
     const personaId =
       typeof rawPersonaId === "string" && isValidPersonaId(rawPersonaId)
         ? rawPersonaId
         : "balam";
     const premium = await isPremium(uid);
-    const effectivePersonaId =
-      isPremiumPersona(personaId) && !premium ? "balam" : personaId;
+    let effectivePersonaId: string;
+    if (emergencyMode) {
+      effectivePersonaId = "pediatrician";
+    } else if (isPremiumPersona(personaId) && !premium) {
+      effectivePersonaId = "balam";
+    } else {
+      effectivePersonaId = personaId;
+    }
 
     // Free-tier gate (the SaaS line). Free users get 3 questions/week;
     // premium is unlimited. Checked before the cost-protection caps so a
     // gated free user never consumes the beta Claude budget. A blocked
     // call returns a soft message with limitReached:true — the client
-    // shows the paywall instead of rendering it as a chat reply.
-    if (!premium) {
+    // shows the paywall instead of rendering it as a chat reply. Skipped
+    // entirely when emergencyMode is on (the 3am promise).
+    if (!premium && !emergencyMode) {
       const withinFreeTier = await checkAndIncrementWeekly(uid);
       if (!withinFreeTier) {
         return {
@@ -262,6 +277,8 @@ export const balamChat = onCall(
           uid: request.auth.uid,
           ...(userContext ?? {}),
           personaId: effectivePersonaId,
+          // Emergency answers must be short — override any client value.
+          briefMode: emergencyMode ? true : (userContext?.briefMode === true),
         },
         Array.isArray(history) ? history : []
       );

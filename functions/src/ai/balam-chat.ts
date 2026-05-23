@@ -11,6 +11,13 @@ interface UserContext {
   // non-default personas is enforced in the index.ts handler before
   // we reach this layer.
   personaId?: string;
+  // Emergency mode (M3) — set by the client when the chat originated from
+  // the red emergency button. The handler overrides personaId to
+  // 'pediatrician', forces briefMode, and bypasses the weekly free-tier
+  // gate so a panicked free parent at 3am always gets an answer. The
+  // builder itself doesn't branch on this flag — the overrides upstream
+  // are enough.
+  emergencyMode?: boolean;
   // Household-member-scoped fields (build 14+). When memberRole is set to a
   // non-child role (self / partner / mother / father / grandmother / grandfather
   // / sibling / uncleAunt / other), the adult-coach system prompt branch fires.

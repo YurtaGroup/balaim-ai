@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/child_model.dart';
 import '../../ai/widgets/persona_pill.dart';
 import '../../ai/widgets/prompt_library_carousel.dart';
+import '../../emergency/widgets/emergency_entry_pill.dart';
 import '../../journey/providers/journey_provider.dart';
 
 /// v3 Ask — AI-native entry point. Persona pill at top tells the parent
@@ -61,6 +62,12 @@ class _AskScreenState extends ConsumerState<AskScreen> {
         elevation: 0,
         title: Text(tr(currentLang(context),
             en: 'Ask Balam', ru: 'Спросить Balam', ky: 'Balam-дан сур')),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 12),
+            child: Center(child: EmergencyEntryPill(compact: true)),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
