@@ -6,6 +6,8 @@ import { defineSecret } from "firebase-functions/params";
 import { balamChat as balamChatInternal } from "./ai/balam-chat";
 import { isPremiumPersona, isValidPersonaId } from "./ai/personas";
 import { generateDailyInsight } from "./ai/daily-insights";
+import { generateDailyBrief, BriefMember } from "./ai/daily-brief";
+import { retrieveVaultContext } from "./ai/vault_retrieval";
 import {
   runScheduleEngineForAllUsers,
   runScheduleEngineForUser,
@@ -322,6 +324,193 @@ export const dailyInsight = functions
 
     return { insight };
   });
+
+// ============================================================
+// DAILY BRIEF — the agent does the work overnight
+// ============================================================
+//
+// Generates one brief per (user, child, day). The Flutter Home tab
+// streams today's brief from users/{uid}/dailyBriefs and renders it as
+// the hero card. Client calls dailyBriefGenerate on first open if no
+// brief exists for today; scheduledDailyBriefs runs at 03:00 UTC daily
+// for warm hits across active users.
+
+export const dailyBriefGenerate = onCall(
+  { region: "us-central1", secrets: [anthropicKey] },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError("unauthenticated", "Must be signed in");
+    }
+    const uid = request.auth.uid;
+    const memberId = String(request.data?.memberId ?? "");
+    if (!memberId) {
+      throw new HttpsError("invalid-argument", "memberId required");
+    }
+    const locale = normalizeLocale(request.data?.locale);
+
+    const brief = await composeBriefForMember(uid, memberId, locale);
+    if (!brief) {
+      throw new HttpsError("not-found", "Member not found");
+    }
+    await writeBrief(uid, brief);
+    return { brief: serializeBrief(brief) };
+  }
+);
+
+export const scheduledDailyBriefs = onSchedule(
+  { schedule: "0 3 * * *", timeZone: "UTC", region: "us-central1", secrets: [anthropicKey] },
+  async () => {
+    const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    const snap = await admin
+      .firestore()
+      .collection("users")
+      .where("lastSeenAt", ">", new Date(cutoff))
+      .get();
+    let written = 0;
+    let skipped = 0;
+    for (const userDoc of snap.docs) {
+      const data = userDoc.data();
+      const members = ((data.members as unknown[]) ?? []) as Record<string, unknown>[];
+      const children = members.filter((m) => m?.role === "child");
+      if (children.length === 0) continue;
+      const locale = normalizeLocale(data.localeCode);
+      for (const child of children) {
+        const memberId = String(child.id ?? "");
+        if (!memberId) continue;
+        try {
+          const brief = await composeBriefForMember(userDoc.id, memberId, locale);
+          if (brief) {
+            await writeBrief(userDoc.id, brief);
+            written += 1;
+          } else {
+            skipped += 1;
+          }
+        } catch (e) {
+          functions.logger.warn("[dailyBrief] scheduled skip", {
+            uid: userDoc.id,
+            memberId,
+            err: String(e),
+          });
+          skipped += 1;
+        }
+      }
+    }
+    functions.logger.info("[dailyBrief] scheduled run", { written, skipped });
+  }
+);
+
+async function composeBriefForMember(
+  uid: string,
+  memberId: string,
+  locale: "en" | "ru" | "ky"
+) {
+  const userDoc = await admin.firestore().doc(`users/${uid}`).get();
+  if (!userDoc.exists) return null;
+  const members = ((userDoc.data()?.members as unknown[]) ?? []) as Record<string, unknown>[];
+  const memberRaw = members.find((m) => m && m.id === memberId);
+  if (!memberRaw) return null;
+
+  const member: BriefMember = {
+    id: String(memberRaw.id ?? ""),
+    name: String(memberRaw.name ?? "your child"),
+    birthDate: typeof memberRaw.birthDate === "string" ? memberRaw.birthDate : undefined,
+    stage: typeof memberRaw.stage === "string"
+      ? (memberRaw.stage as BriefMember["stage"])
+      : undefined,
+    conditions: Array.isArray(memberRaw.conditions)
+      ? (memberRaw.conditions as string[])
+      : undefined,
+    medications: Array.isArray(memberRaw.medications)
+      ? (memberRaw.medications as string[])
+      : undefined,
+  };
+
+  const [vaultDigest, activeNotices, recentMoment] = await Promise.all([
+    retrieveVaultContext(uid, member.id, member.name, { max: 3, maxChars: 1600 }),
+    fetchActiveNoticeTitles(uid, member.id, locale),
+    fetchRecentMomentCaption(uid, member.id),
+  ]);
+
+  return generateDailyBrief({
+    uid,
+    member,
+    locale,
+    vaultDigest,
+    activeNotices,
+    recentMoment,
+  });
+}
+
+async function fetchActiveNoticeTitles(
+  uid: string,
+  memberId: string,
+  locale: "en" | "ru" | "ky"
+): Promise<string[]> {
+  try {
+    const snap = await admin
+      .firestore()
+      .collection(`notices/${uid}/items`)
+      .where("memberId", "==", memberId)
+      .where("dismissedAt", "==", null)
+      .orderBy("createdAt", "desc")
+      .limit(5)
+      .get();
+    return snap.docs
+      .map((d) => {
+        const title = d.get("title") as Record<string, string> | undefined;
+        if (!title) return null;
+        return title[locale] ?? title.en ?? null;
+      })
+      .filter((t): t is string => typeof t === "string" && t.length > 0);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchRecentMomentCaption(uid: string, memberId: string): Promise<string | null> {
+  try {
+    const snap = await admin
+      .firestore()
+      .collection(`users/${uid}/moments`)
+      .where("childId", "==", memberId)
+      .orderBy("date", "desc")
+      .limit(1)
+      .get();
+    if (snap.empty) return null;
+    const caption = snap.docs[0].get("caption");
+    return typeof caption === "string" && caption.length > 0 ? caption : null;
+  } catch {
+    return null;
+  }
+}
+
+async function writeBrief(uid: string, brief: Awaited<ReturnType<typeof generateDailyBrief>>) {
+  const docId = `${brief.memberId}__${brief.date}`;
+  await admin
+    .firestore()
+    .doc(`users/${uid}/dailyBriefs/${docId}`)
+    .set(brief, { merge: true });
+}
+
+function serializeBrief(brief: Awaited<ReturnType<typeof generateDailyBrief>>) {
+  return {
+    memberId: brief.memberId,
+    memberName: brief.memberName,
+    date: brief.date,
+    locale: brief.locale,
+    headline: brief.headline,
+    body: brief.body,
+    ctas: brief.ctas,
+    source: brief.source,
+  };
+}
+
+function normalizeLocale(raw: unknown): "en" | "ru" | "ky" {
+  const s = typeof raw === "string" ? raw.toLowerCase().slice(0, 2) : "en";
+  if (s === "ru") return "ru";
+  if (s === "ky") return "ky";
+  return "en";
+}
 
 // ============================================================
 // PROACTIVE NOTICES — "The App That Notices"
