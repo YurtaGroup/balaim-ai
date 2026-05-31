@@ -23,6 +23,35 @@ class AuthService {
 
   bool get _useFirebase => isFirebaseInitialized;
 
+  /// Cached custom-claim flags. Populated by the idTokenChanges watcher
+  /// started in [initClaimWatcher]. Read synchronously by callers like
+  /// the router's `isDoctorAccount` check.
+  bool _cachedDoctorClaim = false;
+  bool get cachedDoctorClaim => _cachedDoctorClaim;
+
+  StreamSubscription<fb.User?>? _claimSub;
+
+  /// Start watching for ID-token changes so freshly-assigned custom
+  /// claims (e.g. `doctor: true` from `setDoctorClaim`) propagate to
+  /// the synchronous `cachedDoctorClaim` getter without requiring a
+  /// sign-out / sign-in. Call once at app start.
+  void initClaimWatcher() {
+    if (!_useFirebase) return;
+    _claimSub?.cancel();
+    _claimSub = fb.FirebaseAuth.instance.idTokenChanges().listen((user) async {
+      if (user == null) {
+        _cachedDoctorClaim = false;
+        return;
+      }
+      try {
+        final result = await user.getIdTokenResult();
+        _cachedDoctorClaim = result.claims?['doctor'] == true;
+      } catch (_) {
+        _cachedDoctorClaim = false;
+      }
+    });
+  }
+
   // ==========================================================
   // CURRENT USER
   // ==========================================================
@@ -43,6 +72,35 @@ class AuthService {
   }
 
   bool get isSignedIn => currentUid != null;
+
+  /// Force-refresh the ID token so a freshly-assigned custom claim
+  /// (e.g. `doctor: true` set by setDoctorClaim) shows up on the
+  /// client without requiring a sign-out / sign-in cycle.
+  Future<void> refreshIdToken() async {
+    if (!_useFirebase) return;
+    try {
+      await fb.FirebaseAuth.instance.currentUser?.getIdToken(true);
+    } catch (e) {
+      // Best-effort — silently ignore. The next natural refresh
+      // (~1h cadence) will pick up the claim regardless.
+    }
+  }
+
+  /// True if the currently-signed-in user carries the `doctor: true`
+  /// custom claim (set server-side by `setDoctorClaim`). Returns
+  /// false on the demo path, when not signed in, or when the token
+  /// hasn't been refreshed since the claim was assigned.
+  Future<bool> hasDoctorClaim() async {
+    if (!_useFirebase) return false;
+    final user = fb.FirebaseAuth.instance.currentUser;
+    if (user == null) return false;
+    try {
+      final result = await user.getIdTokenResult();
+      return result.claims?['doctor'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   /// The demo user object (for role checking). Null when Firebase is active.
   DemoUser? get currentDemoUser => _useFirebase ? null : demo.currentUser;

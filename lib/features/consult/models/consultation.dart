@@ -23,7 +23,7 @@ DateTime _date(Object? raw) {
   return DateTime.now();
 }
 
-/// An async consultation thread between one parent and the doctor.
+/// An async consultation thread between one parent and a doctor.
 /// Stored top-level at `consultations/{id}` so the doctor can query
 /// across every family; messages live in the `messages` subcollection.
 class Consultation {
@@ -37,6 +37,16 @@ class Consultation {
   final String lastMessagePreview;
   final bool paid;
 
+  /// The doctor this thread is with. Null on legacy (pre-multi-doctor)
+  /// rows — treat null as "the anchor doctor" (Jane Mone) for back-
+  /// compat. New consults always set this.
+  final String? doctorId;
+
+  /// AI bridge — set true if the new-consult pre-screen ran on this
+  /// thread. Future: a parallel `doctorBriefSummary` field gets filled
+  /// by `generateDoctorBrief` (Phase 2).
+  final bool screenedByAi;
+
   const Consultation({
     required this.id,
     required this.uid,
@@ -47,6 +57,8 @@ class Consultation {
     required this.lastMessageAt,
     required this.lastMessagePreview,
     required this.paid,
+    this.doctorId,
+    this.screenedByAi = false,
   });
 
   factory Consultation.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -61,6 +73,8 @@ class Consultation {
       lastMessageAt: _date(d['lastMessageAt']),
       lastMessagePreview: (d['lastMessagePreview'] as String?) ?? '',
       paid: d['paid'] == true,
+      doctorId: d['doctorId'] as String?,
+      screenedByAi: d['screenedByAi'] == true,
     );
   }
 }

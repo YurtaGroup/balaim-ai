@@ -24,6 +24,7 @@ import { onMoodCheckinCreated as onMoodCheckinCreatedImpl } from "./mood/onMoodC
 import { onObservationCreated as onObservationCreatedImpl } from "./montessori/onObservationCreated";
 import { generateDailyInvitation as generateDailyInvitationImpl } from "./montessori/generateDailyInvitation";
 import { setPremiumFromReceipt as setPremiumFromReceiptImpl } from "./billing/setPremiumFromReceipt";
+import { setDoctorClaim as setDoctorClaimImpl } from "./admin/setDoctorClaim";
 
 admin.initializeApp();
 
@@ -933,3 +934,13 @@ export const generateDailyInvitation = generateDailyInvitationImpl;
 // Wire `REVENUECAT_API_KEY` as a Firebase secret before launch:
 //   firebase functions:secrets:set REVENUECAT_API_KEY
 export const setPremiumFromReceipt = setPremiumFromReceiptImpl;
+
+// ============================================================
+// ADMIN — Doctor onboarding
+// ============================================================
+//
+// Founder-gated callable that registers a doctor: assigns the
+// `doctor: true` custom claim on their Firebase Auth user and
+// writes/merges their `doctors/{id}` Firestore record. Idempotent.
+// Doctors must have signed up via email/password first.
+export const setDoctorClaim = setDoctorClaimImpl;

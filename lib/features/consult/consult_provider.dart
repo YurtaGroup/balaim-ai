@@ -50,11 +50,14 @@ final consultMessagesProvider = StreamProvider.autoDispose
 final consultServiceProvider = Provider<ConsultService>((ref) => ConsultService());
 
 class ConsultService {
-  /// Open a new consultation. Returns the new doc id, or null on failure.
-  /// Call only after payment has succeeded.
+  /// Open a new consultation against a specific doctor. Returns the
+  /// new doc id, or null on failure. Call only after payment has
+  /// succeeded.
   Future<String?> create({
     required String topic,
     required String firstMessage,
+    String? doctorId,
+    bool screenedByAi = false,
   }) async {
     if (!isFirebaseInitialized) return null;
     final uid = AuthService().currentUid;
@@ -66,12 +69,15 @@ class ConsultService {
         'topic': topic,
         'status': ConsultStatus.awaitingDoctor.name,
         'paid': true,
+        if (doctorId != null) 'doctorId': doctorId,
+        if (screenedByAi) 'screenedByAi': true,
         'createdAt': FieldValue.serverTimestamp(),
         'lastMessageAt': FieldValue.serverTimestamp(),
         'lastMessagePreview': firstMessage,
       });
       await doc.collection('messages').add({
         'fromDoctor': false,
+        'kind': 'user',
         'text': firstMessage,
         'photoUrl': null,
         'createdAt': FieldValue.serverTimestamp(),

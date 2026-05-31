@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'core/analytics/analytics.dart';
+import 'core/services/auth_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
@@ -54,6 +55,9 @@ void main() async {
     );
     isFirebaseInitialized = true;
     debugPrint('[Balam] Firebase initialized — running in LIVE mode');
+    // Start watching ID-token changes so custom claims (doctor, etc.)
+    // populate the synchronous AuthService cache used by the router.
+    AuthService().initClaimWatcher();
   } catch (e) {
     isFirebaseInitialized = false;
     debugPrint('[Balam] Firebase not configured — running in DEMO mode');

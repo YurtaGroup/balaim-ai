@@ -2,11 +2,18 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // The single dogfood doctor account. Keep in sync with
-    // kDoctorEmail in lib/features/consult/consult_config.dart.
+    // Multi-doctor gate. A user is a doctor if they carry the
+    // `doctor: true` custom claim (set by the setDoctorClaim Cloud
+    // Function as part of admin onboarding).
+    //
+    // Transitional fallback: the original hardcoded email check
+    // stays live as a second condition until Jane Mone's account
+    // has been migrated by calling setDoctorClaim once. Drop the
+    // email arm after the migration is confirmed.
     function isDoctor() {
       return request.auth != null
-             && request.auth.token.email == 'jmone1@aol.com';
+             && (request.auth.token.doctor == true
+                 || request.auth.token.email == 'jmone1@aol.com');
     }
 
     // Users — can only read/write their own profile.
