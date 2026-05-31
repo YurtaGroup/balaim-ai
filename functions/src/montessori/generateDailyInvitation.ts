@@ -353,7 +353,7 @@ Compose today's Invitation.`;
 
   const client = new Anthropic({ apiKey });
   const response = await client.messages.create({
-    model: "claude-sonnet-4-6-20250514",
+    model: "claude-sonnet-4-6",
     max_tokens: 500,
     temperature: 0.85,
     system,

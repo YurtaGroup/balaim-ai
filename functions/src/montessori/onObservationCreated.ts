@@ -223,7 +223,7 @@ Observation: ${text}`;
 
   const client = new Anthropic({ apiKey });
   const response = await client.messages.create({
-    model: "claude-sonnet-4-6-20250514",
+    model: "claude-sonnet-4-6",
     max_tokens: 400,
     temperature: 0.4,
     system,

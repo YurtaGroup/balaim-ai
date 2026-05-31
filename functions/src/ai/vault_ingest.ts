@@ -23,7 +23,7 @@ import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import Anthropic from "@anthropic-ai/sdk";
 
-const MODEL = "claude-sonnet-4-6-20250514";
+const MODEL = "claude-sonnet-4-6";
 const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB hard cap
 
 export type VaultDocType =

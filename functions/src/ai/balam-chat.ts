@@ -426,7 +426,7 @@ export async function balamChat(
   });
 
   const response = await client.messages.create({
-    model: "claude-sonnet-4-6-20250514",
+    model: "claude-sonnet-4-6",
     max_tokens: context.briefMode ? 256 : 1024,
     system: systemPrompt,
     messages,
