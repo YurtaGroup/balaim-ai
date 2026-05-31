@@ -15,6 +15,7 @@ import '../../journey/providers/journey_provider.dart';
 import '../../montessori/invitation_card.dart';
 import '../../mood/mood_card.dart';
 import '../../mood/mood_provider.dart';
+import '../../sleep_coach/sleep_help_entry.dart';
 import '../../paywall/add_child_gate.dart';
 import '../models/daily_brief.dart';
 import '../providers/daily_brief_provider.dart';
@@ -76,6 +77,10 @@ class HomeScreen extends ConsumerWidget {
               _YesterdaysWin(childId: activeChild.id),
             ],
             const SizedBox(height: 18),
+            if (activeChild != null) ...[
+              SleepHelpEntry(child: activeChild),
+              const SizedBox(height: 10),
+            ],
             const EmergencyEntryPill(),
           ],
         ),

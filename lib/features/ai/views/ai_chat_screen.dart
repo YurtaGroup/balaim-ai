@@ -8,6 +8,8 @@ import '../../../core/constants/app_constants.dart' show ParentingStage;
 import '../../../shared/models/child_model.dart';
 import '../../../shared/models/user_profile.dart';
 import '../../emergency/emergency_dial.dart';
+import '../models/persona.dart';
+import '../providers/active_persona_provider.dart';
 import '../providers/ai_provider.dart';
 import '../widgets/persona_pill.dart';
 import '../widgets/prompt_library_carousel.dart';
@@ -16,8 +18,14 @@ import '../../journey/providers/journey_provider.dart';
 class AiChatScreen extends ConsumerStatefulWidget {
   final String? prefill;
   final bool emergency;
+  final String? personaOverride;
 
-  const AiChatScreen({super.key, this.prefill, this.emergency = false});
+  const AiChatScreen({
+    super.key,
+    this.prefill,
+    this.emergency = false,
+    this.personaOverride,
+  });
 
   @override
   ConsumerState<AiChatScreen> createState() => _AiChatScreenState();
@@ -27,6 +35,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
   bool _prefillSent = false;
+  bool _personaApplied = false;
 
   @override
   void dispose() {
@@ -38,6 +47,19 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
+    // Apply persona override from a deep link (e.g. Home's
+    // "She won't sleep" button → sleep_coach). One-shot — Mom can flip
+    // back via the persona pill. Server still enforces premium gating;
+    // a free user silently falls back to Balam.
+    if (widget.personaOverride != null && !_personaApplied) {
+      _personaApplied = true;
+      final target = PersonaId.fromServerId(widget.personaOverride);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(activePersonaProvider.notifier).set(target);
+      });
+    }
+
     // Auto-send prefill message from toolkit deep links
     if (widget.prefill != null && !_prefillSent) {
       _prefillSent = true;

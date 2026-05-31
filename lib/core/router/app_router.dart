@@ -147,6 +147,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               child: AiChatScreen(
                 prefill: state.uri.queryParameters['prefill'],
                 emergency: state.uri.queryParameters['emergency'] == '1',
+                personaOverride: state.uri.queryParameters['persona'],
               ),
             ),
           ),

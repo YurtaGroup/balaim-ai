@@ -123,6 +123,14 @@ class Analytics {
   Future<void> diaperLogged({required String type}) =>
       _log('diaper_logged', {'type': type});
 
+  /// Mom tapped "She won't sleep" on Home. The strongest "right now"
+  /// intent signal in the app — every tap is a 3am moment.
+  Future<void> sleepHelpOpened({int? ageMonths, int? lastFeedAgoMinutes}) =>
+      _log('sleep_help_opened', {
+        if (ageMonths != null) 'age_months': ageMonths,
+        if (lastFeedAgoMinutes != null) 'last_feed_min': lastFeedAgoMinutes,
+      });
+
   // ── Mood ("Am I Okay") ──────────────────────────────────────────
 
   Future<void> moodCheckinLogged({
