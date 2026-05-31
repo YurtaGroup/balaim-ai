@@ -11,6 +11,9 @@ import '../../child/providers/moments_provider.dart';
 import '../../emergency/widgets/emergency_entry_pill.dart';
 import '../../family/views/add_member_sheet.dart';
 import '../../journey/providers/journey_provider.dart';
+import '../../montessori/invitation_card.dart';
+import '../../mood/mood_card.dart';
+import '../../mood/mood_provider.dart';
 import '../../paywall/add_child_gate.dart';
 import '../models/daily_brief.dart';
 import '../providers/daily_brief_provider.dart';
@@ -56,8 +59,13 @@ class HomeScreen extends ConsumerWidget {
                 }
               },
             ),
+            const SizedBox(height: 18),
+            const _MoodNudge(),
+            const MoodCard(),
             if (activeChild != null) ...[
-              const SizedBox(height: 18),
+              const SizedBox(height: 14),
+              const InvitationCard(),
+              const SizedBox(height: 14),
               const _DebriefHero(),
               const SizedBox(height: 14),
               _YesterdaysWin(childId: activeChild.id),
@@ -182,7 +190,6 @@ class _DebriefCard extends StatelessWidget {
               fontSize: 22,
               fontWeight: FontWeight.w800,
               height: 1.25,
-              fontFamily: 'serif',
             ),
           ),
           const SizedBox(height: 10),
@@ -597,6 +604,75 @@ class _AddChildChip extends StatelessWidget {
             style: const TextStyle(fontSize: 11, color: AppColors.textHint),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The "I see you" pill — surfaces above the MoodCard when Mom has had
+/// a few hard days in a row OR has gone quiet for several days. Reads
+/// the moodState/summary aggregate that the trigger maintains.
+class _MoodNudge extends ConsumerWidget {
+  const _MoodNudge();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summary = ref.watch(moodSummaryProvider).asData?.value;
+    if (summary == null) return const SizedBox.shrink();
+
+    final lang = currentLang(context);
+    String? message;
+
+    if (summary.hasUnacknowledgedCrisis) {
+      message = tr(lang,
+          en: "What you wrote last time isn't something to sit with alone. Open the thread when you're ready.",
+          ru: 'То, что ты написала, не стоит держать в себе. Открой переписку, когда будешь готова.',
+          ky: 'Жазганың өзүң менен жалгыз отурууга арзыбайт. Даяр болгондо тизмекти ачкын.');
+    } else if (summary.streakHardDays >= 3) {
+      message = tr(lang,
+          en: "A few hard days in a row. I'm here when you want to talk.",
+          ru: 'Несколько тяжёлых дней подряд. Я рядом, когда захочешь поговорить.',
+          ky: 'Бир нече күн оор болду. Сүйлөшкүң келгенде мен бармын.');
+    } else if (summary.isSilent) {
+      message = tr(lang,
+          en: 'Hey. How are you, really?',
+          ru: 'Слушай. Как ты на самом деле?',
+          ky: 'Эй. Чындыгында кандайсың?');
+    }
+
+    if (message == null) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        onTap: () => context.push('/mood'),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.accent.withValues(alpha: 0.30)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.favorite, color: AppColors.accent, size: 16),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right, color: AppColors.textHint, size: 18),
+            ],
+          ),
+        ),
       ),
     );
   }

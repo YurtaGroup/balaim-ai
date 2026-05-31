@@ -10,6 +10,9 @@ import '../../../shared/models/child_model.dart';
 import '../../../shared/models/moment.dart';
 import '../../family/views/add_member_sheet.dart';
 import '../../journey/providers/journey_provider.dart';
+import '../../montessori/montessori_taxonomy.dart';
+import '../../montessori/observation_entry_sheet.dart';
+import '../../montessori/observation_models.dart';
 import '../../vault/vault_provider.dart';
 import '../providers/child_timeline_provider.dart';
 import '../providers/moments_provider.dart';
@@ -57,6 +60,14 @@ class _ChildScreenState extends ConsumerState<ChildScreen> {
     );
   }
 
+  void _addObservation(HouseholdMember child) {
+    ObservationEntrySheet.show(
+      context,
+      childId: child.id,
+      childFirstName: child.name.split(' ').first,
+    );
+  }
+
   void _showAddSheet(HouseholdMember child) {
     showModalBottomSheet(
       context: context,
@@ -99,6 +110,22 @@ class _ChildScreenState extends ConsumerState<ChildScreen> {
               onTap: () {
                 Navigator.of(ctx).pop();
                 _addMoment(child);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.visibility_outlined,
+                  color: AppColors.accent),
+              title: Text(tr(currentLang(ctx),
+                  en: 'I noticed…',
+                  ru: 'Я заметила…',
+                  ky: 'Мен байкадым…')),
+              subtitle: Text(tr(currentLang(ctx),
+                  en: 'A 30-second note about what your child showed today',
+                  ru: 'Запись на 30 секунд — что ребёнок показал сегодня',
+                  ky: '30 секундалык эскертүү — балаңыз эмнени көрсөттү')),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                _addObservation(child);
               },
             ),
             const SizedBox(height: 12),
@@ -203,6 +230,8 @@ class _Timeline extends ConsumerWidget {
             switch (entry) {
               RecordEntry(:final item) => _RecordCard(item: item),
               MomentEntry(:final moment) => _MomentCard(moment: moment),
+              ObservationEntry(:final observation) =>
+                _ObservationCard(observation: observation),
             },
             const SizedBox(height: 10),
           ],
@@ -592,6 +621,176 @@ class _MomentCard extends StatelessWidget {
         color: AppColors.primary.withValues(alpha: 0.06),
         child: const Icon(Icons.photo, color: AppColors.textHint, size: 36),
       );
+}
+
+// ─── Observation card (Mom's "I noticed ___" entry) ──────────────
+
+class _ObservationCard extends StatelessWidget {
+  final Observation observation;
+  const _ObservationCard({required this.observation});
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = currentLang(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.visibility_outlined,
+                    color: AppColors.accent, size: 16),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  tr(lang,
+                      en: 'I noticed',
+                      ru: 'Я заметила',
+                      ky: 'Мен байкадым'),
+                  style: const TextStyle(
+                    color: AppColors.textHint,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              Text(
+                DateFormat.MMMd().format(observation.createdAt),
+                style: const TextStyle(
+                  color: AppColors.textHint,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if ((observation.note ?? '').isNotEmpty)
+            Text(
+              observation.note!,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                height: 1.4,
+              ),
+            ),
+          if (observation.summary != null &&
+              observation.summary != observation.note) ...[
+            const SizedBox(height: 8),
+            Text(
+              observation.summary!,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+                height: 1.4,
+              ),
+            ),
+          ],
+          if (observation.isEnriched &&
+              (observation.sensitivePeriods.isNotEmpty ||
+                  observation.montessoriCategory !=
+                      MontessoriCategory.unknown)) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                if (observation.montessoriCategory !=
+                    MontessoriCategory.unknown)
+                  _Chip(
+                    icon: observation.montessoriCategory.icon,
+                    label: observation.montessoriCategory.label,
+                    color: AppColors.primary,
+                  ),
+                for (final p in observation.sensitivePeriods)
+                  _Chip(label: p.label, color: AppColors.accent),
+                for (final m in observation.milestones)
+                  _Chip(
+                    label: m.label,
+                    color: AppColors.textSecondary,
+                  ),
+              ],
+            ),
+          ] else if (observation.taggerStatus ==
+              ObservationTaggerStatus.pending) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const SizedBox(
+                  width: 10,
+                  height: 10,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: AppColors.primary),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  tr(lang,
+                      en: 'Balam is reading this…',
+                      ru: 'Balam обрабатывает…',
+                      ky: 'Balam окуп жатат…'),
+                  style: const TextStyle(
+                    color: AppColors.textHint,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  final String label;
+  final String? icon;
+  final Color color;
+  const _Chip({required this.label, this.icon, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Text(icon!, style: const TextStyle(fontSize: 11)),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ─── Add-moment sheet ─────────────────────────────────────────────

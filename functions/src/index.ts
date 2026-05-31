@@ -20,6 +20,9 @@ import {
 } from "./ai/box_interpretation";
 import { MemberSnapshot } from "./data/milestones";
 import { buildOnVaultItemCreated } from "./ai/vault_ingest";
+import { onMoodCheckinCreated as onMoodCheckinCreatedImpl } from "./mood/onMoodCheckinCreated";
+import { onObservationCreated as onObservationCreatedImpl } from "./montessori/onObservationCreated";
+import { generateDailyInvitation as generateDailyInvitationImpl } from "./montessori/generateDailyInvitation";
 
 admin.initializeApp();
 
@@ -891,3 +894,28 @@ export const trackingReminder = functions.pubsub
       }
     }
   });
+
+// ============================================================
+// MOOD — "Am I Okay" thread
+// ============================================================
+//
+// Trigger fires when Mom logs a mood check-in. Enriches the doc with a
+// crisis-keyword flag and rolls up the moodState/summary aggregate that
+// Today's Debrief reads for streak/silence prompts. Claude reply
+// generation lands in a separate trigger later in the week.
+export const onMoodCheckinCreated = onMoodCheckinCreatedImpl;
+
+// ============================================================
+// MONTESSORI — Observation log + daily Invitation
+// ============================================================
+//
+// Trigger fires when Mom logs "I noticed ___" in the Child tab. A
+// Claude tag pass writes the Montessori reading (sensitive periods,
+// category) and any matched pediatric milestones back onto the doc.
+// Those tags feed the daily Invitation composer.
+export const onObservationCreated = onObservationCreatedImpl;
+
+// Callable: compose today's Montessori Invitation for the active
+// child. Idempotent — second call on the same day returns the same
+// doc. Free-tier gated to 1/ISO week; premium = daily.
+export const generateDailyInvitation = generateDailyInvitationImpl;

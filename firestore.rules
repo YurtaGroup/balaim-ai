@@ -52,6 +52,61 @@ service cloud.firestore {
         allow read: if request.auth != null && request.auth.uid == userId;
         allow write: if false;
       }
+
+      // "Am I Okay" mood check-ins. Mom creates with the four whitelisted
+      // fields; server-only fields (aiReply, voiceTranscript, flaggedCrisis,
+      // updatedAt) are filled by the onMoodCheckinCreated trigger. Updates
+      // from client are blocked — a check-in is a moment in time, not a
+      // post. Delete is allowed (a venting entry should be erasable).
+      match /moodCheckins/{checkinId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId
+                       && request.resource.data.keys().hasOnly(
+                            ['level', 'note', 'voiceUrl', 'createdAt'])
+                       && request.resource.data.level is int
+                       && request.resource.data.level >= 1
+                       && request.resource.data.level <= 5;
+        allow update: if false; // server-only enrichment after create
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Aggregate mood state (7d/30d averages, hard-day streak, trend).
+      // Server-only writes from the trigger; user reads own to drive the
+      // Today's Debrief streak/silence prompts.
+      match /moodState/{stateId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false; // Cloud Functions only
+      }
+
+      // Montessori observations — Mom logs "I noticed ___" in 30s. The
+      // onObservationCreated trigger runs a Claude tag pass and writes
+      // back: sensitivePeriods[], montessoriCategory, milestoneIds[],
+      // summary, taggedAt. Mom can edit the raw text/voiceUrl on her
+      // own log; she cannot forge the server-applied tags.
+      match /observations/{observationId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId
+                       && request.resource.data.keys().hasOnly(
+                            ['childId', 'note', 'voiceUrl', 'createdAt']);
+        allow update: if request.auth != null && request.auth.uid == userId
+                       && request.resource.data.diff(resource.data)
+                            .affectedKeys().hasOnly(['note']);
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Daily Montessori invitations. One per child per day; the
+      // generator Cloud Function composes from age + active sensitive
+      // periods + recent observations. Server-only writes. Mom can
+      // record her feedback (loved / lost interest / too early) and
+      // mark it tried/completed — those are the only mutable fields.
+      match /invitations/{invitationId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow update: if request.auth != null && request.auth.uid == userId
+                       && request.resource.data.diff(resource.data)
+                            .affectedKeys().hasOnly(
+                              ['triedAt', 'feedback', 'feedbackAt']);
+        allow create, delete: if false; // Cloud Functions only
+      }
     }
 
     // Insights — users can read their own, Cloud Functions write

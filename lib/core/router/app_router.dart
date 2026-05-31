@@ -12,6 +12,7 @@ import '../../features/home/views/home_screen.dart';
 import '../../features/ai/views/ai_chat_screen.dart';
 import '../../features/ai/views/demo_conversations_screen.dart';
 import '../../features/emergency/views/emergency_screen.dart';
+import '../../features/mood/mood_screen.dart';
 import '../../features/paywall/views/paywall_screen.dart';
 import '../../features/consult/consult_config.dart';
 import '../../features/consult/views/consult_list_screen.dart';
@@ -91,6 +92,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/emergency',
         builder: (context, state) => const EmergencyScreen(),
+      ),
+      GoRoute(
+        path: '/mood',
+        builder: (context, state) => const MoodScreen(),
       ),
 
       // ─── Doctor consultations ───────────────────────────────
