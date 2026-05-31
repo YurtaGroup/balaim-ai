@@ -28,6 +28,7 @@ import { setDoctorClaim as setDoctorClaimImpl } from "./admin/setDoctorClaim";
 import { screenConsultDraft as screenConsultDraftImpl } from "./consult/screenConsultDraft";
 import { generateDoctorBrief as generateDoctorBriefImpl } from "./consult/generateDoctorBrief";
 import { generateFollowUps as generateFollowUpsImpl } from "./consult/generateFollowUps";
+import { onConsultMessageCreated as onConsultMessageCreatedImpl } from "./consult/onConsultMessageCreated";
 
 admin.initializeApp();
 
@@ -971,3 +972,7 @@ export const setDoctorClaim = setDoctorClaimImpl;
 export const screenConsultDraft = screenConsultDraftImpl;
 export const generateDoctorBrief = generateDoctorBriefImpl;
 export const generateFollowUps = generateFollowUpsImpl;
+
+// Push the other party when a consult message lands. Skips server-
+// appended AI followup pills (those aren't chat).
+export const onConsultMessageCreated = onConsultMessageCreatedImpl;

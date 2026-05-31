@@ -131,6 +131,45 @@ class Analytics {
         if (lastFeedAgoMinutes != null) 'last_feed_min': lastFeedAgoMinutes,
       });
 
+  // ── Consult flow ────────────────────────────────────────────────
+
+  /// Mom ran the AI pre-screen on her consult draft. The result tells
+  /// us how the screen-vs-send funnel splits in production.
+  Future<void> consultDraftScreened({
+    required String urgency,
+    required bool canAiAnswerFirst,
+    required String doctorRelevance,
+  }) =>
+      _log('consult_draft_screened', {
+        'urgency': urgency,
+        'can_ai_answer_first': canAiAnswerFirst,
+        'doctor_relevance': doctorRelevance,
+      });
+
+  /// Mom hit pay + send on a consult. `screenedByAi` distinguishes
+  /// pre-screened consults from raw ones — important signal for
+  /// understanding the AI bridge's effect on send-through.
+  Future<void> consultStarted({
+    required String doctorId,
+    required bool screenedByAi,
+  }) =>
+      _log('consult_started', {
+        'doctor_id': doctorId,
+        'screened_by_ai': screenedByAi,
+      });
+
+  /// Doctor opened a thread and the briefing card rendered. Fires
+  /// once per (doctor, consultation) combination per session — used
+  /// to measure how much we actually save the doctor.
+  Future<void> doctorBriefViewed({required String consultId}) =>
+      _log('doctor_brief_viewed', {'consult_id': consultId});
+
+  /// Mom tapped one of the AI follow-up pills under a doctor's reply.
+  /// The strongest signal that the AI bridge produced something
+  /// usable: she didn't just close the thread, she escalated.
+  Future<void> followUpPillTapped({required String consultId}) =>
+      _log('followup_pill_tapped', {'consult_id': consultId});
+
   // ── Mood ("Am I Okay") ──────────────────────────────────────────
 
   Future<void> moodCheckinLogged({

@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/analytics/analytics.dart';
 import '../../../core/l10n/content_localizations.dart';
 import '../../../core/services/payment_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -66,6 +69,11 @@ class _NewConsultScreenState extends ConsumerState<NewConsultScreen> {
       _lastScreenedDraft = draft;
       _screenResult = _ScreenResult.fromMap(
           (res.data as Map?)?.cast<String, dynamic>() ?? const {});
+      unawaited(Analytics.instance.consultDraftScreened(
+        urgency: _screenResult!.urgency,
+        canAiAnswerFirst: _screenResult!.canAiAnswerFirst,
+        doctorRelevance: _screenResult!.doctorRelevance,
+      ));
     } catch (e) {
       debugPrint('[consult] pre-screen failed: $e');
     } finally {
@@ -111,6 +119,12 @@ class _NewConsultScreenState extends ConsumerState<NewConsultScreen> {
           doctorId: doctor.id,
           screenedByAi: _screenResult != null,
         );
+    if (id != null) {
+      unawaited(Analytics.instance.consultStarted(
+        doctorId: doctor.id,
+        screenedByAi: _screenResult != null,
+      ));
+    }
     if (!mounted) return;
     setState(() => _busy = false);
     if (id == null) {
