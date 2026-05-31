@@ -12,6 +12,7 @@ enum DiaperType {
 
 class DiaperEntry {
   final String id;
+  final String? childId;
   final DiaperType type;
   final DateTime timestamp;
   final String? note;
@@ -20,11 +21,13 @@ class DiaperEntry {
     required this.id,
     required this.type,
     required this.timestamp,
+    this.childId,
     this.note,
   });
 
   Map<String, dynamic> toFirestore() => {
     'id': id,
+    if (childId != null) 'childId': childId,
     'type': type.name,
     'timestamp': timestamp.toIso8601String(),
     'note': note,
@@ -32,6 +35,7 @@ class DiaperEntry {
 
   factory DiaperEntry.fromFirestore(Map<String, dynamic> data) => DiaperEntry(
     id: data['id'] as String,
+    childId: data['childId'] as String?,
     type: DiaperType.values.firstWhere((t) => t.name == data['type']),
     timestamp: DateTime.parse(data['timestamp']),
     note: data['note'] as String?,

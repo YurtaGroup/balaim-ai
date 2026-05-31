@@ -12,6 +12,7 @@ enum FeedingType {
 
 class FeedingEntry {
   final String id;
+  final String? childId;
   final FeedingType type;
   final DateTime startTime;
   final DateTime? endTime;
@@ -23,6 +24,7 @@ class FeedingEntry {
     required this.id,
     required this.type,
     required this.startTime,
+    this.childId,
     this.endTime,
     this.amountMl,
     this.durationMinutes,
@@ -47,6 +49,7 @@ class FeedingEntry {
 
   Map<String, dynamic> toFirestore() => {
     'id': id,
+    if (childId != null) 'childId': childId,
     'type': type.name,
     'startTime': startTime.toIso8601String(),
     'endTime': endTime?.toIso8601String(),
@@ -57,6 +60,7 @@ class FeedingEntry {
 
   factory FeedingEntry.fromFirestore(Map<String, dynamic> data) => FeedingEntry(
     id: data['id'] as String,
+    childId: data['childId'] as String?,
     type: FeedingType.values.firstWhere((t) => t.name == data['type']),
     startTime: DateTime.parse(data['startTime']),
     endTime: data['endTime'] != null ? DateTime.parse(data['endTime']) : null,

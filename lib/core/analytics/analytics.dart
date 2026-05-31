@@ -109,6 +109,20 @@ class Analytics {
         'reason': reason,
       });
 
+  // ── Care log (feeding + diaper) ─────────────────────────────────
+
+  Future<void> feedingLogged({
+    required String type, // FeedingType.name
+    int? amountMl,
+  }) =>
+      _log('feeding_logged', {
+        'type': type,
+        if (amountMl != null) 'amount_ml': amountMl,
+      });
+
+  Future<void> diaperLogged({required String type}) =>
+      _log('diaper_logged', {'type': type});
+
   // ── Mood ("Am I Okay") ──────────────────────────────────────────
 
   Future<void> moodCheckinLogged({

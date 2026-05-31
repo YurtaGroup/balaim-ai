@@ -7,6 +7,8 @@ import '../../../core/services/storage_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/models/child_model.dart';
+import '../../../shared/models/diaper_entry.dart';
+import '../../../shared/models/feeding_entry.dart';
 import '../../../shared/models/moment.dart';
 import '../../family/views/add_member_sheet.dart';
 import '../../journey/providers/journey_provider.dart';
@@ -232,6 +234,8 @@ class _Timeline extends ConsumerWidget {
               MomentEntry(:final moment) => _MomentCard(moment: moment),
               ObservationEntry(:final observation) =>
                 _ObservationCard(observation: observation),
+              FeedingEntryItem(:final feeding) => _FeedingCard(feeding: feeding),
+              DiaperEntryItem(:final diaper) => _DiaperCard(diaper: diaper),
             },
             const SizedBox(height: 10),
           ],
@@ -621,6 +625,144 @@ class _MomentCard extends StatelessWidget {
         color: AppColors.primary.withValues(alpha: 0.06),
         child: const Icon(Icons.photo, color: AppColors.textHint, size: 36),
       );
+}
+
+// ─── Feeding + Diaper cards (the survival data) ─────────────────
+
+class _FeedingCard extends StatelessWidget {
+  final FeedingEntry feeding;
+  const _FeedingCard({required this.feeding});
+
+  @override
+  Widget build(BuildContext context) {
+    return _LogCard(
+      icon: '🍼',
+      title: _label(context),
+      value: feeding.displayValue,
+      when: feeding.startTime,
+    );
+  }
+
+  String _label(BuildContext context) {
+    final lang = currentLang(context);
+    switch (feeding.type) {
+      case FeedingType.breastLeft:
+        return tr(lang,
+            en: 'Breast — left',
+            ru: 'Грудь — левая',
+            ky: 'Эмчек — сол');
+      case FeedingType.breastRight:
+        return tr(lang,
+            en: 'Breast — right',
+            ru: 'Грудь — правая',
+            ky: 'Эмчек — оң');
+      case FeedingType.bottleBreastMilk:
+        return tr(lang,
+            en: 'Bottle — breast milk',
+            ru: 'Бутылка — грудное молоко',
+            ky: 'Бөтөлкө — эмчек сүтү');
+      case FeedingType.bottleFormula:
+        return tr(lang,
+            en: 'Bottle — formula',
+            ru: 'Бутылка — смесь',
+            ky: 'Бөтөлкө — аралашма');
+      case FeedingType.solid:
+        return tr(lang, en: 'Solid food', ru: 'Прикорм', ky: 'Тамак');
+    }
+  }
+}
+
+class _DiaperCard extends StatelessWidget {
+  final DiaperEntry diaper;
+  const _DiaperCard({required this.diaper});
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = currentLang(context);
+    final label = switch (diaper.type) {
+      DiaperType.wet => tr(lang, en: 'Wet', ru: 'Мокрый', ky: 'Нымдуу'),
+      DiaperType.dirty => tr(lang, en: 'Dirty', ru: 'Грязный', ky: 'Кир'),
+      DiaperType.both => tr(lang, en: 'Wet + Dirty', ru: 'Мокрый + грязный', ky: 'Нымдуу + кир'),
+      DiaperType.dry => tr(lang, en: 'Dry', ru: 'Сухой', ky: 'Кургак'),
+    };
+    final icon = switch (diaper.type) {
+      DiaperType.wet => '💧',
+      DiaperType.dirty => '💩',
+      DiaperType.both => '💧💩',
+      DiaperType.dry => '⊘',
+    };
+    return _LogCard(
+      icon: icon,
+      title: tr(lang, en: 'Diaper', ru: 'Подгузник', ky: 'Жөргөк'),
+      value: label,
+      when: diaper.timestamp,
+    );
+  }
+}
+
+/// Compact one-line card shared by feeding + diaper rows. Tight on
+/// purpose — the survival data is dense, no need for hero treatment.
+class _LogCard extends StatelessWidget {
+  final String icon;
+  final String title;
+  final String value;
+  final DateTime when;
+
+  const _LogCard({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.when,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Row(
+        children: [
+          Text(icon, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            DateFormat('HH:mm').format(when),
+            style: const TextStyle(
+              color: AppColors.textHint,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ─── Observation card (Mom's "I noticed ___" entry) ──────────────

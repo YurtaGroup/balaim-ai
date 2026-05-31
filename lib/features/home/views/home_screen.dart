@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/child_model.dart';
 import '../../../shared/models/moment.dart';
 import '../../child/providers/moments_provider.dart';
+import '../../care_log/quick_log_strip.dart';
 import '../../emergency/widgets/emergency_entry_pill.dart';
 import '../../family/views/add_member_sheet.dart';
 import '../../journey/providers/journey_provider.dart';
@@ -59,7 +60,11 @@ class HomeScreen extends ConsumerWidget {
                 }
               },
             ),
-            const SizedBox(height: 18),
+            if (activeChild != null) ...[
+              const SizedBox(height: 14),
+              QuickLogStrip(child: activeChild),
+            ],
+            const SizedBox(height: 14),
             const _MoodNudge(),
             const MoodCard(),
             if (activeChild != null) ...[
