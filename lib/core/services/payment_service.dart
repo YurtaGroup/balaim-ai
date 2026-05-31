@@ -1,8 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import '../../main.dart' show isFirebaseInitialized;
+import '../analytics/analytics.dart';
 import '../constants/env_config.dart';
 import 'auth_service.dart';
 
@@ -111,28 +112,55 @@ class PaymentService {
     }
   }
 
-  Future<PurchaseResult> purchase(Package package) async {
+  Future<PurchaseResult> purchase(
+    Package package, {
+    String surface = 'unknown',
+  }) async {
     if (!_initialized) {
       return const PurchaseResult(
         success: false,
         error: 'Purchases are not available right now.',
       );
     }
+    final productId = package.storeProduct.identifier;
+    Analytics.instance.purchaseInitiated(
+      productId: productId,
+      surface: surface,
+    );
     try {
       final info = await Purchases.purchasePackage(package);
       _apply(info);
+      if (_premium.value) {
+        Analytics.instance.purchaseCompleted(
+          productId: productId,
+          surface: surface,
+          priceUsd: package.storeProduct.price,
+        );
+      }
       return PurchaseResult(success: _premium.value);
     } on PlatformException catch (e) {
       final code = PurchasesErrorHelper.getErrorCode(e);
       if (code == PurchasesErrorCode.purchaseCancelledError) {
+        Analytics.instance.purchaseFailed(
+          productId: productId,
+          reason: 'cancelled',
+        );
         return const PurchaseResult(success: false, cancelled: true);
       }
+      Analytics.instance.purchaseFailed(
+        productId: productId,
+        reason: code.toString(),
+      );
       return const PurchaseResult(
         success: false,
         error: 'Purchase failed. Please try again.',
       );
     } catch (e) {
       debugPrint('[Payment] purchase error: $e');
+      Analytics.instance.purchaseFailed(
+        productId: productId,
+        reason: 'unknown',
+      );
       return const PurchaseResult(
         success: false,
         error: 'Something went wrong. Please try again.',
@@ -187,21 +215,28 @@ class PaymentService {
     return _premium.value;
   }
 
-  /// Mirror premium status into `users/{uid}.premium` so the balamChat
-  /// Cloud Function can enforce the free-tier gate server-side. A
-  /// RevenueCat webhook should also write this field (defense in depth);
-  /// Firestore rules must keep `premium` non-writable by clients except
-  /// through this trusted path.
+  /// Tell the server to verify and persist this user's premium
+  /// entitlement. The Firestore rule blocks `premium` writes from the
+  /// client (otherwise free users would mint themselves Premium). The
+  /// `setPremiumFromReceipt` callable verifies with the RevenueCat REST
+  /// API, then writes the flag using the Admin SDK.
+  ///
+  /// Silent failure is fine — the AI free-tier gate is the source of
+  /// truth at consumption time. If the server can't verify right now,
+  /// the user simply stays on free until the next call (e.g. on app
+  /// resume, restore-purchases, or webhook callback).
   Future<void> _syncToFirestore(bool premium) async {
     if (!isFirebaseInitialized) return;
-    final uid = AuthService().currentUid;
-    if (uid == null) return;
+    if (AuthService().currentUid == null) return;
     try {
-      await FirebaseFirestore.instance
-          .doc('users/$uid')
-          .set({'premium': premium}, SetOptions(merge: true));
+      final callable = FirebaseFunctions.instance
+          .httpsCallable('setPremiumFromReceipt');
+      await callable.call();
     } catch (e) {
-      debugPrint('[Payment] firestore sync failed: $e');
+      // Common pre-launch case: REVENUECAT_API_KEY not bound on the
+      // server yet → the callable returns failed-precondition. Don't
+      // spam — log once and move on.
+      debugPrint('[Payment] premium sync skipped: $e');
     }
   }
 }

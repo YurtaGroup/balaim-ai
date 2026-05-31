@@ -1,8 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/analytics/analytics.dart';
 import '../../../core/constants/app_constants.dart' show ParentingStage;
 import '../../../main.dart' show localeProvider;
 import '../../journey/providers/journey_provider.dart';
+import '../../paywall/providers/premium_provider.dart';
 import '../services/ai_service.dart';
 
 export '../services/ai_service.dart' show Triage, TriageUrgency;
@@ -135,6 +137,12 @@ class ChatMessagesNotifier extends StateNotifier<List<ChatMessage>> {
   }
 
   Future<void> sendMessage(String text, {bool emergencyMode = false}) async {
+    Analytics.instance.askQuestionSent(
+      weekQuestionsUsed: 0, // server returns authoritative count; client logs intent
+      isPremium: _ref.read(isPremiumProvider),
+      emergencyMode: emergencyMode,
+    );
+
     // Snapshot history BEFORE we add the new user message — last 10 non-loading,
     // non-welcome messages (the welcome is stage-specific and lives in system prompt anyway).
     final historySource = state.where((m) => !m.isLoading && m.id != 'welcome').toList();
@@ -175,6 +183,10 @@ class ChatMessagesNotifier extends StateNotifier<List<ChatMessage>> {
         emergencyMode: emergencyMode,
         history: history,
       );
+
+      if (result.limitReached) {
+        Analytics.instance.weeklyCapHit();
+      }
 
       // Replace loading with actual response
       state = [

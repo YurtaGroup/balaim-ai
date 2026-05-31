@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/analytics/analytics.dart';
 import '../../core/l10n/content_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../auth/providers/auth_provider.dart';
@@ -69,6 +72,14 @@ class _ObservationEntrySheetState
       childId: widget.childId,
       note: note,
     );
+    if (id != null) {
+      final bucket = note.length < 40
+          ? 'short'
+          : note.length < 140
+              ? 'medium'
+              : 'long';
+      unawaited(Analytics.instance.observationLogged(noteLengthBucket: bucket));
+    }
     if (!mounted) return;
     setState(() => _saving = false);
     if (id != null) Navigator.of(context).pop();

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/analytics/analytics.dart';
 import '../../core/l10n/content_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../auth/providers/auth_provider.dart';
@@ -197,11 +200,17 @@ class _EmojiButtonState extends ConsumerState<_EmojiButton> {
       note = await _askForNote(context, widget.level);
     }
 
-    await logMoodCheckin(
+    final id = await logMoodCheckin(
       uid: uid,
       level: widget.level,
       note: note,
     );
+    if (id != null) {
+      unawaited(Analytics.instance.moodCheckinLogged(
+        level: widget.level.value,
+        hasNote: note != null && note.isNotEmpty,
+      ));
+    }
 
     if (!mounted) return;
     setState(() => _busy = false);

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -5,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
+import 'core/analytics/analytics.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
@@ -55,6 +58,9 @@ void main() async {
     isFirebaseInitialized = false;
     debugPrint('[Balam] Firebase not configured — running in DEMO mode');
   }
+
+  // Fire-and-forget — the funnel needs cold-start signal.
+  unawaited(Analytics.instance.appOpened());
 
   runApp(const ProviderScope(child: BalamApp()));
 }

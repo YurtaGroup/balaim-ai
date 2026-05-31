@@ -23,6 +23,7 @@ import { buildOnVaultItemCreated } from "./ai/vault_ingest";
 import { onMoodCheckinCreated as onMoodCheckinCreatedImpl } from "./mood/onMoodCheckinCreated";
 import { onObservationCreated as onObservationCreatedImpl } from "./montessori/onObservationCreated";
 import { generateDailyInvitation as generateDailyInvitationImpl } from "./montessori/generateDailyInvitation";
+import { setPremiumFromReceipt as setPremiumFromReceiptImpl } from "./billing/setPremiumFromReceipt";
 
 admin.initializeApp();
 
@@ -919,3 +920,16 @@ export const onObservationCreated = onObservationCreatedImpl;
 // child. Idempotent — second call on the same day returns the same
 // doc. Free-tier gated to 1/ISO week; premium = daily.
 export const generateDailyInvitation = generateDailyInvitationImpl;
+
+// ============================================================
+// BILLING — Premium entitlement setter
+// ============================================================
+//
+// The ONLY server-trusted path that writes `users/{uid}.premium`.
+// Firestore rules block the field for clients. Client calls this
+// callable after a RevenueCat purchase/restore; we verify with RC's
+// REST API and set the flag.
+//
+// Wire `REVENUECAT_API_KEY` as a Firebase secret before launch:
+//   firebase functions:secrets:set REVENUECAT_API_KEY
+export const setPremiumFromReceipt = setPremiumFromReceiptImpl;

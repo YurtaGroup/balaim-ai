@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/analytics/analytics.dart';
 import '../../../core/l10n/content_localizations.dart';
 import '../../../core/services/payment_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -26,6 +27,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
   void initState() {
     super.initState();
     _load();
+    Analytics.instance.paywallViewed(surface: 'paywall_screen');
   }
 
   Future<void> _load() async {
@@ -52,7 +54,7 @@ class _PaywallScreenState extends ConsumerState<PaywallScreen> {
     final pkg = _pkg(_selected);
     if (pkg == null) return;
     setState(() => _busy = true);
-    final res = await PaymentService().purchase(pkg);
+    final res = await PaymentService().purchase(pkg, surface: 'paywall_screen');
     if (!mounted) return;
     setState(() => _busy = false);
     if (res.success) {

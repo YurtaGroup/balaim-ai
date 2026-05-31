@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/analytics/analytics.dart';
 import '../../core/l10n/content_localizations.dart';
 import '../../core/theme/app_colors.dart';
 import '../auth/providers/auth_provider.dart';
@@ -14,21 +17,55 @@ import 'montessori_taxonomy.dart';
 /// activity, never three. Real tools, never purchases. Process, never
 /// product. The "follow the child" implementation lives in the
 /// generator's hard rules.
-class InvitationCard extends ConsumerWidget {
+class InvitationCard extends ConsumerStatefulWidget {
   const InvitationCard({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<InvitationCard> createState() => _InvitationCardState();
+}
+
+class _InvitationCardState extends ConsumerState<InvitationCard> {
+  Timer? _loaderTimeout;
+  bool _loaderTimedOut = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 25s is well past Claude's worst-case composition; past that we
+    // surface a friendly "still cooking" state instead of leaving an
+    // empty shimmer on Home forever.
+    _loaderTimeout = Timer(const Duration(seconds: 25), () {
+      if (mounted) setState(() => _loaderTimedOut = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _loaderTimeout?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final async = ref.watch(invitationProvider);
     return async.when(
-      data: (inv) => inv == null
-          ? const _Loading()
-          : _Card(invitation: inv),
-      loading: () => const _Loading(),
-      error: (_, _) => const _Loading(),
+      data: (inv) {
+        if (inv != null) {
+          _loaderTimeout?.cancel();
+          return _Card(invitation: inv);
+        }
+        return _loaderTimedOut ? const _LoaderTimedOut() : const _Loading();
+      },
+      loading: () =>
+          _loaderTimedOut ? const _LoaderTimedOut() : const _Loading(),
+      error: (_, _) => const _LoaderTimedOut(),
     );
   }
 }
+
+// One-shot per invitation id, so the "viewed" event fires once per
+// composed card, not on every rebuild.
+final Set<String> _viewedIds = <String>{};
 
 class _Card extends ConsumerWidget {
   final Invitation invitation;
@@ -37,6 +74,12 @@ class _Card extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lang = currentLang(context);
+    if (_viewedIds.add(invitation.id)) {
+      unawaited(Analytics.instance.invitationViewed(
+        category: invitation.category.id,
+        setupMinutes: invitation.setupMinutes,
+      ));
+    }
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
       decoration: BoxDecoration(
@@ -253,6 +296,10 @@ class _ActionRow extends ConsumerWidget {
       invitationId: invitation.id,
       feedback: feedback,
     );
+    unawaited(Analytics.instance.invitationFeedback(
+      feedback: feedback.id,
+      category: invitation.category.id,
+    ));
   }
 
   String _feedbackLabel(InvitationFeedback f, String lang) {
@@ -389,6 +436,62 @@ class _Loading extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Surfaced when the invitation provider has been pending too long
+/// (Cloud Function slow / down) or the stream errored. Calmer than a
+/// spinner that never resolves; tappable to retry.
+class _LoaderTimedOut extends ConsumerWidget {
+  const _LoaderTimedOut();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lang = currentLang(context);
+    return Material(
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: () => ref.invalidate(invitationProvider),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: AppColors.divider),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.refresh,
+                    color: AppColors.accent, size: 16),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  tr(lang,
+                      en: "Today's invitation is still cooking. Tap to try again.",
+                      ru: 'Сегодняшнее приглашение ещё готовится. Нажми, чтобы попробовать снова.',
+                      ky: "Бүгүнкү сунуш дагы даярдалууда. Кайра аракет кылуу үчүн басыңыз."),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

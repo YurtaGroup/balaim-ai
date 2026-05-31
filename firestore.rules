@@ -9,11 +9,29 @@ service cloud.firestore {
              && request.auth.token.email == 'jmone1@aol.com';
     }
 
-    // Users — can only read/write their own profile
+    // Users — can only read/write their own profile.
+    //
+    // `premium` is the entitlement flag the AI cost gates read. It must
+    // only be settable from the trusted server path (the RevenueCat
+    // webhook). Allowing the owner to set it directly = free users mint
+    // themselves Premium with one Firestore write. So we exclude
+    // `premium`, `premiumSince`, and `premiumProductId` from the set of
+    // fields the client may touch on update. Admin SDK (Cloud Functions)
+    // bypasses rules entirely, so the webhook writer is unaffected.
+    function isClientUpdatingForbiddenFields() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+               .hasAny(['premium', 'premiumSince', 'premiumProductId']);
+    }
+    function clientCreatePayloadIsClean() {
+      return !request.resource.data.keys()
+               .hasAny(['premium', 'premiumSince', 'premiumProductId']);
+    }
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId
+                     && clientCreatePayloadIsClean();
+      allow update: if request.auth != null && request.auth.uid == userId
+                     && !isClientUpdatingForbiddenFields();
       allow delete: if false;
 
       // Tracking — nested under user, private to that user
