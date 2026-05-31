@@ -19,6 +19,7 @@ import '../../sleep_coach/sleep_help_entry.dart';
 import '../../paywall/add_child_gate.dart';
 import '../models/daily_brief.dart';
 import '../providers/daily_brief_provider.dart';
+import '../widgets/sunday_chapter_card.dart';
 
 /// v3 Home — one card. The agent did the work overnight; mom opens
 /// the app and reads the brief. Nothing else above the fold.
@@ -64,6 +65,10 @@ class HomeScreen extends ConsumerWidget {
             if (activeChild != null) ...[
               const SizedBox(height: 14),
               QuickLogStrip(child: activeChild),
+            ],
+            if (activeChild != null) ...[
+              const SizedBox(height: 14),
+              const SundayChapterCard(),
             ],
             const SizedBox(height: 14),
             const _MoodNudge(),

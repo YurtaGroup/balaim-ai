@@ -27,11 +27,11 @@ service cloud.firestore {
     // bypasses rules entirely, so the webhook writer is unaffected.
     function isClientUpdatingForbiddenFields() {
       return request.resource.data.diff(resource.data).affectedKeys()
-               .hasAny(['premium', 'premiumSince', 'premiumProductId']);
+               .hasAny(['premium', 'premiumSince', 'premiumProductId', 'chapterCount']);
     }
     function clientCreatePayloadIsClean() {
       return !request.resource.data.keys()
-               .hasAny(['premium', 'premiumSince', 'premiumProductId']);
+               .hasAny(['premium', 'premiumSince', 'premiumProductId', 'chapterCount']);
     }
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
@@ -131,6 +131,19 @@ service cloud.firestore {
                             .affectedKeys().hasOnly(
                               ['triedAt', 'feedback', 'feedbackAt']);
         allow create, delete: if false; // Cloud Functions only
+      }
+
+      // Sunday Chapters — the weekly narrated letter. One doc per ISO
+      // week, keyed by weekId (e.g. "2026-W22"). Cloud Functions
+      // (jobs/sunday_chapter.ts) write the narrative + audio metadata;
+      // the parent reads their own. Never updatable from the client —
+      // a chapter is a moment in time, not a post. Deletable by the
+      // owner (rare but legitimate — e.g. an off-week the parent wants
+      // erased from the timeline).
+      match /chapters/{chapterId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create, update: if false; // Cloud Functions only
+        allow delete: if request.auth != null && request.auth.uid == userId;
       }
     }
 

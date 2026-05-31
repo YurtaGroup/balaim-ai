@@ -10,6 +10,7 @@ import 'demo_auth_service.dart';
 import 'analytics_service.dart';
 import 'notification_service.dart';
 import 'payment_service.dart';
+import 'user_profile_service.dart';
 
 /// Unified auth service — Firebase when configured, demo fallback otherwise.
 /// SINGLETON: ensures auth state is consistent across the entire app.
@@ -49,6 +50,9 @@ class AuthService {
       } catch (_) {
         _cachedDoctorClaim = false;
       }
+      // Capture lastSeenAt + device timezone for the Sunday Chapter cron.
+      // Silent on failure — never block auth on this.
+      unawaited(UserProfileService().markActiveSession(user.uid));
     });
   }
 

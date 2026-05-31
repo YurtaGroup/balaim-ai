@@ -29,6 +29,10 @@ import { screenConsultDraft as screenConsultDraftImpl } from "./consult/screenCo
 import { generateDoctorBrief as generateDoctorBriefImpl } from "./consult/generateDoctorBrief";
 import { generateFollowUps as generateFollowUpsImpl } from "./consult/generateFollowUps";
 import { onConsultMessageCreated as onConsultMessageCreatedImpl } from "./consult/onConsultMessageCreated";
+import {
+  scheduledSundayChapters as scheduledSundayChaptersImpl,
+  generateSundayChapterManual as generateSundayChapterManualImpl,
+} from "./jobs/sunday_chapter";
 
 admin.initializeApp();
 
@@ -976,3 +980,21 @@ export const generateFollowUps = generateFollowUpsImpl;
 // Push the other party when a consult message lands. Skips server-
 // appended AI followup pills (those aren't chat).
 export const onConsultMessageCreated = onConsultMessageCreatedImpl;
+
+// ============================================================
+// SUNDAY CHAPTER — the weekly narrated letter (Sprint 1)
+// ============================================================
+//
+// One 60-second narrated chapter per parent per week. Cron scans hourly
+// for parents at local Sun 19:00. Text-only in Sprint 1 (TTS gated on
+// OPENAI_API_KEY — wire in step 5 after prompt review). E2EE migration
+// happens in Sprint 3 — the composeChapter pure function in
+// jobs/sunday_chapter.ts is the stable seam for that swap.
+//
+//   - scheduledSundayChapters: hourly cron. Picks parents whose local
+//     time just crossed Sunday 19:00. Idempotent on weekId.
+//   - generateSundayChapterManual: dogfood trigger. Call from
+//     `firebase functions:shell` to fire one chapter on demand and read
+//     the narrative inline before scaling to the cron.
+export const scheduledSundayChapters = scheduledSundayChaptersImpl;
+export const generateSundayChapterManual = generateSundayChapterManualImpl;

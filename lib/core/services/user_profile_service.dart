@@ -35,6 +35,19 @@ class UserProfileService {
     await _db!.collection('users').doc(uid).set(updates, SetOptions(merge: true));
   }
 
+  /// Writes `lastSeenAt` + the device's current UTC offset so the Sunday
+  /// Chapter cron knows when it's local Sunday 7pm for this parent.
+  /// Idempotent — call freely on auth state changes / cold starts.
+  Future<void> markActiveSession(String uid) async {
+    if (_db == null) return;
+    final now = DateTime.now();
+    await _db!.collection('users').doc(uid).set({
+      'lastSeenAt': FieldValue.serverTimestamp(),
+      'timezoneOffsetMinutes': now.timeZoneOffset.inMinutes,
+      'timezoneName': now.timeZoneName,
+    }, SetOptions(merge: true));
+  }
+
   Future<Map<String, dynamic>?> getProfile(String uid) async {
     if (_db == null) return null;
     final doc = await _db!.collection('users').doc(uid).get();
