@@ -43,9 +43,13 @@ class Consultation {
   final String? doctorId;
 
   /// AI bridge — set true if the new-consult pre-screen ran on this
-  /// thread. Future: a parallel `doctorBriefSummary` field gets filled
-  /// by `generateDoctorBrief` (Phase 2).
+  /// thread.
   final bool screenedByAi;
+
+  /// Server-generated 30-second briefing for the doctor, filled by
+  /// the `generateDoctorBrief` trigger shortly after consult creation.
+  /// Visible only to the doctor side of the thread.
+  final String? doctorBriefSummary;
 
   const Consultation({
     required this.id,
@@ -59,10 +63,12 @@ class Consultation {
     required this.paid,
     this.doctorId,
     this.screenedByAi = false,
+    this.doctorBriefSummary,
   });
 
   factory Consultation.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final d = doc.data() ?? const {};
+    final briefRaw = d['doctorBriefSummary'] as String?;
     return Consultation(
       id: doc.id,
       uid: (d['uid'] as String?) ?? '',
@@ -75,7 +81,30 @@ class Consultation {
       paid: d['paid'] == true,
       doctorId: d['doctorId'] as String?,
       screenedByAi: d['screenedByAi'] == true,
+      doctorBriefSummary: (briefRaw == null || briefRaw.isEmpty) ? null : briefRaw,
     );
+  }
+}
+
+/// Kind of message inside a consult thread. `user` and `doctor` are
+/// the two human sides; `aiFollowupSuggestion` is a server-appended
+/// message that carries three tappable follow-up questions in
+/// `suggestedFollowUps` (set by the `generateFollowUps` trigger).
+enum ConsultMessageKind {
+  user,
+  doctor,
+  aiFollowupSuggestion;
+
+  static ConsultMessageKind fromString(String? raw) {
+    switch (raw) {
+      case 'doctor':
+        return ConsultMessageKind.doctor;
+      case 'ai_followup_suggestion':
+        return ConsultMessageKind.aiFollowupSuggestion;
+      case 'user':
+      default:
+        return ConsultMessageKind.user;
+    }
   }
 }
 
@@ -86,6 +115,8 @@ class ConsultMessage {
   final String text;
   final String? photoUrl;
   final DateTime createdAt;
+  final ConsultMessageKind kind;
+  final List<String> suggestedFollowUps;
 
   const ConsultMessage({
     required this.id,
@@ -93,16 +124,30 @@ class ConsultMessage {
     required this.text,
     required this.photoUrl,
     required this.createdAt,
+    this.kind = ConsultMessageKind.user,
+    this.suggestedFollowUps = const [],
   });
 
   factory ConsultMessage.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final d = doc.data() ?? const {};
+    final fromDoctor = d['fromDoctor'] == true;
+    final kindRaw = d['kind'] as String?;
+    // Back-compat: legacy messages don't have `kind`. Infer from
+    // `fromDoctor` (doctor messages are `doctor`, parent messages are
+    // `user`); the AI followup kind is always explicit.
+    final kind = kindRaw == null
+        ? (fromDoctor ? ConsultMessageKind.doctor : ConsultMessageKind.user)
+        : ConsultMessageKind.fromString(kindRaw);
+    final raw = (d['suggestedFollowUps'] as List<dynamic>?) ?? const [];
+    final followUps = raw.whereType<String>().toList();
     return ConsultMessage(
       id: doc.id,
-      fromDoctor: d['fromDoctor'] == true,
+      fromDoctor: fromDoctor,
       text: (d['text'] as String?) ?? '',
       photoUrl: d['photoUrl'] as String?,
       createdAt: _date(d['createdAt']),
+      kind: kind,
+      suggestedFollowUps: followUps,
     );
   }
 }

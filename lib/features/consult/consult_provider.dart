@@ -47,6 +47,16 @@ final consultMessagesProvider = StreamProvider.autoDispose
       .map((s) => s.docs.map(ConsultMessage.fromDoc).toList());
 });
 
+/// Live stream of a single consultation document — used by the thread
+/// screen to react to server-side enrichment (doctorBriefSummary,
+/// status changes, etc.).
+final consultationProvider = StreamProvider.autoDispose
+    .family<Consultation?, String>((ref, consultId) {
+  if (!isFirebaseInitialized) return Stream.value(null);
+  return _consults.doc(consultId).snapshots().map(
+      (snap) => snap.exists ? Consultation.fromDoc(snap) : null);
+});
+
 final consultServiceProvider = Provider<ConsultService>((ref) => ConsultService());
 
 class ConsultService {

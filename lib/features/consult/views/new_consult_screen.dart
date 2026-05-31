@@ -1,9 +1,11 @@
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/l10n/content_localizations.dart';
 import '../../../core/services/payment_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../main.dart' show localeProvider;
 import '../consult_config.dart';
 import '../consult_provider.dart';
 import '../doctor_picker_sheet.dart';
@@ -27,11 +29,58 @@ class _NewConsultScreenState extends ConsumerState<NewConsultScreen> {
   bool _busy = false;
   Doctor? _selectedDoctor;
 
+  // AI pre-screen state
+  bool _screening = false;
+  _ScreenResult? _screenResult;
+  String? _lastScreenedDraft;
+
   @override
   void dispose() {
     _topic.dispose();
     _message.dispose();
     super.dispose();
+  }
+
+  Future<void> _runScreen(Doctor doctor) async {
+    final draft = _message.text.trim();
+    final topic = _topic.text.trim();
+    if (draft.length < 10) return;
+    if (_screening) return;
+    if (_lastScreenedDraft == draft) return;
+    setState(() {
+      _screening = true;
+      _screenResult = null;
+    });
+    try {
+      final locale = ref.read(localeProvider)?.languageCode ?? 'en';
+      final normalized = {'en', 'ru', 'ky'}.contains(locale) ? locale : 'en';
+      final callable =
+          FirebaseFunctions.instance.httpsCallable('screenConsultDraft');
+      final res = await callable.call(<String, dynamic>{
+        'draft': draft,
+        if (topic.isNotEmpty) 'topic': topic,
+        'doctorId': doctor.id,
+        'locale': normalized,
+      });
+      if (!mounted) return;
+      _lastScreenedDraft = draft;
+      _screenResult = _ScreenResult.fromMap(
+          (res.data as Map?)?.cast<String, dynamic>() ?? const {});
+    } catch (e) {
+      debugPrint('[consult] pre-screen failed: $e');
+    } finally {
+      if (mounted) setState(() => _screening = false);
+    }
+  }
+
+  void _routeToEmergency() {
+    context.go('/emergency');
+  }
+
+  void _askBalamFree() {
+    final draft = _message.text.trim();
+    if (draft.isEmpty) return;
+    context.go('/ai?prefill=${Uri.encodeComponent(draft)}');
   }
 
   Doctor _resolveDoctor(List<Doctor> directory) {
@@ -60,6 +109,7 @@ class _NewConsultScreenState extends ConsumerState<NewConsultScreen> {
           topic: topic,
           firstMessage: message,
           doctorId: doctor.id,
+          screenedByAi: _screenResult != null,
         );
     if (!mounted) return;
     setState(() => _busy = false);
@@ -138,7 +188,14 @@ class _NewConsultScreenState extends ConsumerState<NewConsultScreen> {
           const SizedBox(height: 6),
           TextField(
             controller: _message,
-            onChanged: (_) => setState(() {}),
+            onChanged: (_) {
+              setState(() {});
+              // Invalidate any stale screen result on edit.
+              if (_screenResult != null &&
+                  _message.text.trim() != _lastScreenedDraft) {
+                setState(() => _screenResult = null);
+              }
+            },
             minLines: 4,
             maxLines: 8,
             textCapitalization: TextCapitalization.sentences,
@@ -147,7 +204,57 @@ class _NewConsultScreenState extends ConsumerState<NewConsultScreen> {
                 ru: 'Симптомы, как долго, что пробовали, что хочешь узнать. Фото можно приложить дальше.',
                 ky: 'Симптомдор, канча убакыт, эмне аракет кылдыңыз, эмнени билгиңиз келет. Сүрөттөрдү кийинки кадамда тиркей аласыз.')),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          if (_message.text.trim().length >= 10 && _screenResult == null) ...[
+            OutlinedButton.icon(
+              onPressed: _screening ? null : () => _runScreen(doctor),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                side: BorderSide(color: AppColors.primary.withValues(alpha: 0.4)),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              icon: _screening
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.primary))
+                  : const Icon(Icons.auto_awesome, size: 16),
+              label: Text(
+                _screening
+                    ? tr(lang,
+                        en: 'Balam is reading…',
+                        ru: 'Balam читает…',
+                        ky: 'Balam окуп жатат…')
+                    : tr(lang,
+                        en: 'Check with Balam first (free)',
+                        ru: 'Сначала спросить Balam (бесплатно)',
+                        ky: 'Адегенде Balamден сура (бекер)'),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w700, fontSize: 13),
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
+          if (_screenResult != null) ...[
+            _ScreenResultCard(
+              result: _screenResult!,
+              lang: lang,
+              onOpenEmergency: _routeToEmergency,
+              onAskFreeAi: _askBalamFree,
+              onUseRephrase: () {
+                final r = _screenResult!.suggestedRephrase;
+                if (r != null) {
+                  _message.text = r;
+                  setState(() {});
+                }
+              },
+            ),
+            const SizedBox(height: 10),
+          ],
+          const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -218,6 +325,273 @@ class _NewConsultScreenState extends ConsumerState<NewConsultScreen> {
             borderSide: const BorderSide(color: AppColors.divider)),
         contentPadding: const EdgeInsets.all(14),
       );
+}
+
+// ─── AI pre-screen result ──────────────────────────────────────
+
+class _ScreenResult {
+  final String? suggestedRephrase;
+  final bool canAiAnswerFirst;
+  final String? aiAnswerPreview;
+  final String urgency; // low / medium / high / emergency
+  final String doctorRelevance; // low / medium / high
+
+  const _ScreenResult({
+    required this.suggestedRephrase,
+    required this.canAiAnswerFirst,
+    required this.aiAnswerPreview,
+    required this.urgency,
+    required this.doctorRelevance,
+  });
+
+  factory _ScreenResult.fromMap(Map<String, dynamic> raw) {
+    String? s(Object? v) {
+      if (v is! String) return null;
+      final t = v.trim();
+      return t.isEmpty ? null : t;
+    }
+    final urgency = (raw['urgency'] as String?)?.trim() ?? 'low';
+    final rel = (raw['doctor_relevance'] as String?)?.trim() ?? 'medium';
+    return _ScreenResult(
+      suggestedRephrase: s(raw['suggested_rephrase']),
+      canAiAnswerFirst: raw['can_ai_answer_first'] == true,
+      aiAnswerPreview: s(raw['ai_answer_preview']),
+      urgency: ['low', 'medium', 'high', 'emergency'].contains(urgency)
+          ? urgency
+          : 'low',
+      doctorRelevance:
+          ['low', 'medium', 'high'].contains(rel) ? rel : 'medium',
+    );
+  }
+}
+
+class _ScreenResultCard extends StatelessWidget {
+  final _ScreenResult result;
+  final String lang;
+  final VoidCallback onOpenEmergency;
+  final VoidCallback onAskFreeAi;
+  final VoidCallback onUseRephrase;
+
+  const _ScreenResultCard({
+    required this.result,
+    required this.lang,
+    required this.onOpenEmergency,
+    required this.onAskFreeAi,
+    required this.onUseRephrase,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Emergency wins everything else: hide the rest, push hard to /emergency.
+    if (result.urgency == 'emergency') {
+      return _EmergencyBlock(lang: lang, onOpen: onOpenEmergency);
+    }
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.auto_awesome,
+                  size: 14, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Text(
+                tr(lang,
+                    en: "BALAM'S READ",
+                    ru: 'BALAM СЧИТАЕТ',
+                    ky: 'BALAM КӨРГӨН'),
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                  letterSpacing: 0.6,
+                ),
+              ),
+            ],
+          ),
+          if (result.canAiAnswerFirst && result.aiAnswerPreview != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              result.aiAnswerPreview!,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textPrimary,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                FilledButton.icon(
+                  onPressed: onAskFreeAi,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                  ),
+                  icon: const Icon(Icons.chat_bubble_outline, size: 14),
+                  label: Text(
+                    tr(lang,
+                        en: 'Ask Balam free',
+                        ru: 'Спросить Balam (бесплатно)',
+                        ky: 'Balamдан сура (бекер)'),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              tr(lang,
+                  en: "Or send to the doctor anyway — useful if you want a clinician's eye on it.",
+                  ru: 'Или всё-таки отправь врачу — если хочешь, чтобы посмотрел специалист.',
+                  ky: 'Же дарыгерге жөнөткүң келсе — адистин көзү тийсин.'),
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ] else ...[
+            const SizedBox(height: 6),
+            Text(
+              tr(lang,
+                  en: "This is a good one for the doctor.",
+                  ru: 'Это как раз случай для врача.',
+                  ky: 'Бул дарыгерге арналган суроо.'),
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textPrimary,
+                height: 1.4,
+              ),
+            ),
+          ],
+          if (result.suggestedRephrase != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.divider),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tr(lang,
+                        en: 'A clearer way to ask:',
+                        ru: 'Можно сформулировать так:',
+                        ky: 'Так бул түрдө суроо:'),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textHint,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    result.suggestedRephrase!,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      color: AppColors.textPrimary,
+                      height: 1.35,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: onUseRephrase,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        tr(lang,
+                            en: 'Use this',
+                            ru: 'Использовать',
+                            ky: 'Колдонуу'),
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _EmergencyBlock extends StatelessWidget {
+  final String lang;
+  final VoidCallback onOpen;
+  const _EmergencyBlock({required this.lang, required this.onOpen});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            tr(lang,
+                en: "This sounds urgent — don't wait for an async reply.",
+                ru: 'Это срочно — не жди ответа в переписке.',
+                ky: 'Бул шашылыш — жазышуудан жоопту күтпө.'),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: AppColors.error,
+            ),
+          ),
+          const SizedBox(height: 8),
+          FilledButton.icon(
+            onPressed: onOpen,
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.error,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            ),
+            icon: const Icon(Icons.emergency_outlined, size: 16),
+            label: Text(
+              tr(lang,
+                  en: 'Open Emergency Mode',
+                  ru: 'Открыть экстренный режим',
+                  ky: 'Шашылыш режимди ачуу'),
+              style: const TextStyle(
+                  fontWeight: FontWeight.w800, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// The doctor picked for this consult. Shows "Change" only when the

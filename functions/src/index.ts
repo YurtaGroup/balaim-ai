@@ -25,6 +25,9 @@ import { onObservationCreated as onObservationCreatedImpl } from "./montessori/o
 import { generateDailyInvitation as generateDailyInvitationImpl } from "./montessori/generateDailyInvitation";
 import { setPremiumFromReceipt as setPremiumFromReceiptImpl } from "./billing/setPremiumFromReceipt";
 import { setDoctorClaim as setDoctorClaimImpl } from "./admin/setDoctorClaim";
+import { screenConsultDraft as screenConsultDraftImpl } from "./consult/screenConsultDraft";
+import { generateDoctorBrief as generateDoctorBriefImpl } from "./consult/generateDoctorBrief";
+import { generateFollowUps as generateFollowUpsImpl } from "./consult/generateFollowUps";
 
 admin.initializeApp();
 
@@ -944,3 +947,27 @@ export const setPremiumFromReceipt = setPremiumFromReceiptImpl;
 // writes/merges their `doctors/{id}` Firestore record. Idempotent.
 // Doctors must have signed up via email/password first.
 export const setDoctorClaim = setDoctorClaimImpl;
+
+// ============================================================
+// CONSULT — AI bridge (Phase 2)
+// ============================================================
+//
+// Three coupled Cloud Functions that make Balam more than just a
+// messaging app for doctors:
+//
+//   - screenConsultDraft: callable. Mom drafts a question; Haiku 4.5
+//     decides if AI can answer it for free, if it's an emergency, or
+//     if it's worth a paid consult. Mom sees the result before paying.
+//
+//   - generateDoctorBrief: Firestore onCreate trigger on consultations.
+//     Sonnet 4.6 composes a 30-second briefing from child age, vault,
+//     recent observations, and the parent's question. Doctor opens
+//     the thread and sees the brief at the top.
+//
+//   - generateFollowUps: Firestore onCreate trigger on messages.
+//     When the DOCTOR replies, Haiku 4.5 proposes 3 tappable follow-up
+//     questions the parent might want to ask next. Posted as a sibling
+//     "ai_followup_suggestion" message with `suggestedFollowUps`.
+export const screenConsultDraft = screenConsultDraftImpl;
+export const generateDoctorBrief = generateDoctorBriefImpl;
+export const generateFollowUps = generateFollowUpsImpl;
