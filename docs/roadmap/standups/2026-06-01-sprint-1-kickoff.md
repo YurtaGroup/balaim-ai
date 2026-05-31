@@ -89,3 +89,42 @@ That's the bar. If 4 out of 5 dogfood chapters don't read at this quality, the p
 3. **Approve the recommended implementation order** above, or rearrange.
 
 Once those are answered, implementation begins immediately on the persona file + the cron skeleton.
+
+---
+
+## End-of-day update — 2026-06-01
+
+**Status:** Sprint 1 code-complete + DEPLOYED. Awaiting first chapter narrative for prompt review.
+
+**Shipped today (commit `e9024cb` on `v3-hyperfocus`):**
+- ✅ `functions/src/ai/personas/sunday_chapter.ts` — CTO's prompt, EN/RU/KY
+- ✅ `functions/src/jobs/sunday_chapter.ts` — hourly cron, pure `composeChapter()` migration seam, idempotent transaction, FCM push
+- ✅ Flutter card per Designer spec — 5 states, share via dio+share_plus, inserted into `home_screen.dart` between Quick Log and Mood
+- ✅ `users/{uid}.timezoneOffsetMinutes` captured by Flutter on every auth state change
+- ✅ `chapters/` subcollection added to `firestore.rules`
+- ✅ All ratification questions answered (Q1-Q6) and reflected in code
+
+**Deployed to `balam-ai-2a037`:**
+- ✅ Firestore rules
+- ✅ `scheduledSundayChapters` (hourly cron — fires every UTC hour, picks parents at local Sun 19:00)
+- ✅ `generateSundayChapterManual` (dogfood trigger)
+
+**Open warnings (non-blocking):**
+- Node.js 20 runtime deprecated 2026-04-30; decommission 2026-10-30. Upgrade to Node 22 before then.
+- `firebase-functions` package is outdated; run `npm install --save firebase-functions@latest` when convenient.
+
+**What's still needed before the first real chapter can render:**
+
+1. **TestFlight build with the auth_service.dart change.** Without it, `timezoneOffsetMinutes` doesn't get written to user docs, so the cron skips everyone. Workaround for the founder: open the running app once with this build to write the field, OR add it to a user doc manually in Firestore Console.
+2. **Founder fires the manual trigger** to read the first chapter narrative:
+   ```
+   firebase functions:shell
+   > generateSundayChapterManual({force: true}, {auth: {uid: "TIMUR_UID"}})
+   ```
+   Read the `narrative` field in the returned object. If it sounds like the CTO's reference example, the prompt ships. If not, send feedback to Claude in tomorrow's session and the prompt gets one more pass.
+
+**Next session opens with:**
+- Read first chapter narrative (TIMUR action) → ratify prompt quality
+- If ratified: wire OpenAI TTS (`npm install openai` + `firebase functions:secrets:set OPENAI_API_KEY` + uncomment the TTS scaffold in `jobs/sunday_chapter.ts`)
+- After TTS: TestFlight build N+1 → dogfood weekend with Izzatillo + Adam
+- After Sprint 1 closes: Sprint 2 — onboarding rewrite + Letter-at-18
