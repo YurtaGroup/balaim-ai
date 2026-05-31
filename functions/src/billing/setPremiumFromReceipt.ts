@@ -1,7 +1,6 @@
 import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
-import { defineSecret } from "firebase-functions/params";
 
 /**
  * Premium entitlement setter — the ONLY server-trusted path that
@@ -29,8 +28,6 @@ import { defineSecret } from "firebase-functions/params";
  * = defense in depth; whichever fires first wins.
  */
 
-const revenueCatKey = defineSecret("REVENUECAT_API_KEY");
-
 interface RcSubscriber {
   entitlements?: Record<string, RcEntitlement>;
 }
@@ -45,7 +42,12 @@ interface RcResponse {
 }
 
 export const setPremiumFromReceipt = onCall(
-  { region: "us-central1", secrets: [revenueCatKey] },
+  { region: "us-central1" },
+  // NOTE: when RevenueCat is wired up, run:
+  //   firebase functions:secrets:set REVENUECAT_API_KEY
+  // then re-add `secrets: [defineSecret("REVENUECAT_API_KEY")]` to this
+  // options object and redeploy. Until then, the function deploys but
+  // returns failed-precondition (safe — premium stays false).
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Must be signed in");
