@@ -239,5 +239,29 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false; // Cloud Functions only
     }
+
+    // Doctors directory — pediatricians and specialists who can take
+    // paid consults inside Balam. Replaces the single-hardcoded-email
+    // model with a Firestore-backed roster.
+    //
+    // Read: any authenticated user (parents need to pick a doctor in
+    // the new-consult flow). The `active` and `acceptingNew` booleans
+    // gate visibility in the UI; clients filter client-side.
+    //
+    // Write: server only. Doctor onboarding is done via the
+    // `setDoctorClaim` Cloud Function (which writes the doc with the
+    // Admin SDK and assigns the matching `doctor: true` custom claim).
+    // Future: a verified self-onboarding flow can add a permitted
+    // write path, but v1 is admin-only.
+    //
+    // The companion auth gate (rules calling `isDoctor()`) is
+    // migrating from a hardcoded-email check to
+    // `request.auth.token.doctor == true` — done in a follow-up edit
+    // once the claim setter ships. Until then the email check stays
+    // authoritative and this collection is just the directory.
+    match /doctors/{doctorId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
   }
 }
